@@ -10,11 +10,10 @@ using std::ostream;
 using std::swap;
 using std::vector;
 
-template <class T>
 class BinaryHeap
 {
 private:
-    vector<T> __heap;
+    vector<int> __heap;
 
     void SiftDown(size_t index);
     void SiftUp(size_t index);
@@ -23,17 +22,17 @@ private:
 public:
     explicit BinaryHeap() = default;
     explicit BinaryHeap(const BinaryHeap &heap) = default;
-    explicit BinaryHeap(const vector<T> &data);
+    explicit BinaryHeap(const vector<int> &data);
     ~BinaryHeap() = default;
 
-    friend ostream &operator<<(ostream &stream, const BinaryHeap<T> &heap);
+    friend ostream &operator<<(ostream &stream, const BinaryHeap &heap);
 
-    void Insert(T element);
-    void LazyInsert(T element);
+    void Insert(int element);
+    void LazyInsert(int element);
     void DeleteMin();
     void DisplayHeap();
     size_t Size();
-    T GetMin();
+    int GetMin();
 };
 
 #endif //STRUCTURES_BINARYHEAP_H

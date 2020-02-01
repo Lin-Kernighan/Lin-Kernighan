@@ -1,13 +1,13 @@
 #include "heap.h"
 
-template <class T>
-BinaryHeap<T>::BinaryHeap(const vector<T> &vector) : __heap(vector)
+
+BinaryHeap::BinaryHeap(const vector<int> &vector) : __heap(vector)
 {
     Heapify();
 }
 
-template <class T>
-void BinaryHeap<T>::Heapify()
+
+void BinaryHeap::Heapify()
 {
     size_t length = __heap.size();
     for (size_t i = length - 1; i >= 0; --i)
@@ -16,8 +16,8 @@ void BinaryHeap<T>::Heapify()
     }
 }
 
-template <class T>
-void BinaryHeap<T>::SiftDown(size_t index)
+
+void BinaryHeap::SiftDown(size_t index)
 {
     size_t length = __heap.size();
     size_t leftIndex = 2 * index + 1;
@@ -44,8 +44,8 @@ void BinaryHeap<T>::SiftDown(size_t index)
     }
 }
 
-template <class T>
-void BinaryHeap<T>::SiftUp(size_t index)
+
+void BinaryHeap::SiftUp(size_t index)
 {
     if (index == 0)
     {
@@ -60,22 +60,22 @@ void BinaryHeap<T>::SiftUp(size_t index)
     }
 }
 
-template <class T>
-void BinaryHeap<T>::Insert(T value)
+
+void BinaryHeap::Insert(int value)
 {
     size_t length = __heap.size();
     __heap.push_back(value);
     SiftUp(length);
 }
 
-template <class T>
-T BinaryHeap<T>::GetMin()
+
+int BinaryHeap::GetMin()
 {
     return __heap[0];
 }
 
-template <class T>
-void BinaryHeap<T>::DeleteMin()
+
+void BinaryHeap::DeleteMin()
 {
     size_t length = __heap.size();
 
@@ -90,20 +90,20 @@ void BinaryHeap<T>::DeleteMin()
     SiftDown(0);
 }
 
-template <class T>
-size_t BinaryHeap<T>::Size()
+
+size_t BinaryHeap::Size()
 {
     return __heap.size();
 }
 
-template <class T>
-void BinaryHeap<T>::LazyInsert(T element)
+
+void BinaryHeap::LazyInsert(int element)
 {
     __heap.push_back(element);
 }
 
-template <class T>
-void BinaryHeap<T>::DisplayHeap()
+
+void BinaryHeap::DisplayHeap()
 {
     cout << "Heap: ";
     for (auto &it : __heap)
@@ -113,13 +113,14 @@ void BinaryHeap<T>::DisplayHeap()
     cout << endl;
 }
 
-template <class T>
-ostream &operator<<(ostream &os, const BinaryHeap<T> &heap)
+
+ostream &operator<<(ostream &os, const BinaryHeap &heap)
 {
     os << "Heap: ";
     for (auto &it : heap.__heap)
     {
-        os << *it << "; ";
+        os << it << "; ";
     }
     os << '\n';
+    return os;
 }

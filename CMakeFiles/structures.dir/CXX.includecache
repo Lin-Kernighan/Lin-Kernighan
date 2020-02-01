@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/dimitrius/PycharmProjects/Lin-Kernighan/playground/heap.cpp
+heap.h
+/Users/dimitrius/PycharmProjects/Lin-Kernighan/playground/heap.h
+
+/Users/dimitrius/PycharmProjects/Lin-Kernighan/playground/heap.h
+vector
+-
+iostream
+-
+
+/Users/dimitrius/PycharmProjects/Lin-Kernighan/playground/test.cpp
+vector
+-
+iostream
+-
+heap.h
+/Users/dimitrius/PycharmProjects/Lin-Kernighan/playground/heap.h
+
