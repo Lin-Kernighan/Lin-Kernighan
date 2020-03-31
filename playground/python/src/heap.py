@@ -9,9 +9,7 @@ class StdHeap:
         self.data = []
 
     def push(self, a):
-        print(self.data)
         heappush(self.data, a)
-        print(self.data)
 
     def min(self):
         return self.data[0]
