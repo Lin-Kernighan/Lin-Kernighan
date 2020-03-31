@@ -30,9 +30,11 @@ class Graph:
         self.nodes = points
         self.c = WeightMatrix(points)
         self.length = len(points)
-        self.edges = [Edge(0, 0, 0)] * self.length
+        self.edges = [Edge(0, 0, 0)] * (self.length - 1)
 
-    def prim_tree(self) -> None:
+    def prim_tree(self) -> float:
+        total_price = 0
+
         def add(idx: int):
             visited[idx] = True
             for idy, price in enumerate(self.c[idx]):
@@ -46,13 +48,16 @@ class Graph:
 
         k = 0
         while k < self.length - 1:
+            print(k)
             was, new_edge = True, None
             while was:
                 new_edge = heap.pop()
                 was = visited[new_edge.dst]
             self.edges[k] = new_edge
+            total_price += new_edge.price
             add(new_edge.dst)
             k += 1
+        return total_price
 
     def draw(self):
         for edge in self.edges:

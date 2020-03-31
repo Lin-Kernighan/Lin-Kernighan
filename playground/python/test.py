@@ -1,9 +1,9 @@
 from src.graph import Graph
-from src.tsp.oliver30 import tsp
+from src.tsp.ulysses16 import tsp
 
 graph = Graph(tsp)
-print(graph.c)
-graph.prim_tree()
+total_price = graph.prim_tree()
+print(total_price)
 print(graph.edges)
 graph.draw()
 
