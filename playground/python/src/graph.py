@@ -29,24 +29,30 @@ class Graph:
     def __init__(self, points: List[List[float]]) -> None:
         self.nodes = points
         self.c = WeightMatrix(points)
-        self.edges = []
         self.length = len(points)
+        self.edges = [Edge(0, 0, 0)] * self.length
 
     def prim_tree(self) -> None:
+        def add(idx: int):
+            visited[idx] = True
+            for idy, price in enumerate(self.c[idx]):
+                if price == 0:
+                    continue
+                heap.push(Edge(price, idx, idy))
+
         heap = StdHeap()
         visited = [False] * self.length
+        add(0)
 
-        def visit(u):
-            visited[u] = True
-
-            for v in range(self.length):
-                if not visited[v] and self.c[u][v] > 0:
-                    heap.push(Edge(self.c[u][v], u, v))
-
-        visit(0)
-        for i in range(self.length - 1):
-            self.edges += [heap.pop()]
-            visit(self.edges[-1].dst)
+        k = 0
+        while k < self.length - 1:
+            was, new_edge = True, None
+            while was:
+                new_edge = heap.pop()
+                was = visited[new_edge.dst]
+            self.edges[k] = new_edge
+            add(new_edge.dst)
+            k += 1
 
     def draw(self):
         for edge in self.edges:
@@ -55,5 +61,5 @@ class Graph:
             plt.plot([x1, x2], [y1, y2], linewidth=1, color='r')
 
         for idx, node in enumerate(self.nodes):
-            plt.annotate(f'{idx}:({node[0]},{node[1]})', node, size=10)
+            plt.annotate(f'{idx}:({node[0]},{node[1]})', node, size=9)
         plt.show()

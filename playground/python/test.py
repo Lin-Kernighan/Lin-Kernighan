@@ -1,9 +1,9 @@
 from src.graph import Graph
-from src.tsp.ulysses16 import tsp
+from src.tsp.oliver30 import tsp
 
 graph = Graph(tsp)
-graph.prim_tree()
 print(graph.c)
+graph.prim_tree()
 print(graph.edges)
 graph.draw()
 
