@@ -48,7 +48,6 @@ class Graph:
 
         k = 0
         while k < self.length - 1:
-            print(k)
             was, new_edge = True, None
             while was:
                 new_edge = heap.pop()
