@@ -32,26 +32,41 @@ class Graph:
         self.length = len(points)
         self.edges = [Edge(0, 0, 0)] * (self.length - 1)
 
-    def prim_tree(self) -> float:
-        total_price = 0
+    def prim_tree(self, with_edge: List[int] = None) -> float:
+        """ Prim's algorithm
+        with_edge: build MST with edge for calc alpha nearness
+        """
 
-        def add(idx: int):
+        def add(idx: int, without: int = None):
+            """ Add Edges from new node to heap
+            """
             visited[idx] = True
             for idy, price in enumerate(self.c[idx]):
-                if price == 0 or visited[idy]:
+                if price == 0 or visited[idy] or without == idy:
                     continue
                 heap.push(Edge(price, idx, idy))
 
         heap = StdHeap()
         visited = [False] * self.length
-        add(0)
 
+        total_price = 0
         k = 0
+        if with_edge is not None:
+            x, y = with_edge
+            self.edges[0] = Edge(self.c[x][y], x, y)
+            total_price += self.c[x][y]
+            visited[y] = visited[x] = True
+            add(x, y)  # add all edges from x without y
+            add(y)  # add all edges from y
+            k += 1
+        else:
+            add(0)
+
         while k < self.length - 1:
             was, new_edge = True, None
             while was:
                 new_edge = heap.pop()
-                was = visited[new_edge.dst]
+                was = visited[new_edge.dst]  # check dst node
             self.edges[k] = new_edge
             total_price += new_edge.price
             add(new_edge.dst)
