@@ -38,7 +38,7 @@ class Graph:
         def add(idx: int):
             visited[idx] = True
             for idy, price in enumerate(self.c[idx]):
-                if price == 0:
+                if price == 0 or visited[idy]:
                     continue
                 heap.push(Edge(price, idx, idy))
 
