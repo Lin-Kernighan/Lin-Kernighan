@@ -10,6 +10,7 @@ from src.minimum_spanning_tree import MinimumSpanningTree
 class SubgradientOptimization:
     weight_matrix: List[List[float]]
     pi_max: List[float]
+    w_max: float
     length: int
 
     def __init__(self, weight_matrix: List[List[float]], max_iterations=1000):
@@ -80,3 +81,12 @@ class SubgradientOptimization:
             v[edge.dst] += 1
             v[edge.src] += 1
         return v
+
+    def __len__(self) -> int:
+        return self.length
+
+    def __repr__(self):
+        return str(self)
+
+    def __str__(self):
+        return f'pi_max:{self.pi_max}\nw_max:{self.w_max}'
