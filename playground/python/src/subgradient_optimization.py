@@ -3,8 +3,8 @@ from typing import List
 
 import numpy as np
 
-from src.minimum_spanning_tree import MinimumSpanningTree
 from src.graph import Edge
+from src.minimum_spanning_tree import MinimumSpanningTree
 
 
 class SubgradientOptimization:
@@ -16,7 +16,8 @@ class SubgradientOptimization:
         self.weight_matrix = weight_matrix
         self.length = len(weight_matrix)
 
-        pi, w_max, w = np.zeros(self.length), -maxsize, -maxsize  # инициализируем итерацию, штрафы и текущий максимум
+        self.w_max, w = -maxsize, -maxsize  # инициализируем текущий максимум и штрафы
+        pi = np.zeros(self.length)  # итерацию
         self.pi_max = pi[:]
         v = np.zeros(self.length)
 
@@ -25,7 +26,6 @@ class SubgradientOptimization:
         is_first_period = True
         is_increasing = True
         last_improve = 0
-        best_solution = 0
 
         for k in range(1, max_iterations):
             self.__make_move(pi)
@@ -33,8 +33,8 @@ class SubgradientOptimization:
             ll = mst.total_price  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 
-            if w > w_max + 1e-6:  # максимальная пока что длина
-                w_max, self.pi_max = w, pi.copy()
+            if w > self.w_max + 1e-6:  # максимальная пока что длина
+                self.w_max, self.pi_max = w, pi.copy()
                 last_improve = k
 
             v_prev, v = v, self.__get_degrees(mst.edges)  # получаем субградиенты
@@ -42,10 +42,6 @@ class SubgradientOptimization:
             # -------------------- обновляем pi -----------------------------------------------------
             pi = pi + t * (0.7 * v + 0.3 * v_prev)
             # ic(k, w_max, w, t, period, ll, 2*pi.sum(), last_improve)
-            if best_solution < self.__check(v):
-                best_solution = self.__check(v)
-                print(f'new best:{best_solution}, iter:{k}')
-            # print(f'{k}:{v}:{self.__check(v)}')
             # ic(k, w_max, w, pi, t, period, ll, v)
 
             # --------------------- магия с шагом оптимизации ---------------------------------------
@@ -57,8 +53,8 @@ class SubgradientOptimization:
                 else:
                     t *= 2
 
-            if k - last_improve >= 10:  # вставка чтобы избежать стагнации
-                t /= 1.07
+            # if k - last_improve >= 10:  # вставка чтобы избежать стагнации
+            #     t /= 1.07
 
             if period == 0:  # случай когда период закончился
                 is_first_period = False
@@ -70,10 +66,7 @@ class SubgradientOptimization:
                 period = next_period
 
             if period == 0 or t < 1e-10 or np.absolute(v).sum() == 0:  # условие выхода
-                print(f't:{t:0.10f}, period:{period}, abs.sum:{np.absolute(v).sum()}, sol:{self.__check(v)}, iter:{k}')
                 break
-
-        print(last_improve)
 
     def __make_move(self, pi: np.ndarray) -> None:
         for i, k in enumerate(pi):
@@ -87,11 +80,3 @@ class SubgradientOptimization:
             v[edge.dst] += 1
             v[edge.src] += 1
         return v
-
-    @staticmethod
-    def __check(v: np.ndarray) -> int:
-        i = 0
-        for num in v:
-            if num == 0:
-                i += 1
-        return i
