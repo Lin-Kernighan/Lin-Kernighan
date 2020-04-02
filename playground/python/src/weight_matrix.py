@@ -5,9 +5,6 @@ class WeightMatrix:
     matrix: List[List[float]]
     length: int
 
-    def __len__(self) -> int:
-        return self.length
-
     def __init__(self, points: List[List[float]]) -> None:
         self.matrix = []
         self.length = len(points)
@@ -26,6 +23,9 @@ class WeightMatrix:
                 string += f'{elem:0.2f}\t'
             string += '\n'
         return string
+
+    def __len__(self) -> int:
+        return self.length
 
     def __repr__(self):
         return str(self)
