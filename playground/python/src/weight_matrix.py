@@ -1,4 +1,5 @@
 from typing import List
+from math import sqrt
 
 
 class WeightMatrix:
@@ -13,7 +14,7 @@ class WeightMatrix:
 
         for idx in range(0, self.length):
             for idy in range(idx + 1, self.length):
-                distance = (points[idy][0] - points[idx][0]) ** 2 + (points[idy][1] - points[idx][1]) ** 2
+                distance = sqrt((points[idy][0] - points[idx][0]) ** 2 + (points[idy][1] - points[idx][1]) ** 2)
                 self.matrix[idx][idy] = self.matrix[idy][idx] = distance
 
     def __str__(self):

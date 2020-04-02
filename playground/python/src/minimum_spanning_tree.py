@@ -1,7 +1,7 @@
 from typing import List
 
 from src.heap import StdHeap
-from src.utils import Edge
+from src.graph import Edge
 
 
 class MinimumSpanningTree:
