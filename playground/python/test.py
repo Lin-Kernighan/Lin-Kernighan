@@ -3,7 +3,7 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from src.graph import Edge
-from src.one_tree import MinimumOneTree
+from src.one_tree import OneTree
 from src.tsp.oliver30 import tsp
 from src.weight_matrix import WeightMatrix
 
@@ -20,5 +20,5 @@ def draw(edges: List[Edge], nodes: List[List[float]]):
 
 
 weight_matrix = WeightMatrix(tsp).matrix
-one_tree = MinimumOneTree(weight_matrix, 10, 1)
+one_tree = OneTree(weight_matrix, 10, 1)
 draw(one_tree.edges, tsp)

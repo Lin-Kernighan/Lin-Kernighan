@@ -5,7 +5,7 @@ from src.graph import Edge
 from src.heap import StdHeap
 
 
-class MinimumOneTree:
+class OneTree:
     edges: List[Edge]
     total_price: int
     length: int
