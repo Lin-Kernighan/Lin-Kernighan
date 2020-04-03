@@ -8,29 +8,27 @@ from src.one_tree import OneTree
 
 
 class SubgradientOptimization:
-    weight_matrix: List[List[float]]
     pi_max: List[float]
     w_max: float
     length: int
 
     def __init__(self, weight_matrix: List[List[float]], max_iterations=1000):
-        self.weight_matrix = weight_matrix
-        self.length = len(weight_matrix)
+        length = len(weight_matrix)
+        pi = np.zeros(length)  # итерацию
+        v = np.zeros(length)
 
         self.w_max, w = -maxsize, -maxsize  # инициализируем текущий максимум и штрафы
-        pi = np.zeros(self.length)  # итерацию
         self.pi_max = pi[:]
-        v = np.zeros(self.length)
 
         t = 0.0001
-        period = next_period = self.length // 2
+        period = next_period = length // 2
         is_first_period = True
         is_increasing = True
         last_improve = 0
 
         for k in range(1, max_iterations):
-            self.__make_move(pi)
-            one_tree = OneTree(self.weight_matrix, 0)  # с нулевой вершиной
+            self.__make_move(pi, weight_matrix)
+            one_tree = OneTree(weight_matrix, 0)  # с нулевой вершиной
             ll = one_tree.total_price  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 
@@ -38,7 +36,7 @@ class SubgradientOptimization:
                 self.w_max, self.pi_max = w, pi.copy()
                 last_improve = k
 
-            v_prev, v = v, self.__get_degrees(one_tree.edges)  # получаем субградиенты
+            v_prev, v = v, self.__get_degrees(one_tree.edges, length)  # получаем субградиенты
 
             # -------------------- обновляем pi -----------------------------------------------------
             pi = pi + t * (0.7 * v + 0.3 * v_prev)
@@ -69,27 +67,25 @@ class SubgradientOptimization:
             if period == 0 or t < 1e-10 or np.absolute(v).sum() == 0:  # условие выхода
                 break
 
-    def __make_move(self, pi: np.ndarray) -> None:
+    def __make_move(self, pi: np.ndarray, weight_matrix: List[List[float]]) -> None:
         """ vertex pi[i] added to all elements of i-row and i-column of weight matrix
         """
+        length = len(weight_matrix)
         for i, k in enumerate(pi):
-            for index in range(self.length):
-                self.weight_matrix[i][index] += k
-                self.weight_matrix[index][i] += k
+            for index in range(length):
+                weight_matrix[i][index] += k
+                weight_matrix[index][i] += k
 
-    def __get_degrees(self, edges: List[Edge]) -> np.ndarray:
+    def __get_degrees(self, edges: List[Edge], length: int) -> np.ndarray:
         """ v^k = d^k - 2,
         where d is vector having as its elements the
         degrees of the nodes in the current minimum 1-tree
         """
-        v = np.asarray([-2] * self.length)
+        v = np.asarray([-2] * length)
         for edge in edges:
             v[edge.dst] += 1
             v[edge.src] += 1
         return v
-
-    def __len__(self) -> int:
-        return self.length
 
     def __repr__(self):
         return str(self)
