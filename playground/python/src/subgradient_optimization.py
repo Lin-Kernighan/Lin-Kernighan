@@ -4,7 +4,7 @@ from typing import List
 import numpy as np
 
 from src.graph import Edge
-from src.minimum_spanning_tree import MinimumSpanningTree
+from src.one_tree import OneTree
 
 
 class SubgradientOptimization:
@@ -30,15 +30,15 @@ class SubgradientOptimization:
 
         for k in range(1, max_iterations):
             self.__make_move(pi)
-            mst = MinimumSpanningTree(self.weight_matrix)
-            ll = mst.total_price  # получаем длину нового деревого
+            one_tree = OneTree(self.weight_matrix, 0)  # с нулевой вершиной
+            ll = one_tree.total_price  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 
             if w > self.w_max + 1e-6:  # максимальная пока что длина
                 self.w_max, self.pi_max = w, pi.copy()
                 last_improve = k
 
-            v_prev, v = v, self.__get_degrees(mst.edges)  # получаем субградиенты
+            v_prev, v = v, self.__get_degrees(one_tree.edges)  # получаем субградиенты
 
             # -------------------- обновляем pi -----------------------------------------------------
             pi = pi + t * (0.7 * v + 0.3 * v_prev)
@@ -70,12 +70,18 @@ class SubgradientOptimization:
                 break
 
     def __make_move(self, pi: np.ndarray) -> None:
+        """ vertex pi[i] added to all elements of i-row and i-column of weight matrix
+        """
         for i, k in enumerate(pi):
             for index in range(self.length):
                 self.weight_matrix[i][index] += k
                 self.weight_matrix[index][i] += k
 
     def __get_degrees(self, edges: List[Edge]) -> np.ndarray:
+        """ v^k = d^k - 2,
+        where d is vector having as its elements the
+        degrees of the nodes in the current minimum 1-tree
+        """
         v = np.asarray([-2] * self.length)
         for edge in edges:
             v[edge.dst] += 1
