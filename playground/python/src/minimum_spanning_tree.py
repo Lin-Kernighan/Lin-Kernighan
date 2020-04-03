@@ -51,7 +51,7 @@ class MinimumSpanningTree:
             k += 1
 
     def __len__(self) -> int:
-        return self.length
+        return self.total_price
 
     def __repr__(self):
         return str(self)

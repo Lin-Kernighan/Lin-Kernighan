@@ -89,7 +89,7 @@ class OneTree:
         self.total_price += second_min
 
     def __len__(self) -> int:
-        return self.length
+        return self.total_price
 
     def __repr__(self):
         return str(self)
