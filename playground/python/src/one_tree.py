@@ -8,20 +8,19 @@ from src.heap import StdHeap
 class OneTree:
     edges: List[Edge]
     total_price: int
-    length: int
 
     def __init__(self, weight_matrix: List[List[float]], node: int, with_edge: List[int] = None) -> None:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree
         """
-        self.length = len(weight_matrix)
-        self.edges: List[Edge] = [Edge(0, 0, 0)] * self.length  # for n - 1 edges + one edge from node
+        length = len(weight_matrix)
+        self.edges: List[Edge] = [Edge(0, 0, 0)] * length  # for n - 1 edges + one edge from node
         self.total_price = 0
 
         heap = StdHeap()
-        checklist: List[bool] = [False] * self.length  # for checking before adding last edge in one-tree
-        visited: List[bool] = [False] * self.length  # for searching not visited nodes in Prim's algorithm
+        checklist: List[bool] = [False] * length  # for checking before adding last edge in one-tree
+        visited: List[bool] = [False] * length  # for searching not visited nodes in Prim's algorithm
 
         def add(idx: int, without: int = None):
             """ Add Edges from new node to heap
@@ -45,7 +44,7 @@ class OneTree:
         else:  # or just start
             add(0)
 
-        while k < self.length - 1:  # another
+        while k < length - 1:  # another
             was, new_edge = True, None
             while was:
                 new_edge = heap.pop()
@@ -60,6 +59,8 @@ class OneTree:
 
     @staticmethod
     def __check_edge(node: int, x: int, y: int, checklist: List[bool]) -> None:
+        """ Check if one of node is Node... if that, mark it
+        """
         if x == node:
             checklist[y] = True
         elif y == node:
@@ -67,6 +68,8 @@ class OneTree:
 
     @staticmethod
     def __add_last_edge(prices: List[float], node: int, checklist: List[bool]) -> Edge:
+        """ Add last edge, mst -> one tree
+        """
         n_node, min_edge = -1, maxsize
         for index, price in enumerate(prices):
             if index == node:
