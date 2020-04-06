@@ -21,7 +21,8 @@ def draw(edges: List[Edge], nodes: List[List[float]]):
 
 
 weight_matrix = WeightMatrix(tsp).matrix
-one_tree = OneTree(weight_matrix, 10, 1)
+one_tree = OneTree(weight_matrix, 0)
+print(one_tree.edges)
 draw(one_tree.edges, tsp)
 
 optimization = SubgradientOptimization(weight_matrix)
