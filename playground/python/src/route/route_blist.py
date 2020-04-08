@@ -17,25 +17,23 @@ class Node:
 class RouteBlist(Route):
     data: blist[Node]
     weight_matrix: WeightMatrix
-    length: int
 
     def __init__(self, points: List[List[float]]) -> None:
         self.weight_matrix = WeightMatrix(points)
         self.data = blist([Node(0)])  # wtf
-        self.length = len(points)
-        self.data *= self.length
+        self.data *= len(points)
         for index, _ in enumerate(points):  # some initial tour generator
             self.data[index] = index
 
     def predecessor(self, node: Node) -> Optional[Node]:  # what is better index of Node or Node?
         index = self.data.index(node)
-        if 0 < index < self.length:
+        if 0 < index < len(self.data):
             return self.data[index - 1]
         return None
 
     def successor(self, node: Node) -> Optional[Node]:  # what is better index of Node or Node?
         index = self.data.index(node)
-        if 0 <= index < self.length - 1:
+        if 0 <= index < len(self.data) - 1:
             return self.data[index + 1]
         return None
 
