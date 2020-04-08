@@ -9,7 +9,7 @@ from src.weight_matrix import WeightMatrix
 
 @dataclass
 class Node:
-    index: int
+    value: int
     predecessor: Node
     successor: Node
 
@@ -35,19 +35,23 @@ class RouteList(Route):
                 self.head = Node(index, None, None)
                 prev = self.head
 
-    def predecessor(self, node: Node) -> Node:
+    def predecessor(self, node: Node) -> Optional[Node]:
         return node.predecessor
 
-    def successor(self, node: Node) -> Node:
+    def successor(self, node: Node) -> Optional[Node]:
         return node.successor
 
-    def between(self, forth: Node, back: Node) -> bool:
+    def between(self, forth: Node, back: Node, search: Node) -> bool:
+        found = False
         while forth is not None and back is not None:
+            if forth == search or back == search:
+                found = True
             if forth == back or forth.successor == back:
-                return True
+                break
             forth = forth.successor
             back = back.predecessor
-        return False
+
+        return found
 
     def move(self) -> None:
         pass

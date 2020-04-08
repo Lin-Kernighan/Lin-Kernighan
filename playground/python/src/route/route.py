@@ -1,23 +1,20 @@
 from __future__ import annotations
-from typing import List
+from typing import Optional
 
 
 class Node:
-    index: int
+    value: int
 
 
 class Route:
 
-    def __init__(self, points: List[List[float]]):
+    def predecessor(self, node: Node) -> Optional[Node]:
         pass
 
-    def predecessor(self, node: Node):
+    def successor(self, node: Node) -> Optional[Node]:
         pass
 
-    def successor(self, node: Node):
-        pass
-
-    def between(self, forth: Node, back: Node) -> bool:
+    def between(self, forth: Node, back: Node, search: Node) -> bool:
         pass
 
     def move(self) -> None:
