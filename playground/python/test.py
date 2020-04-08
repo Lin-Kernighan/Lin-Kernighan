@@ -3,11 +3,7 @@ from typing import List
 import matplotlib.pyplot as plt
 
 from src.graph import Edge
-from src.alpha_nearness import AlphaNearness
-from src.one_tree import OneTree
-from src.subgradient_optimization import SubgradientOptimization
-from src.tsp.oliver30 import tsp
-from src.weight_matrix import WeightMatrix
+from src.route.array_tree import SqrtTree
 
 
 def draw(edges: List[Edge], nodes: List[List[float]]):
@@ -21,10 +17,7 @@ def draw(edges: List[Edge], nodes: List[List[float]]):
     plt.show()
 
 
-weight_matrix = WeightMatrix(tsp).matrix
-one_tree = OneTree(weight_matrix, 0)
-draw(one_tree.edges, tsp)
-nearness = AlphaNearness(weight_matrix)
-print(nearness.alpha_nearness([0, 2]))
-
-optimization = SubgradientOptimization(weight_matrix)
+tree = SqrtTree([
+    [0], [4], [4], [5], [5], [5]
+])
+print(tree)

@@ -3,13 +3,12 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from src.route.route import Route
-from src.weight_matrix import WeightMatrix
 
 
 @dataclass
 class Node:
-    value: int
     index: int
+    value: int
     reversed: bool
 
 
@@ -20,7 +19,7 @@ class Block:
     reversed: bool
 
 
-class SqrtTree:
+class ArrayTree(Route):
     blocks: List[Block]
     data: List[Node]
 
@@ -50,35 +49,17 @@ class SqrtTree:
     def len_blocks(self) -> int:
         return len(self.blocks)
 
-    def previous(self, node: Node) -> Optional[Node]:
+    def predecessor(self, node: Node) -> Optional[Node]:
         if 0 < node.index < self.len_data():
             return self.data[node.index - 1]
         return None
 
-    def following(self, node: Node) -> Optional[Node]:
+    def successor(self, node: Node) -> Optional[Node]:
         if 0 <= node.index < self.len_data() - 1:
             return self.data[node.index + 1]
         return None
-
-
-class RouteTree(Route):
-    data_tree: SqrtTree
-    weight_matrix: WeightMatrix
-
-    def __init__(self, points: List[List[float]]) -> None:
-        self.data_tree = SqrtTree(points)
-        self.weight_matrix = WeightMatrix(points)
-
-    def predecessor(self, node: Node) -> Optional[Node]:
-        return self.data_tree.previous(node)
-
-    def successor(self, node: Node) -> Optional[Node]:
-        return self.data_tree.following(node)
 
     def between(self, forth: Node, back: Node, search: Node) -> bool:
         if forth.index < search.index < back.index:
             return True
         return False
-
-    def move(self) -> None:
-        pass
