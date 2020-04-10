@@ -3,8 +3,8 @@ from typing import List
 
 import numpy as np
 
-from src.graph import Edge
-from src.one_tree import OneTree
+from src.structures.graph import Edge
+from src.structures.one_tree import OneTree
 
 
 class SubgradientOptimization:
@@ -67,7 +67,8 @@ class SubgradientOptimization:
             if period == 0 or t < 1e-10 or np.absolute(v).sum() == 0:  # условие выхода
                 break
 
-    def __make_move(self, pi: np.ndarray, weight_matrix: List[List[float]]) -> None:
+    @staticmethod
+    def __make_move(pi: np.ndarray, weight_matrix: List[List[float]]) -> None:
         """ vertex pi[i] added to all elements of i-row and i-column of weight matrix
         """
         length = len(weight_matrix)
@@ -76,7 +77,8 @@ class SubgradientOptimization:
                 weight_matrix[i][index] += k
                 weight_matrix[index][i] += k
 
-    def __get_degrees(self, edges: List[Edge], length: int) -> np.ndarray:
+    @staticmethod
+    def __get_degrees(edges: List[Edge], length: int) -> np.ndarray:
         """ v^k = d^k - 2,
         where d is vector having as its elements the
         degrees of the nodes in the current minimum 1-tree

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Set
 
 
 @dataclass(order=True)
@@ -15,10 +15,6 @@ class Edge:
         return str(self)
 
 
+@dataclass
 class Graph:
-    edges: List[Edge]
-    nodes: List[List[float]]
-
-    def __init__(self, points: List[List[float]]) -> None:
-        self.nodes = points
-        self.edges = []
+    edges: Set[Edge]  # набор ребер

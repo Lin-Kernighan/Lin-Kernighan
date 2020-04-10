@@ -1,15 +1,15 @@
 from sys import maxsize
-from typing import List
+from typing import List, Tuple
 
-from src.graph import Edge
-from src.heap import StdHeap
+from src.structures.graph import Edge
+from src.structures.heap import Heap
 
 
 class OneTree:
     edges: List[Edge]
     total_price: int
 
-    def __init__(self, weight_matrix: List[List[float]], node: int, with_edge: List[int] = None) -> None:
+    def __init__(self, weight_matrix: List[List[float]], node: int = 0, with_edge: Tuple[int, int] = None) -> None:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree
@@ -18,7 +18,7 @@ class OneTree:
         self.edges: List[Edge] = [Edge(0, 0, 0)] * length  # for n - 1 edges + one edge from node
         self.total_price = 0
 
-        heap = StdHeap()
+        heap = Heap()
         checklist: List[bool] = [False] * length  # for checking before adding last edge in one-tree
         visited: List[bool] = [False] * length  # for searching not visited nodes in Prim's algorithm
 

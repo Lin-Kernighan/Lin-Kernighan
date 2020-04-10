@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from src.route.route import Route
-from src.weight_matrix import WeightMatrix
+from src.structures.weight_matrix import WeightMatrix
 
 
 @dataclass
@@ -23,7 +23,7 @@ class RouteList(Route):
     head: Node
     weight_matrix: WeightMatrix
 
-    def __init__(self, points: List[List[float]]) -> None:
+    def __init__(self, points: List[Tuple[float, float]]) -> None:
         self.weight_matrix = WeightMatrix(points)
         prev: Optional[Node] = None
         for index, _ in enumerate(points):  # some initial tour generator
@@ -41,17 +41,17 @@ class RouteList(Route):
     def successor(self, node: Node) -> Optional[Node]:
         return node.successor
 
-    def between(self, forth: Node, back: Node, search: Node) -> bool:
-        found = False
-        while forth is not None and back is not None:
-            if forth == search or back == search:
-                found = True
-            if forth == back or forth.successor == back:
-                break
-            forth = forth.successor
-            back = back.predecessor
-
-        return found
+    # def between(self, forth: Node, back: Node, search: Node) -> bool:
+    #     found = False
+    #     while forth is not None and back is not None:
+    #         if forth == search or back == search:
+    #             found = True
+    #         if forth == back or forth.successor == back:
+    #             break
+    #         forth = forth.successor
+    #         back = back.predecessor
+    #
+    #     return found
 
     def move(self) -> None:
         pass

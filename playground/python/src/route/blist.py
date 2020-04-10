@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from blist import *
 
 from src.route.route import Route
-from src.weight_matrix import WeightMatrix
+from src.structures.weight_matrix import WeightMatrix
 
 
 @dataclass
@@ -18,7 +18,7 @@ class RouteBlist(Route):
     data: blist[Node]
     weight_matrix: WeightMatrix
 
-    def __init__(self, points: List[List[float]]) -> None:
+    def __init__(self, points: List[Tuple[float, float]]) -> None:
         self.weight_matrix = WeightMatrix(points)
         self.data = blist([Node(0)])  # wtf
         self.data *= len(points)

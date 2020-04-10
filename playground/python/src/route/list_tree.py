@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from src.route.route import Route
 
@@ -32,7 +32,7 @@ class ArrayListTree(Route):
     block_size: int
     blocks_length: int
 
-    def __init__(self, points: List[List[float]]) -> None:
+    def __init__(self, points: List[Tuple[float, float]]) -> None:
         self.data_length = len(points)
         prev: Optional[Node] = None
         for index, _ in enumerate(points):
@@ -93,7 +93,7 @@ class ArrayListTree(Route):
             return self.data[node]
         return None
 
-    def __getitem__(self, index) -> Optional[Node]:
+    def __getitem__(self, index: int) -> Optional[Node]:
         """ Get by order in tsp tour """
         if 0 <= index < self.len_data():
             block_number = index // self.block_size

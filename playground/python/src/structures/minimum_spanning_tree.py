@@ -1,7 +1,7 @@
 from typing import List
 
-from src.heap import StdHeap
-from src.graph import Edge
+from src.structures.graph import Edge
+from src.structures.heap import Heap
 
 
 class MinimumSpanningTree:
@@ -16,7 +16,7 @@ class MinimumSpanningTree:
         self.length = len(weight_matrix)
         self.edges: List[Edge] = [Edge(0, 0, 0)] * (self.length - 1)
         self.total_price = 0
-        heap = StdHeap()
+        heap = Heap()
         visited: List[bool] = [False] * self.length
 
         def add(idx: int, without: int = None):

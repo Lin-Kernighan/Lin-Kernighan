@@ -1,6 +1,6 @@
 import math
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from src.route.route import Route
 
@@ -23,7 +23,7 @@ class ArrayTree(Route):
     blocks: List[Block]
     data: List[Node]
 
-    def __init__(self, points: List[List[float]]) -> None:
+    def __init__(self, points: List[Tuple[float, float]]) -> None:
         length = len(points)
 
         self.data = [Node(0, 0, False)] * length

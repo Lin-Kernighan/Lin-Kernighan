@@ -1,7 +1,7 @@
 from heapq import heappush, heappop
 
 
-class StdHeap:
+class Heap:
     """ Heap, returning minimum element based on python stdlib
     """
 
