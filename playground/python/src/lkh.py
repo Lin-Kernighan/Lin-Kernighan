@@ -37,10 +37,9 @@ class LKH:
     def run(self) -> None:
         """ Пока тут просто шаблон нулевого запуска """
         # self.__subgradient_optimization()
-        # self.__one_tree()
-        # self.__alpha_nearness()
-        # self.__initial_tour()
-        pass
+        self.__one_tree()
+        self.__alpha_nearness()
+        self.__initial_tour()
 
     def __subgradient_optimization(self) -> None:
         opt = SubgradientOptimization(self.weight_matrix)  # переделать под WeightMatrix?
@@ -56,3 +55,4 @@ class LKH:
         if self.initial_generator is None:
             self.initial_generator = InitialTour(self.alpha_matrix, self.weight_matrix, self.selected_edges)
         self.current_tour = self.initial_generator.generate(self.solutions_set.get_best())
+        print(self.current_tour.edges)

@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 from src.route.route import Route
+from src.structures.graph import Graph
 
 
 @dataclass
@@ -32,7 +33,7 @@ class ArrayListTree(Route):
     block_size: int
     blocks_length: int
 
-    def __init__(self, points: List[Tuple[float, float]]) -> None:
+    def __init__(self, points: List[Tuple[float, float]], graph: Graph) -> None:
         self.data_length = len(points)
         prev: Optional[Node] = None
         for index, _ in enumerate(points):

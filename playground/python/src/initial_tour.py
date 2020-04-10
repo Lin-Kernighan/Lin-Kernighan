@@ -28,21 +28,22 @@ class InitialTour:
         while k < length - 1:  # вероятно не оптимально, если вообще правильно
             prices = self.alpha_matrix[previous]
 
-            if search := self.__zero_alpha(previous, prices, visited) is not None:
+            if (search := self.__zero_alpha(previous, prices, visited)) is not None:
                 new_init.add((previous, search), self.weight_matrix[previous][search])
 
-            elif search := self.__best_tour(previous, best_solution, visited) is not None:
+            elif (search := self.__best_tour(previous, best_solution, visited)) is not None:
                 new_init.add((previous, search), self.weight_matrix[previous][search])
 
-            elif search := self.__best_price(previous, prices, visited) is not None:
+            elif (search := self.__best_price(previous, prices, visited)) is not None:
                 new_init.add((previous, search), self.weight_matrix[previous][search])
 
             else:
                 raise RuntimeError('Edge not found')
 
             k += 1
+            visited[search] = True
             previous = search
-        new_init.add((previous, search), self.weight_matrix[first][search])
+        new_init.add((first, search), self.weight_matrix[first][search])
         return new_init
 
     def __zero_alpha(self, previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
