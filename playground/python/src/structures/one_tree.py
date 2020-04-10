@@ -3,13 +3,14 @@ from typing import List, Tuple
 
 from src.structures.graph import Edge
 from src.structures.heap import Heap
+from src.structures.matrix import Matrix
 
 
 class OneTree:
     edges: List[Edge]
     total_price: int
 
-    def __init__(self, weight_matrix: List[List[float]], node: int = 0, with_edge: Tuple[int, int] = None) -> None:
+    def __init__(self, weight_matrix: Matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> None:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree

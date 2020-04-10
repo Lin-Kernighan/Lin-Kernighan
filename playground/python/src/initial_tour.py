@@ -3,19 +3,21 @@ from sys import maxsize
 from typing import List, Optional
 
 from src.structures.graph import Graph, PoolEdges
+from src.structures.matrix import Matrix
 
 
 class InitialTour:
-    alpha_matrix: List[List[float]]
-    weight_matrix: List[List[float]]
+    alpha_matrix: Matrix
+    weight_matrix: Matrix
     selected_edges: PoolEdges
 
-    def __init__(self, alpha_matrix: List[List[float]], weight_matrix: List[List[float]], pool: PoolEdges) -> None:
+    def __init__(self, alpha_matrix: Matrix, weight_matrix: Matrix, pool: PoolEdges) -> None:
         self.alpha_matrix = alpha_matrix
         self.weight_matrix = weight_matrix
         self.selected_edges = pool
 
     def generate(self, best_solution: Optional[Graph]) -> Graph:
+        """ Генерируем новый тур """
         length = len(self.alpha_matrix)
         first = previous = search = randrange(0, length - 1)  # пункт первый "choose a random node i"
         visited: List[bool] = [False] * length
@@ -39,11 +41,12 @@ class InitialTour:
                 raise RuntimeError('Edge not found')
 
             k += 1
+            previous = search
         new_init.add((previous, search), self.weight_matrix[first][search])
         return new_init
 
     def __zero_alpha(self, previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
-        """ Перебираем все ребра с близостью равной нулю """
+        """ Перебираем все ребра с альфа-близостью равной нулю """
         for node, price in enumerate(prices):
             if node == previous or visited[node] or price != 0:
                 continue

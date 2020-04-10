@@ -15,3 +15,8 @@ class SolutionSet:
         if self.minimum == -1:
             return None
         return self.solutions[self.minimum]
+
+    def add(self, graph: Graph) -> None:
+        self.solutions.append(graph)
+        if graph.total_length < self.solutions[self.minimum].total_length:
+            self.minimum = len(self.solutions)

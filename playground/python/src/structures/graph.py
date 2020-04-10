@@ -22,6 +22,7 @@ class PoolEdges:
         self.edges = set()
 
     def add(self, edge: Tuple[int, int]) -> None:
+        """ Докидываем еще одно ребро в правильном порядке """
         idx, idy = edge
         if idx == idy:
             raise RuntimeError(f'idx == idy in edge:{edge}')
@@ -33,6 +34,7 @@ class PoolEdges:
             self.edges.add(temp)
 
     def search(self, node: int) -> Set[Tuple[int, int]]:
+        """ Ищем ребра с концом равным node """
         temp = set()
         for edge in self.edges:
             if node == edge[0] or node == edge[1]:
@@ -53,6 +55,7 @@ class Graph(PoolEdges):
         self.total_length = 0
 
     def add(self, edge: Tuple[int, int], price: float = 0) -> None:
+        """ Докидываем ребро, увеличиваем длину """
         idx, idy = edge
         if idx == idy:
             raise RuntimeError(f'idx == idy in edge:{edge}')
@@ -61,5 +64,5 @@ class Graph(PoolEdges):
         if edge in self.edges:
             raise RuntimeError(f'edge:{edge} is already in pool')
         else:
-            self.edges.add(edge)
+            self.edges.add(temp)
             self.total_length += price

@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 
 from src.structures.graph import Edge
+from src.structures.matrix import Matrix
 from src.structures.one_tree import OneTree
 
 
@@ -12,7 +13,7 @@ class SubgradientOptimization:
     w_max: float
     length: int
 
-    def __init__(self, weight_matrix: List[List[float]], max_iterations=1000):
+    def __init__(self, weight_matrix: Matrix, max_iterations=1000):
         length = len(weight_matrix)
         pi = np.zeros(length)  # итерацию
         v = np.zeros(length)
@@ -68,7 +69,7 @@ class SubgradientOptimization:
                 break
 
     @staticmethod
-    def __make_move(pi: np.ndarray, weight_matrix: List[List[float]]) -> None:
+    def __make_move(pi: np.ndarray, weight_matrix: Matrix) -> None:
         """ vertex pi[i] added to all elements of i-row and i-column of weight matrix
         """
         length = len(weight_matrix)

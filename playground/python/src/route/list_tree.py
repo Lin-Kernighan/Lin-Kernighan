@@ -76,7 +76,7 @@ class ArrayListTree(Route):
         return node.successor
 
     def between(self, forth: Node, back: Node, search: Node) -> bool:
-        found = False  # по ходу?
+        found = False  # по ходу движения проверок нет?
         while forth is not None and back is not None:
             if forth == search or back == search:
                 found = True

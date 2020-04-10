@@ -1,12 +1,10 @@
-from typing import List
-
 from src.structures.matrix import Matrix
 from src.structures.one_tree import OneTree
 
 
 class AlphaMatrix(Matrix):
 
-    def __init__(self, weight_matrix: List[List[float]], optimal: OneTree) -> None:
+    def __init__(self, weight_matrix: Matrix, optimal: OneTree) -> None:
         self.matrix = []
         self.length = len(weight_matrix)
 

@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 
+from src.initial_tour import InitialTour
 from src.structures.alpha_matrix import AlphaMatrix
 from src.structures.graph import Graph, PoolEdges
 from src.structures.one_tree import OneTree
@@ -17,7 +18,7 @@ class LKH:
     current_tour: Optional[Graph]  # текущее решение
     one_tree: Optional[OneTree]  # оптимальное дерево
     alpha_matrix: Optional[AlphaMatrix]  # матрица альфа близостей
-    # not_selected_edges: Optional[Heap]  # доступные не выбранные ранее ребра
+    initial_generator: Optional[InitialTour]  # генератор начальных туров
 
     length: int
 
@@ -31,9 +32,10 @@ class LKH:
         self.current_tour = None
         self.one_tree = None
         self.alpha_matrix = None
-        # self.not_selected_edges = None
+        self.initial_generator = None
 
     def run(self) -> None:
+        """ Пока тут просто шаблон нулевого запуска """
         # self.__subgradient_optimization()
         # self.__one_tree()
         # self.__alpha_nearness()
@@ -41,14 +43,16 @@ class LKH:
         pass
 
     def __subgradient_optimization(self) -> None:
-        opt = SubgradientOptimization(self.weight_matrix.matrix)  # переделать под WeightMatrix?
+        opt = SubgradientOptimization(self.weight_matrix)  # переделать под WeightMatrix?
         # TODO: поменять текущую матрицу, уточнить этот вопрос
 
     def __one_tree(self) -> None:
-        self.one_tree = OneTree(self.weight_matrix.matrix)  # node = 0
+        self.one_tree = OneTree(self.weight_matrix)  # node = 0
 
     def __alpha_nearness(self) -> None:
-        self.alpha_matrix = AlphaMatrix(self.weight_matrix.matrix, self.one_tree)
+        self.alpha_matrix = AlphaMatrix(self.weight_matrix, self.one_tree)
 
     def __initial_tour(self) -> None:
-        self.current_tour = InitialTour()
+        if self.initial_generator is None:
+            self.initial_generator = InitialTour(self.alpha_matrix, self.weight_matrix, self.selected_edges)
+        self.current_tour = self.initial_generator.generate(self.solutions_set.get_best())
