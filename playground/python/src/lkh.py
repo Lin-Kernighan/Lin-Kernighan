@@ -55,4 +55,3 @@ class LKH:
         if self.initial_generator is None:
             self.initial_generator = InitialTour(self.alpha_matrix, self.weight_matrix, self.selected_edges)
         self.current_tour = self.initial_generator.generate(self.solutions_set.get_best())
-        print(self.current_tour.edges)
