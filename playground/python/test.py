@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 
 from src.lkh import LKH
 from src.structures.graph import Edge
+from src.tsp.generator import generator
 from src.tsp.oliver30 import tsp
 
 
@@ -26,9 +27,12 @@ def draw_by_nodes(graph: Set[Tuple[int, int]], nodes: List[Tuple[float, float]])
         plt.plot([x1, x2], [y1, y2], linewidth=1, color='r')
 
     for idx, node in enumerate(nodes):
-        plt.annotate(f'{idx}:({node[0]},{node[1]})', node, size=9)
+        plt.annotate(f'{idx}:({node[0]:0.1f},{node[1]:0.1f})', node, size=9)
     plt.show()
 
+
+random_tsp = [node for node in generator(50)]
+print(random_tsp)  # тип ему не нравится, не верь
 
 lkh = LKH(tsp)
 lkh.run()
