@@ -31,12 +31,12 @@ class LKH:
         self.alpha_matrix = None
         self.initial_generator = None
 
-    def run(self) -> None:
+    def run(self, precess: Optional[float]) -> None:
         """ Пока тут просто шаблон нулевого запуска """
         self.__subgradient_optimization()
         self.__one_tree()
         self.__alpha_nearness()
-        self.__initial_tour()
+        self.__initial_tour(precess)
 
     def __subgradient_optimization(self) -> None:
         opt = SubgradientOptimization.run(self.weight_matrix)  # ищем градиент
