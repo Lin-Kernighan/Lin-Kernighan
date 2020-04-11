@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+from dataclasses import dataclass, field
 from sys import maxsize
 from typing import List, Tuple
 
@@ -6,18 +9,25 @@ from src.structures.heap import Heap
 from src.structures.matrix import Matrix
 
 
+@dataclass
 class OneTree:
-    edges: List[Edge]
-    total_price: int
+    length: int
+    total_price: float = field(default=0.0, init=False)
+    edges: List[Edge] = field(default_factory=list)
 
-    def __init__(self, weight_matrix: Matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> None:
+    def __post_init__(self):
+        self.edges: List[Edge] = [Edge(0, 0, 0)] * self.length
+
+    @staticmethod
+    def build(weight_matrix: Matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> OneTree:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree
         """
         length = len(weight_matrix)
-        self.edges: List[Edge] = [Edge(0, 0, 0)] * length  # for n - 1 edges + one edge from node
-        self.total_price = 0
+        tree = OneTree(length)
+        # for n - 1 edges + one edge from node
+        tree.total_price = 0
 
         heap = Heap()
         checklist: List[bool] = [False] * length  # for checking before adding last edge in one-tree
@@ -35,9 +45,9 @@ class OneTree:
         k = 0
         if with_edge is not None:  # add additional edge
             x, y = with_edge
-            self.edges[0] = Edge(weight_matrix[x][y], x, y)
-            self.__check_edge(node, x, y, checklist)
-            self.total_price += weight_matrix[x][y]
+            tree.edges[0] = Edge(weight_matrix[x][y], x, y)
+            tree.__check_edge(node, x, y, checklist)
+            tree.total_price += weight_matrix[x][y]
             visited[y] = visited[x] = True
             add(x, y)  # add all edges from x without y
             add(y)  # add all edges from y
@@ -50,13 +60,14 @@ class OneTree:
             while was:
                 new_edge = heap.pop()
                 was = visited[new_edge.dst]  # check dst node
-            self.edges[k] = new_edge
-            self.__check_edge(node, new_edge.dst, new_edge.src, checklist)
-            self.total_price += new_edge.price
+            tree.edges[k] = new_edge
+            tree.__check_edge(node, new_edge.dst, new_edge.src, checklist)
+            tree.total_price += new_edge.price
             add(new_edge.dst)
             k += 1
 
-        self.edges[-1] = self.__add_last_edge(weight_matrix[node], node, checklist)
+        tree.edges[-1] = tree.__add_last_edge(weight_matrix[node], node, checklist)
+        return tree
 
     @staticmethod
     def __check_edge(node: int, x: int, y: int, checklist: List[bool]) -> None:
@@ -83,7 +94,7 @@ class OneTree:
         return Edge(min_edge, node, n_node)
 
     def __len__(self) -> int:
-        return self.total_price
+        return self.length
 
     def __repr__(self):
         return str(self)

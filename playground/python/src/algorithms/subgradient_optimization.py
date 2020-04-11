@@ -29,7 +29,7 @@ class SubgradientOptimization:
 
         for k in range(1, max_iterations):
             self.__make_move(pi, weight_matrix)
-            one_tree = OneTree(weight_matrix, 0)  # с нулевой вершиной
+            one_tree = OneTree.build(weight_matrix)  # с нулевой вершиной
             ll = one_tree.total_price  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 

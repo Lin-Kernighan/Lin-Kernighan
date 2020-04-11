@@ -1,19 +1,16 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
-
-from src.route.route import Route
 
 
 @dataclass
 class Node:
     predecessor: Optional[Node]
     successor: Optional[Node]
-
     value: int
-    reversed: bool
+    reversed: bool = False
 
 
 @dataclass
@@ -21,56 +18,52 @@ class Block:
     start: int
     end: int
     start_node: Optional[Node]  # end node?
-    reversed: bool
+    reversed: bool = False
 
 
-class ArrayListTree(Route):
-    blocks: List[Block]
-    data: List[Node]
-
+@dataclass
+class Route:
     data_length: int
-    block_size: int
-    blocks_length: int
 
-    def __init__(self, points: List[Tuple[float, float]], order: List[int]) -> None:
-        self.data_length = len(points)
-        self.data = [Node(None, None, index, False) for index in range(self.data_length)]  # change value
-        previous_node = self.data[order[-1]]
-        for node in order:
-            previous_node.successor = self.data[node]
-            self.data[node].predecessor = previous_node
-            previous_node = self.data[node]
+    blocks: List[Block] = field(init=False)
+    data: List[Node] = field(init=False)
+    block_size: int = field(init=False)
+    blocks_length: int = field(init=False)
 
+    def __post_init__(self):
+        self.data = [Node(None, None, index) for index in range(self.data_length)]  # change value
         self.block_size = int(math.sqrt(self.data_length))  # sizeof Block
         self.blocks_length = self.block_size if self.block_size ** 2 == self.data_length else self.block_size + 1
-        self.blocks = [Block(0, 0, None, False)] * self.blocks_length
+        self.blocks = [Block(0, 0, None)] * self.blocks_length
+
+    @staticmethod
+    def build(points: List[Tuple[float, float]], order: List[int]) -> Route:
+        route = Route(len(points))
+        previous_node = route.data[order[-1]]
+        for node in order:
+            previous_node.successor = route.data[node]
+            route.data[node].predecessor = previous_node
+            previous_node = route.data[node]
+
         counter = 0
-        for index in range(self.blocks_length):
-            self.blocks[index] = Block(
+        for index in range(route.blocks_length):
+            route.blocks[index] = Block(
                 start=counter,
-                start_node=self.data[counter],  # фигово, что counter тут рассчитываю
-                end=self.data_length if (counter := counter + self.block_size) > self.data_length else counter,
+                start_node=route.data[counter],  # фигово, что counter тут рассчитываю
+                end=route.data_length if (counter := counter + route.block_size) > route.data_length else counter,
                 reversed=False)
+        return route
 
-    def __str__(self) -> str:
-        return f'blocks({len(self.blocks)}):\n{self.blocks}\n'
-
-    def __repr__(self) -> str:
-        return str(self)
-
-    def len_data(self) -> int:
-        return self.data_length
-
-    def len_blocks(self) -> int:
-        return self.blocks_length
-
-    def predecessor(self, node: Node) -> Optional[Node]:
+    @staticmethod
+    def predecessor(node: Node) -> Optional[Node]:
         return node.predecessor
 
-    def successor(self, node: Node) -> Optional[Node]:
+    @staticmethod
+    def successor(node: Node) -> Optional[Node]:
         return node.successor
 
-    def between(self, forth: Node, back: Node, search: Node) -> bool:
+    @staticmethod
+    def between(forth: Node, back: Node, search: Node) -> bool:
         found = False  # по ходу движения проверок нет?
         while forth is not None and back is not None:
             if forth == search or back == search:
@@ -88,6 +81,12 @@ class ArrayListTree(Route):
             return self.data[node]
         return None
 
+    def len_data(self) -> int:
+        return self.data_length
+
+    def len_blocks(self) -> int:
+        return self.blocks_length
+
     def __getitem__(self, index: int) -> Optional[Node]:
         """ Get by order in tsp tour """
         if 0 <= index < self.len_data():
@@ -102,3 +101,9 @@ class ArrayListTree(Route):
                 counter += 1
             return node
         return None
+
+    def __str__(self) -> str:
+        return f'blocks({len(self.blocks)}):\n{self.blocks}\n'
+
+    def __repr__(self) -> str:
+        return str(self)

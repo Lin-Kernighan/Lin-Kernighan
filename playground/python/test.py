@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from src.lkh import LKH
 from src.structures.graph import Edge
 from src.tsp.generator import generator
-from src.tsp.oliver30 import tsp
 
 
 def draw_by_edges(edges: List[Edge], nodes: List[Tuple[float, float]]) -> None:
@@ -31,10 +30,8 @@ def draw_by_nodes(graph: Set[Tuple[int, int]], nodes: List[Tuple[float, float]])
     plt.show()
 
 
-random_tsp = [node for node in generator(50)]
+random_tsp = [node for node in generator(200)]
 print(random_tsp)  # тип ему не нравится, не верь
 
 lkh = LKH(random_tsp)
 lkh.run()
-draw_by_nodes(lkh.current_tour.edges, random_tsp)
-print(lkh.current_tour.edges)

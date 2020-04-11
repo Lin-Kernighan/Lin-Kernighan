@@ -1,11 +1,5 @@
 from dataclasses import dataclass, field
 from typing import Set, Tuple
-from numba import jit
-
-
-@jit
-def compare_edges(p1: float, p2: float):
-    return p1 < p2
 
 
 @dataclass
@@ -20,15 +14,10 @@ class Edge:
     def __repr__(self) -> str:
         return str(self)
 
-    def __lt__(self, other):
-        return compare_edges(self.price, other.price)
-
 
 @dataclass
 class PoolEdges:
-    """
-    Хранилище множества ребер
-    """
+    """ Хранилище множества ребер """
     edges: Set[Tuple[int, int]] = field(default_factory=set)
 
     def add(self, edge: Tuple[int, int]) -> None:
@@ -58,11 +47,7 @@ class PoolEdges:
 
 
 class Graph(PoolEdges):
-    total_length: float
-
-    def __init__(self) -> None:
-        super().__init__()
-        self.total_length = 0
+    total_length: float = 0.0
 
     def add(self, edge: Tuple[int, int], price: float = 0) -> None:
         """ Докидываем ребро, увеличиваем длину """

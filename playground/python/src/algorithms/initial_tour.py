@@ -1,43 +1,35 @@
+from dataclasses import dataclass
 from random import randrange
 from sys import maxsize
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from src.structures.graph import Graph, PoolEdges
+from src.structures.graph import Graph
 from src.structures.matrix import Matrix
 
 
+@dataclass
 class InitialTour:
     alpha_matrix: Matrix
     weight_matrix: Matrix
-    selected_edges: PoolEdges
 
-    def __init__(self, alpha_matrix: Matrix, weight_matrix: Matrix, pool: PoolEdges) -> None:
-        self.alpha_matrix = alpha_matrix
-        self.weight_matrix = weight_matrix
-        self.selected_edges = pool
-
-    def generate(self, best_solution: Optional[Graph]) -> Tuple[Graph, List[int]]:
+    def generate(self, best_solution: Optional[Graph]) -> List[int]:
         """ Генерируем новый тур """
         length = len(self.alpha_matrix)
         first = previous = search = randrange(0, length - 1)  # пункт первый "choose a random node i"
         visited: List[bool] = [False] * length
-        order: List[int] = [0] * length  # костыль, чтобы восстановить порядок тура, ночью добавил
+        order: List[int] = [0] * length
         visited[first] = True
 
         k = 0
-        new_init = Graph()  # хотя зачем мне вообще граф, он для быстрой проверки
         while k < length - 1:  # вероятно не оптимально, если вообще правильно
             prices = self.alpha_matrix[previous]
 
             if (search := self.__zero_alpha(previous, prices, visited)) is not None:
-                new_init.add((previous, search), self.weight_matrix[previous][search])
-
+                pass
             elif (search := self.__best_tour(previous, best_solution, visited)) is not None:
-                new_init.add((previous, search), self.weight_matrix[previous][search])
-
+                pass
             elif (search := self.__best_price(previous, prices, visited)) is not None:
-                new_init.add((previous, search), self.weight_matrix[previous][search])
-
+                pass
             else:
                 raise RuntimeError('Edge not found')
 
@@ -46,16 +38,14 @@ class InitialTour:
             previous = search
             k += 1
         order[-1] = search
-        new_init.add((first, search), self.weight_matrix[first][search])
-        return new_init, order
+        return order
 
     def __zero_alpha(self, previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
         """ Перебираем все ребра с альфа-близостью равной нулю """
         for node, price in enumerate(prices):
             if node == previous or visited[node] or price != 0:
                 continue
-            if (node, previous) not in self.selected_edges:
-                return node
+            return node
         return None
 
     def __best_tour(self, previous: int, best_solution: Optional[Graph], visited: List[bool]) -> Optional[int]:

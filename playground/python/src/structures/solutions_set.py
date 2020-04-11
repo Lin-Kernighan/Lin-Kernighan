@@ -1,15 +1,13 @@
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 from src.structures.graph import Graph
 
 
+@dataclass
 class SolutionSet:
-    solutions: List[Graph]  # список всех (вероятно не всех, но это потом) полученных решений
-    minimum: int  # самое оптимальное в нем
-
-    def __init__(self) -> None:
-        self.solutions = []
-        self.minimum = -1
+    solutions: List[Graph] = field(default_factory=list)  # список всех полученных решений
+    minimum: int = -1  # самое оптимальное в нем
 
     def get_best(self) -> Optional[Graph]:
         if self.minimum == -1:
