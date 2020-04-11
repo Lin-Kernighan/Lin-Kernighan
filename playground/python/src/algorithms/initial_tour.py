@@ -1,5 +1,4 @@
-from dataclasses import dataclass
-from random import randrange
+from random import randrange, choice
 from sys import maxsize
 from typing import List, Optional
 
@@ -7,14 +6,13 @@ from src.structures.graph import Graph
 from src.structures.matrix import Matrix
 
 
-@dataclass
 class InitialTour:
-    alpha_matrix: Matrix
-    weight_matrix: Matrix
 
-    def generate(self, best_solution: Optional[Graph]) -> List[int]:
+    @staticmethod
+    def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: Optional[float] = None) -> List[int]:
         """ Генерируем новый тур """
-        length = len(self.alpha_matrix)
+        length = len(alpha_matrix)
+        excess = excess if excess is not None else 1 / length
         first = previous = search = randrange(0, length - 1)  # пункт первый "choose a random node i"
         visited: List[bool] = [False] * length
         order: List[int] = [0] * length
@@ -22,13 +20,15 @@ class InitialTour:
 
         k = 0
         while k < length - 1:  # вероятно не оптимально, если вообще правильно
-            prices = self.alpha_matrix[previous]
-
-            if (search := self.__zero_alpha(previous, prices, visited)) is not None:
+            prices = alpha_matrix[previous]
+            # какая-то странная лестница получилась)
+            if (search := InitialTour.__zero_alpha(previous, prices, visited)) is not None:
                 pass
-            elif (search := self.__best_tour(previous, best_solution, visited)) is not None:
+            elif (search := InitialTour.__best_tour(previous, prices, excess, best_solution, visited)) is not None:
                 pass
-            elif (search := self.__best_price(previous, prices, visited)) is not None:
+            elif (search := InitialTour.__get_candidate_set(previous, prices, visited, excess)) is not None:
+                pass
+            elif (search := InitialTour.__just_random(previous, prices, visited)) is not None:
                 pass
             else:
                 raise RuntimeError('Edge not found')
@@ -40,16 +40,24 @@ class InitialTour:
         order[-1] = search
         return order
 
-    def __zero_alpha(self, previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
+    @staticmethod
+    def __zero_alpha(previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
         """ Перебираем все ребра с альфа-близостью равной нулю """
-        for node, price in enumerate(prices):
-            if node == previous or visited[node] or price != 0:
-                continue
-            return node
+        zeros = [idx
+                 for idx, price in enumerate(prices)
+                 if price == 0 and not visited[idx] and idx != previous]
+        if zeros:
+            return choice(zeros)
         return None
 
-    def __best_tour(self, previous: int, best_solution: Optional[Graph], visited: List[bool]) -> Optional[int]:
+    @staticmethod
+    def __best_tour(previous: int,
+                    prices: List[float],
+                    excess: float,
+                    best_solution: Optional[Graph],
+                    visited: List[bool]) -> Optional[int]:
         """ Ищем в лучшем туре """
+
         if best_solution is None:
             return None
 
@@ -57,17 +65,24 @@ class InitialTour:
         node, alpha = -1, maxsize
         for edge in search:
             temp = edge[0] if edge[0] != previous else edge[1]
-            if not visited[temp] and alpha > self.alpha_matrix[previous][temp]:
-                node, alpha = temp, self.alpha_matrix[previous][temp]
+            if not visited[temp] and alpha > prices[temp] and alpha > excess:
+                node, alpha = temp, prices[temp]
         return node if node != -1 else None
 
-    def __best_price(self, previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
-        """ Просто лучший по альфа-близости """
-        node, alpha = -1, maxsize
-        for index, price in enumerate(prices):
-            if index == previous or visited[index]:
-                continue
+    @staticmethod
+    def __get_candidate_set(previous: int, prices: List[float], visited: List[bool], excess: float) -> Optional[int]:
+        """ Рандомный из кандидатов """
+        candidates = [idx
+                      for idx, price in enumerate(prices)
+                      if price > excess and idx != previous and not visited[idx]]
+        if candidates:
+            return choice(candidates)
+        return None
 
-            if not visited[index] and alpha > self.alpha_matrix[previous][index]:
-                node, alpha = index, alpha > self.alpha_matrix[previous][index]
-        return node if node != -1 else None
+    @staticmethod
+    def __just_random(previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
+        """ Хоть какой-нибудь """
+        candidates = [idx for idx, price in enumerate(prices) if not visited[idx] and previous != idx]
+        if candidates:
+            return choice(candidates)
+        return None

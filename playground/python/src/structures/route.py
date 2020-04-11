@@ -4,6 +4,8 @@ import math
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
+from src.structures.graph import Edge
+
 
 @dataclass
 class Node:
@@ -74,6 +76,16 @@ class Route:
             back = back.predecessor
 
         return found
+
+    def edges(self) -> List[Edge]:
+        head = self.data[0]
+        runner = head.successor
+        temp = []
+        while runner.value != head.value:
+            temp.append(Edge(0, runner.predecessor.value, runner.value))
+            runner = runner.successor
+        temp.append(Edge(0, runner.predecessor.value, runner.value))
+        return temp
 
     def node(self, node: int) -> Optional[Node]:
         """ Get by index in weight matrix or order in tsp file """
