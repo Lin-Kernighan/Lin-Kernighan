@@ -1,8 +1,14 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Set, Tuple
+from numba import jit
 
 
-@dataclass(order=True)
+@jit
+def compare_edges(e1: 'Edge', e2: 'Edge'):
+    return e1.price < e2.price
+
+
+@dataclass
 class Edge:
     price: float
     src: int
@@ -14,12 +20,16 @@ class Edge:
     def __repr__(self) -> str:
         return str(self)
 
+    def __lt__(self, other):
+        return compare_edges(self, other)
 
+
+@dataclass
 class PoolEdges:
-    edges: Set[Tuple[int, int]]
-
-    def __init__(self) -> None:
-        self.edges = set()
+    """
+    Хранилище множества ребер
+    """
+    edges: Set[Tuple[int, int]] = field(default_factory=set)
 
     def add(self, edge: Tuple[int, int]) -> None:
         """ Докидываем еще одно ребро в правильном порядке """
