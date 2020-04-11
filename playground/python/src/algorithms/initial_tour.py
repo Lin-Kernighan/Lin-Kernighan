@@ -20,7 +20,7 @@ class InitialTour:
 
         k = 0
         while k < length - 1:  # вероятно не оптимально, если вообще правильно
-            prices = alpha_matrix[previous]
+            prices = alpha_matrix[previous]  # я ищу ребро из previous в search
             # какая-то странная лестница получилась)
             if (search := InitialTour.__zero_alpha(previous, prices, visited)) is not None:
                 pass
@@ -42,7 +42,7 @@ class InitialTour:
 
     @staticmethod
     def __zero_alpha(previous: int, prices: List[float], visited: List[bool]) -> Optional[int]:
-        """ Перебираем все ребра с альфа-близостью равной нулю """
+        """ Перебираем все ребра с альфа-близостью равной нулю и выбираем из них рандомное """
         zeros = [idx
                  for idx, price in enumerate(prices)
                  if price == 0 and not visited[idx] and idx != previous]
@@ -65,7 +65,7 @@ class InitialTour:
         node, alpha = -1, maxsize
         for edge in search:
             temp = edge[0] if edge[0] != previous else edge[1]
-            if not visited[temp] and alpha > prices[temp] and alpha > excess:
+            if not visited[temp] and prices[temp] < alpha < excess:
                 node, alpha = temp, prices[temp]
         return node if node != -1 else None
 
@@ -74,7 +74,7 @@ class InitialTour:
         """ Рандомный из кандидатов """
         candidates = [idx
                       for idx, price in enumerate(prices)
-                      if price > excess and idx != previous and not visited[idx]]
+                      if price < excess and idx != previous and not visited[idx]]
         if candidates:
             return choice(candidates)
         return None
