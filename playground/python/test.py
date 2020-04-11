@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from src.lkh import LKH
 from src.structures.graph import Edge
-from src.tsp.generator import generator
+from src.tsp.ulysses16 import tsp
 
 
 def draw_by_edges(edges: List[Edge], nodes: List[Tuple[float, float]]) -> None:
@@ -30,8 +30,8 @@ def draw_by_nodes(graph: Set[Tuple[int, int]], nodes: List[Tuple[float, float]])
     plt.show()
 
 
-random_tsp = [node for node in generator(200)]
-print(random_tsp)  # тип ему не нравится, не верь
+# random_tsp = [node for node in generator(50)]
+# print(random_tsp)
 
-lkh = LKH(random_tsp)
+lkh = LKH(tsp)
 lkh.run()

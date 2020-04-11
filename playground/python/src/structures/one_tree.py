@@ -6,7 +6,6 @@ from typing import List, Tuple
 
 from src.structures.graph import Edge
 from src.structures.heap import Heap
-from src.structures.matrix import Matrix
 
 
 @dataclass
@@ -19,7 +18,7 @@ class OneTree:
         self.edges: List[Edge] = [Edge(0, 0, 0)] * self.length
 
     @staticmethod
-    def build(weight_matrix: Matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> OneTree:
+    def build(weight_matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> OneTree:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree

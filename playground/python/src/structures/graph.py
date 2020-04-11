@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Set, Tuple
 
 
-@dataclass
+@dataclass(order=True)
 class Edge:
     price: float
     src: int

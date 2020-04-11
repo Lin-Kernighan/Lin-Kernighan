@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 
 from src.algorithms.initial_tour import InitialTour
 from src.algorithms.subgradient_optimization import SubgradientOptimization
-from src.structures.graph import Graph, PoolEdges
+from src.structures.graph import Graph
 from src.structures.matrix import Matrix
 from src.structures.one_tree import OneTree
 from src.structures.route import Route
@@ -13,7 +13,6 @@ class LKH:
     nodes: List[Tuple[float, float]]  # вершины, вроде они не меняются по жизни, мб другой формат
     solutions_set: SolutionSet  # набор уже полученных решений
     weight_matrix: Matrix  # матрица весов
-    selected_edges: PoolEdges  # уже выбранные ребра
 
     current_tour: Optional[Graph]  # Optional[ArrayListTree]  # текущее решение
     one_tree: Optional[OneTree]  # оптимальное дерево
@@ -27,7 +26,6 @@ class LKH:
         self.nodes = points
         self.weight_matrix = Matrix.weight_matrix(points)
         self.solutions_set = SolutionSet()
-        self.selected_edges = PoolEdges()
 
         self.current_tour = None
         self.one_tree = None
@@ -42,8 +40,8 @@ class LKH:
         # self.__initial_tour()
 
     def __subgradient_optimization(self) -> None:
-        opt = SubgradientOptimization(self.weight_matrix)  # переделать под WeightMatrix?
-        # TODO: поменять текущую матрицу, уточнить этот вопрос
+        opt = SubgradientOptimization.run(self.weight_matrix)  # ищем градиент
+        SubgradientOptimization.make_move(opt.pi_sum, self.weight_matrix)  # сдвигаем матрицу к нужной
 
     def __one_tree(self) -> None:
         self.one_tree = OneTree.build(self.weight_matrix)  # node = 0
@@ -53,6 +51,5 @@ class LKH:
 
     def __initial_tour(self) -> None:
         if self.initial_generator is None:
-            self.initial_generator = InitialTour(self.alpha_matrix, self.weight_matrix, self.selected_edges)
-        order = self.initial_generator.generate(self.solutions_set.get_best())
-        tree = Route.build(self.nodes, order)
+            self.initial_generator = InitialTour(self.alpha_matrix, self.weight_matrix)
+        tree = Route.build(self.nodes, self.initial_generator.generate(self.solutions_set.get_best()))
