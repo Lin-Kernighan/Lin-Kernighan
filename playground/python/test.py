@@ -34,7 +34,7 @@ def draw_by_nodes(graph: Set[Tuple[int, int]], nodes: List[Tuple[float, float]])
 random_tsp = [node for node in generator(50)]
 print(random_tsp)  # тип ему не нравится, не верь
 
-lkh = LKH(tsp)
+lkh = LKH(random_tsp)
 lkh.run()
-draw_by_nodes(lkh.current_tour.edges, tsp)
+draw_by_nodes(lkh.current_tour.edges, random_tsp)
 print(lkh.current_tour.edges)
