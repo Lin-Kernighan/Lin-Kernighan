@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 from src.initial_tour import InitialTour
+from src.route.list_tree import ArrayListTree
 from src.structures.alpha_matrix import AlphaMatrix
 from src.structures.graph import Graph, PoolEdges
 from src.structures.one_tree import OneTree
@@ -15,7 +16,7 @@ class LKH:
     weight_matrix: WeightMatrix  # матрица весов
     selected_edges: PoolEdges  # уже выбранные ребра
 
-    current_tour: Optional[Graph]  # текущее решение
+    current_tour: Optional[Graph]  # Optional[ArrayListTree]  # текущее решение
     one_tree: Optional[OneTree]  # оптимальное дерево
     alpha_matrix: Optional[AlphaMatrix]  # матрица альфа близостей
     initial_generator: Optional[InitialTour]  # генератор начальных туров
@@ -54,4 +55,5 @@ class LKH:
     def __initial_tour(self) -> None:
         if self.initial_generator is None:
             self.initial_generator = InitialTour(self.alpha_matrix, self.weight_matrix, self.selected_edges)
-        self.current_tour = self.initial_generator.generate(self.solutions_set.get_best())
+        self.current_tour, order = self.initial_generator.generate(self.solutions_set.get_best())
+        tree = ArrayListTree(self.nodes, order)

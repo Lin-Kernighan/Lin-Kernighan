@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
 from src.route.route import Route
-from src.structures.graph import Graph
 
 
 @dataclass
@@ -33,16 +32,14 @@ class ArrayListTree(Route):
     block_size: int
     blocks_length: int
 
-    def __init__(self, points: List[Tuple[float, float]], graph: Graph) -> None:
+    def __init__(self, points: List[Tuple[float, float]], order: List[int]) -> None:
         self.data_length = len(points)
-        prev: Optional[Node] = None
-        for index, _ in enumerate(points):
-            if prev is not None:
-                new_node = Node(prev, None, index, False)
-                prev.successor = new_node
-                prev = new_node
-            else:
-                prev = Node(None, None, index, False)
+        self.data = [Node(None, None, index, False) for index in range(self.data_length)]  # change value
+        previous_node = self.data[order[-1]]
+        for node in order:
+            previous_node.successor = self.data[node]
+            self.data[node].predecessor = previous_node
+            previous_node = self.data[node]
 
         self.block_size = int(math.sqrt(self.data_length))  # sizeof Block
         self.blocks_length = self.block_size if self.block_size ** 2 == self.data_length else self.block_size + 1
@@ -51,12 +48,9 @@ class ArrayListTree(Route):
         for index in range(self.blocks_length):
             self.blocks[index] = Block(
                 start=counter,
+                start_node=self.data[counter],  # фигово, что counter тут рассчитываю
                 end=self.data_length if (counter := counter + self.block_size) > self.data_length else counter,
-                start_node=self.data[counter],
-                reversed=False
-            )
-
-        # initial tour change double list
+                reversed=False)
 
     def __str__(self) -> str:
         return f'blocks({len(self.blocks)}):\n{self.blocks}\n'
