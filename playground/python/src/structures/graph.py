@@ -4,8 +4,8 @@ from numba import jit
 
 
 @jit
-def compare_edges(e1: 'Edge', e2: 'Edge'):
-    return e1.price < e2.price
+def compare_edges(p1: float, p2: float):
+    return p1 < p2
 
 
 @dataclass
@@ -21,7 +21,7 @@ class Edge:
         return str(self)
 
     def __lt__(self, other):
-        return compare_edges(self, other)
+        return compare_edges(self.price, other.price)
 
 
 @dataclass
