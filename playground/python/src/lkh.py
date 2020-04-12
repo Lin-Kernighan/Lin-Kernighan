@@ -33,7 +33,7 @@ class LKH:
 
     def run(self, excess: Optional[float] = None) -> None:
         """ Пока тут просто шаблон нулевого запуска """
-        # self.__subgradient_optimization()
+        self.__subgradient_optimization()
         self.__one_tree()
         self.__alpha_nearness()
         self.__initial_tour(excess)
@@ -48,7 +48,8 @@ class LKH:
     def __alpha_nearness(self) -> None:
         self.alpha_matrix = Matrix.alpha_matrix(self.weight_matrix, self.one_tree)
 
-    def __initial_tour(self, excess) -> None:
-        tour = InitialTour.greedy(self.alpha_matrix)
-        # tour = InitialTour.helsgaun(self.alpha_matrix, self.solutions_set.get_best(), excess)
+    def __initial_tour(self, excess: Optional[float] = None) -> None:
+        # tour = InitialTour.greedy(self.weight_matrix)
+        excess = excess if excess is not None else 1 / self.length * self.one_tree.total_price
+        tour = InitialTour.helsgaun(self.alpha_matrix, self.solutions_set.get_best(), excess)
         self.current_tour = Route.build(self.nodes, tour)

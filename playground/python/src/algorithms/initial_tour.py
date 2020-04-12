@@ -9,9 +9,17 @@ from src.structures.matrix import Matrix
 class InitialTour:
 
     @staticmethod
-    def greedy(matrix: Matrix) -> List[int]:
+    def clarke_wright(weight_matrix: Matrix) -> List[int]:
+        # point = randrange(0, len(weight_matrix))
+        # return InitialTour.greedy(Matrix.savings_matrix(weight_matrix, point), point)
+        pass
+
+    @staticmethod
+    def greedy(matrix: Matrix, point: Optional[int] = None) -> List[int]:
         length = len(matrix)
-        previous = search = randrange(0, length - 1)  # я ищу ребро из previous в search
+        previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
+        search = 0
+
         visited: List[bool] = [False] * length
         order: List[int] = [0] * length
         visited[previous] = True
@@ -30,11 +38,10 @@ class InitialTour:
         return order
 
     @staticmethod
-    def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: Optional[float] = None) -> List[int]:
+    def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: Optional[float]) -> List[int]:
         """ Генерируем новый тур """
         length = len(alpha_matrix)
-        excess = excess if excess is not None else 1 / length
-        previous = search = randrange(0, length - 1)  # я ищу ребро из previous в search
+        previous = search = randrange(0, length)  # я ищу ребро из previous в search
         visited: List[bool] = [False] * length
         order: List[int] = [0] * length
         visited[previous] = True

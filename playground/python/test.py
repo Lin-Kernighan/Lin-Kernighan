@@ -18,9 +18,9 @@ def draw(edges: List[Edge], nodes: List[Tuple[float, float]], color: str = 'r') 
         plt.annotate(f'{idx}:({node[0]:0.1f},{node[1]:0.1f})', node, size=9)
 
 
-def candidates(alpha_matrix: Matrix, nodes: List[Tuple[float, float]], color: str = 'g') -> None:
+def candidates(alpha_matrix: Matrix, nodes: List[Tuple[float, float]], color: str, one_tree: float) -> None:
     temp = []
-    precess = 1 / alpha_matrix.dimension + 10
+    precess = 1 / alpha_matrix.dimension * one_tree
     print(precess)
     for idx in range(0, alpha_matrix.dimension):
         for idy in range(idx + 1, alpha_matrix.dimension):
@@ -45,5 +45,5 @@ draw(lkh.current_tour.edges(), random_tsp, 'r')
 plt.show()
 draw(lkh.one_tree.edges, random_tsp, 'b')
 plt.show()
-candidates(lkh.alpha_matrix, random_tsp)
+candidates(lkh.alpha_matrix, random_tsp, 'g', lkh.one_tree.total_price)
 plt.show()
