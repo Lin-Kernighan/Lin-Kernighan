@@ -31,12 +31,12 @@ class LKH:
         self.alpha_matrix = None
         self.initial_generator = None
 
-    def run(self, precess: Optional[float]) -> None:
+    def run(self, excess: Optional[float] = None) -> None:
         """ Пока тут просто шаблон нулевого запуска """
-        self.__subgradient_optimization()
+        # self.__subgradient_optimization()
         self.__one_tree()
         self.__alpha_nearness()
-        self.__initial_tour(precess)
+        self.__initial_tour(excess)
 
     def __subgradient_optimization(self) -> None:
         opt = SubgradientOptimization.run(self.weight_matrix)  # ищем градиент
@@ -48,6 +48,7 @@ class LKH:
     def __alpha_nearness(self) -> None:
         self.alpha_matrix = Matrix.alpha_matrix(self.weight_matrix, self.one_tree)
 
-    def __initial_tour(self) -> None:
-        tour = InitialTour.helsgaun(self.alpha_matrix, self.solutions_set.get_best())
+    def __initial_tour(self, excess) -> None:
+        tour = InitialTour.greedy(self.alpha_matrix)
+        # tour = InitialTour.helsgaun(self.alpha_matrix, self.solutions_set.get_best(), excess)
         self.current_tour = Route.build(self.nodes, tour)

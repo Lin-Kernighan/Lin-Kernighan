@@ -9,18 +9,39 @@ from src.structures.matrix import Matrix
 class InitialTour:
 
     @staticmethod
+    def greedy(matrix: Matrix) -> List[int]:
+        length = len(matrix)
+        previous = search = randrange(0, length - 1)  # я ищу ребро из previous в search
+        visited: List[bool] = [False] * length
+        order: List[int] = [0] * length
+        visited[previous] = True
+
+        k = 0
+        while k < length - 1:
+            minimum, search = maxsize, -1
+            for idx, price in enumerate(matrix[previous]):
+                if idx != previous and minimum > price and not visited[idx]:
+                    minimum, search = price, idx
+            visited[search] = True
+            order[k] = previous
+            previous = search
+            k += 1
+        order[-1] = search
+        return order
+
+    @staticmethod
     def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: Optional[float] = None) -> List[int]:
         """ Генерируем новый тур """
         length = len(alpha_matrix)
         excess = excess if excess is not None else 1 / length
-        first = previous = search = randrange(0, length - 1)  # пункт первый "choose a random node i"
+        previous = search = randrange(0, length - 1)  # я ищу ребро из previous в search
         visited: List[bool] = [False] * length
         order: List[int] = [0] * length
-        visited[first] = True
+        visited[previous] = True
 
         k = 0
         while k < length - 1:  # вероятно не оптимально, если вообще правильно
-            prices = alpha_matrix[previous]  # я ищу ребро из previous в search
+            prices = alpha_matrix[previous]
             # какая-то странная лестница получилась)
             if (search := InitialTour.__zero_alpha(previous, prices, visited)) is not None:
                 pass
