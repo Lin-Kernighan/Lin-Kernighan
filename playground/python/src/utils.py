@@ -6,6 +6,13 @@ from src.structures.graph import Edge
 from src.structures.matrix import Matrix
 
 
+def get_length(matrix: Matrix, tour: List[int]) -> float:
+    length = matrix[tour[0]][tour[-1]]
+    for idx in range(len(tour) - 1):
+        length += matrix[tour[idx]][tour[idx + 1]]
+    return length
+
+
 def draw(edges: List[Edge], nodes: List[Tuple[float, float]], color: str) -> None:
     for edge in edges:
         [x1, y1] = nodes[edge.dst]

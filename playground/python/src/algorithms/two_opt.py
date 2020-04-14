@@ -3,6 +3,17 @@ from typing import List
 from src.structures.matrix import Matrix
 
 
+def right_rotate(tour: list, num: int) -> list:
+    output_list = []
+    for item in range(len(tour) - num, len(tour)):
+        output_list.append(tour[item])
+
+    for item in range(0, len(tour) - num):
+        output_list.append(tour[item])
+
+    return output_list
+
+
 def swap(tour: list, i: int, j: int) -> list:
     """ Swap two elements in a list and reverse what was in between. """
     return tour[:i] + list(reversed(tour[i:j + 1])) + tour[j + 1:]
@@ -23,6 +34,7 @@ class TwoOpt:
             if best_change < 0:
                 i, j = saved
                 tour = swap(tour, i + 1, j)
+            tour = right_rotate(tour, 2)
         return tour
 
     @staticmethod
@@ -43,10 +55,3 @@ class TwoOpt:
                     saved = (n, m)
 
         return saved, best_change
-
-    @staticmethod
-    def get_length(matrix: Matrix, tour: List[int]) -> float:
-        length = matrix[tour[0]][tour[-1]]
-        for idx in range(len(tour) - 1):
-            length += matrix[tour[idx]][tour[idx + 1]]
-        return length
