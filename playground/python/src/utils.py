@@ -32,8 +32,8 @@ def draw_tour(tour: List[int], nodes: List[Tuple[float, float]], color: str) -> 
         [x1, y1] = nodes[tour[idx]]
         [x2, y2] = nodes[tour[idx + 1]]
         plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
-    for idx, node in enumerate(nodes):
-        plt.annotate(f'{idx}:({node[0]:0.1f},{node[1]:0.1f})', node, size=9)
+    # for idx, node in enumerate(nodes):
+    #     plt.annotate(f'{idx}:({node[0]:0.1f},{node[1]:0.1f})', node, size=9)
 
 
 def candidates(alpha_matrix: Matrix, nodes: List[Tuple[float, float]], color: str, one_tree: float) -> None:
