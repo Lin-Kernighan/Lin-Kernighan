@@ -4,6 +4,10 @@ from src.structures.matrix import Matrix
 
 
 def right_rotate(tour: list, num: int) -> list:
+    """ Сдвиг массива вправо на n
+    Костыль на крайние случаи масиива, чтобы алгоритм их тоже проверил
+    Можно сделать иначе: но нужно переписать swap и взятие по модулю в алгоритме
+    """
     output_list = []
     for item in range(len(tour) - num, len(tour)):
         output_list.append(tour[item])
@@ -15,7 +19,7 @@ def right_rotate(tour: list, num: int) -> list:
 
 
 def swap(tour: list, i: int, j: int) -> list:
-    """ Swap two elements in a list and reverse what was in between. """
+    """ Меняем местами два элемента и разворачивает все что между ними """
     return tour[:i] + list(reversed(tour[i:j + 1])) + tour[j + 1:]
 
 
