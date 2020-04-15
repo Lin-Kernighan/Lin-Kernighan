@@ -1,8 +1,8 @@
 from typing import List, Tuple
 
 from src.algorithms.initial_tour import InitialTour
-from src.algorithms.two_opt import right_rotate
 from src.structures.matrix import Matrix
+from src.utils import right_rotate, get_length
 
 
 class ThreeOpt:
@@ -18,14 +18,17 @@ class ThreeOpt:
     def optimize(tour: List[int], matrix: Matrix) -> List[int]:
         """ Запуск на готовом туре и матрице смежностей """
         best_gain = 1
-        exchange = 0
+        iteration = 0
+        length = get_length(matrix, tour)
+        print(f'start : {length}')
         while best_gain > 0:
             best_gain, tour = ThreeOpt.__three_opt(matrix, tour)
             if best_gain == 0:
                 tour = right_rotate(tour, len(tour) // 3)  # костыль, велосипедов пока не завезли
                 best_gain, tour = ThreeOpt.__three_opt(matrix, tour)
-            print(f'{exchange}\t:\t{best_gain}')  # оставлю, чтобы видеть, что алгоритм не помер еще
-            exchange += 1
+            length -= best_gain
+            print(f'{iteration} : {length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
+            iteration += 1
         return tour
 
     @staticmethod

@@ -1,25 +1,20 @@
 import matplotlib.pyplot as plt
 
 from src.algorithms.initial_tour import InitialTour
-from src.algorithms.three_opt import ThreeOpt
-from src.algorithms.two_opt import TwoOpt
+from src.algorithms.k_opt import KOpt
 from src.structures.matrix import Matrix
 from src.tsp.generator import generator
 from src.utils import draw_tour, get_length
 
-tsp = [node for node in generator(200)]
+tsp = [node for node in generator(100)]
 
 weight_matrix = Matrix.weight_matrix(tsp)
 init = InitialTour.greedy(weight_matrix)
 
-two_opt = TwoOpt.optimize(init, weight_matrix)
-three_opt = ThreeOpt.optimize(init, weight_matrix)
-print(get_length(weight_matrix, init))
-print(get_length(weight_matrix, two_opt))
-print(get_length(weight_matrix, three_opt))
-draw_tour(init, tsp, 'g')
-draw_tour(two_opt, tsp, 'r')
-plt.show()
-draw_tour(init, tsp, 'g')
-draw_tour(three_opt, tsp, 'b')
+k_opt = KOpt(tsp)
+draw_tour(k_opt.tour, tsp, 'r')
+print(get_length(k_opt.matrix, k_opt.tour))
+k_opt.optimize()
+draw_tour(k_opt.tour, tsp, 'b')
+print(get_length(k_opt.matrix, k_opt.tour))
 plt.show()

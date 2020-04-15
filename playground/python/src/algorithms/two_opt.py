@@ -2,21 +2,7 @@ from typing import List, Tuple
 
 from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import Matrix
-
-
-def right_rotate(tour: list, num: int) -> list:
-    """ Сдвиг массива вправо на n
-    Костыль на крайние случаи масиива, чтобы алгоритм их тоже проверил
-    Можно сделать иначе: но нужно переписать swap и взятие по модулю в алгоритме
-    """
-    output_list = []
-    for item in range(len(tour) - num, len(tour)):
-        output_list.append(tour[item])
-
-    for item in range(0, len(tour) - num):
-        output_list.append(tour[item])
-
-    return output_list
+from src.utils import right_rotate, get_length
 
 
 class TwoOpt:
@@ -32,14 +18,17 @@ class TwoOpt:
     def optimize(tour: List[int], matrix: Matrix) -> List[int]:
         """ Запуск на готовом туре и матрице смежностей """
         best_change = -1
-        exchange = 0
+        iteration = 0
+        length = get_length(matrix, tour)
+        print(f'start : {length}')
         while best_change < 0:
             best_change, tour = TwoOpt.__two_opt(matrix, tour)
             if best_change == 0:
                 tour = right_rotate(tour, len(tour) // 3)  # костылек, зато пока работает быстрее чем алгоритм, забью
                 best_change, tour = TwoOpt.__two_opt(matrix, tour)
-            print(f'{exchange}\t:\t{-best_change}')  # оставлю, чтобы видеть, что алгоритм не помер еще
-            exchange += 1
+            length += best_change
+            print(f'{iteration} : {length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
+            iteration += 1
         return tour
 
     @staticmethod
@@ -71,6 +60,6 @@ class TwoOpt:
         return saved, best_change
 
     @staticmethod
-    def __swap(tour: list, i: int, j: int) -> list:
+    def __swap(tour: List[int], i: int, j: int) -> List[int]:
         """ Меняем местами два элемента и разворачивает все что между ними """
         return tour[:i] + list(reversed(tour[i:j + 1])) + tour[j + 1:]

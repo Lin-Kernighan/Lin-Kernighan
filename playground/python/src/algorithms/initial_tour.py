@@ -10,9 +10,12 @@ class InitialTour:
 
     @staticmethod
     def clarke_wright(weight_matrix: Matrix) -> List[int]:
-        # TODO: clarke wright
-        # point = randrange(0, len(weight_matrix))
-        # return InitialTour.greedy(Matrix.savings_matrix(weight_matrix, point), point)
+        # TODO: Clarke-Wright
+        pass
+
+    @staticmethod
+    def popmusic(self, weight_matrix) -> List[int]:
+        # TODO: POPMUSIC
         pass
 
     @staticmethod
