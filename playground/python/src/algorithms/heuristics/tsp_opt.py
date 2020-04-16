@@ -20,7 +20,10 @@ class TspOpt:
 
     @staticmethod
     def run(tour: List[Node], matrix: Matrix) -> TspOpt:
-        pass
+        """ Полный запуск на точках """
+        opt = TspOpt(tour, matrix)
+        opt.optimize()
+        return opt
 
     def optimize(self) -> List[Node]:
         pass

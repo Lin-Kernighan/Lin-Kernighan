@@ -15,13 +15,6 @@ class TwoOpt(TspOpt):
     def __init__(self, tour: List[Node], matrix: Matrix):
         super().__init__(tour, matrix)
 
-    @staticmethod
-    def run(tour: List[int], matrix: Matrix) -> TwoOpt:
-        """ Полный запуск на точках """
-        opt = TwoOpt(tour, matrix)
-        opt.optimize()
-        return opt
-
     def optimize(self) -> List[int]:
         """ Запуск """
         best_change, iteration = -1, 0
@@ -52,22 +45,6 @@ class TwoOpt(TspOpt):
 
         return self.tour
 
-    def __improve(self, tour: List[int]) -> Tuple[tuple, float]:
-        """ Просто пробег по вершинам, ищем лучшее """
-        best_change, saved = 0, None
-
-        for n in range(self.matrix.dimension - 3):
-            for m in range(n + 2, self.matrix.dimension - 1):
-                i, j = tour[n], tour[m]
-                x, y = tour[n + 1], tour[m + 1]
-                change = self.matrix[i][j] + self.matrix[x][y]
-                change -= self.matrix[i][x] + self.matrix[j][y]
-                if change < best_change:
-                    best_change = change
-                    saved = (n, m)
-
-        return saved, best_change
-
     def __two_opt(self) -> float:
         """ Просто 2-opt """
         saved, best_change = self.__improve(self.tour)
@@ -91,6 +68,22 @@ class TwoOpt(TspOpt):
                 self.tour = tour  # если не в табу, сохранили
 
         return best_change
+
+    def __improve(self, tour: List[int]) -> Tuple[tuple, float]:
+        """ Просто пробег по вершинам, ищем лучшее """
+        best_change, saved = 0, None
+
+        for n in range(self.matrix.dimension - 3):
+            for m in range(n + 2, self.matrix.dimension - 1):
+                i, j = tour[n], tour[m]
+                x, y = tour[n + 1], tour[m + 1]
+                change = self.matrix[i][j] + self.matrix[x][y]
+                change -= self.matrix[i][x] + self.matrix[j][y]
+                if change < best_change:
+                    best_change = change
+                    saved = (n, m)
+
+        return saved, best_change
 
     @staticmethod
     def __swap(tour: List[int], i: int, j: int) -> List[int]:

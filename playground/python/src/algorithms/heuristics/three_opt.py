@@ -1,56 +1,80 @@
+from __future__ import annotations
+
 from typing import List, Tuple
 
-from src.algorithms.initial_tour import InitialTour
+from src.algorithms.heuristics.tsp_opt import TspOpt
 from src.structures.matrix import Matrix
-from src.utils import right_rotate, get_length
+from src.structures.tabu_list import AbstractTabu
+from src.utils import right_rotate
 
 Point = Tuple[float, float]
+Node = int
 
 
-class ThreeOpt:
+class ThreeOpt(TspOpt):
 
-    @staticmethod
-    def run(points: List[Point]) -> List[int]:
-        """ Полный запуск на точках """
-        matrix = Matrix.weight_matrix(points)
-        init_tour = InitialTour.greedy(matrix)
-        return ThreeOpt.optimize(init_tour, matrix)
+    def __init__(self, tour: List[Node], matrix: Matrix):
+        super().__init__(tour, matrix)
 
-    @staticmethod
-    def optimize(tour: List[int], matrix: Matrix) -> List[int]:
-        """ Запуск на готовом туре и матрице смежностей """
-        best_gain = 1
-        iteration = 0
-        length = get_length(matrix, tour)
-        print(f'start : {length}')
+    def optimize(self) -> List[int]:
+        """ Запуск """
+        best_gain, iteration = 1, 0
+        print(f'start : {self.length}')
+
         while best_gain > 0:
-            best_gain, tour = ThreeOpt.__three_opt(matrix, tour)
-            if best_gain == 0:
-                tour = right_rotate(tour, len(tour) // 3)  # костыль, велосипедов пока не завезли
-                best_gain, tour = ThreeOpt.__three_opt(matrix, tour)
-            length -= best_gain
-            print(f'{iteration} : {length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
+            best_gain = self.__three_opt()
+            if best_gain <= 0:
+                self.tour = right_rotate(self.tour, len(self.tour) // 3)  # костыль, велосипедов пока не завезли
+                best_gain, tour = self.__three_opt()
+            self.length -= best_gain
+            print(f'{iteration} : {self.length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
             iteration += 1
-        return tour
 
-    @staticmethod
-    def __three_opt(matrix: Matrix, tour: List[int]) -> Tuple[float, List[int]]:
+        return self.tour
+
+    def tabu_optimize(self, tabu_list: AbstractTabu) -> List[Node]:
+        """ 3-opt для Tabu search """
+        self.tabu_list, best_gain, iteration = tabu_list, 1, 0
+
+        while best_gain > 0:
+            best_gain = self.__tabu_three_opt()
+            if best_gain <= 0:
+                rotate = len(self.tour) // 3 * (iteration % 2 + 1)
+                best_gain = self.__tabu_three_opt(rotate)
+            self.length -= best_gain
+            iteration += 1
+            tabu_list.append(self.tour, self.length)
+
+        return self.tour
+
+    def __three_opt(self) -> float:
         """ 3-opt """
-        best_exchange, best_gain, best_nodes = ThreeOpt.__improve(matrix, tour)
+        best_exchange, best_gain, best_nodes = self.__improve(self.tour)
+        if best_gain > 0:
+            self.tour = ThreeOpt.__exchange(self.tour, best_exchange, best_nodes)
+        return best_gain
+
+    def __tabu_three_opt(self, rotate=0) -> float:
+        tour = self.tour if rotate != 0 else right_rotate(self.tour, rotate)
+        best_exchange, best_gain, best_nodes = self.__improve(tour)
         if best_gain > 0:
             tour = ThreeOpt.__exchange(tour, best_exchange, best_nodes)
-        return best_gain, tour
+            tour = tour if rotate != 0 else right_rotate(tour, -rotate)
+            if self.tabu_list.contains(tour):
+                return 0.0
+            else:
+                self.tour = tour
+        return best_gain
 
-    @staticmethod
-    def __improve(matrix: Matrix, tour: List[int]) -> Tuple[int, float, tuple]:
+    def __improve(self, tour: List[int]) -> Tuple[int, float, tuple]:
         """ 3-opt пробег по вершинам """
         best_exchange, best_gain, best_nodes = 0, 0, None
-        size = matrix.dimension
+        size = self.matrix.dimension
 
         for x in range(size - 5):
             for y in range(x + 2, size - 3):
                 for z in range(y + 2, size - 1):
-                    exchange, gain = ThreeOpt.__search(matrix, tour, x, y, z)
+                    exchange, gain = ThreeOpt.__search(self.matrix, tour, x, y, z)
                     if gain > best_gain:
                         best_gain, best_exchange, best_nodes = gain, exchange, (x, y, z)
 
