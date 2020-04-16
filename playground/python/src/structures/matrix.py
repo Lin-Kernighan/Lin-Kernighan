@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from math import sqrt
-from typing import List
+from typing import List, Tuple
 
 from src.structures.one_tree import OneTree
-from src.utils import Point
+
+Point = Tuple[float, float]
 
 
 @dataclass

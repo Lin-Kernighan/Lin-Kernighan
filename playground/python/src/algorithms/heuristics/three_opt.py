@@ -2,7 +2,9 @@ from typing import List, Tuple
 
 from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import Matrix
-from src.utils import right_rotate, get_length, Point
+from src.utils import right_rotate, get_length
+
+Point = Tuple[float, float]
 
 
 class ThreeOpt:

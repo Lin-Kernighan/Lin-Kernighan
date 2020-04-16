@@ -3,7 +3,10 @@ from dataclasses import dataclass, field
 from typing import List, Tuple, Set, Dict
 
 from src.structures.matrix import Matrix
-from src.utils import make_pair, get_length, Node, Edge
+from src.utils import make_pair, get_length
+
+Edge = Tuple[int, int]
+Node = int
 
 
 @dataclass

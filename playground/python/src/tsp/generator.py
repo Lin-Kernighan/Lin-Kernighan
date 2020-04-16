@@ -1,8 +1,8 @@
 from math import sqrt
 from random import uniform
-from typing import Generator
+from typing import Generator, Tuple
 
-from src.utils import Point
+Point = Tuple[float, float]
 
 
 def generator(count: int) -> Generator[Point, None, None]:

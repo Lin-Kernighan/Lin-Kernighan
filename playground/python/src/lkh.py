@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from src.algorithms.initial_tour import InitialTour
 from src.algorithms.subgradient_optimization import SubgradientOptimization
@@ -6,7 +6,8 @@ from src.structures.matrix import Matrix
 from src.structures.one_tree import OneTree
 from src.structures.route import Route
 from src.structures.solutions_set import SolutionSet
-from src.utils import Point
+
+Point = Tuple[float, float]
 
 
 class LKH:

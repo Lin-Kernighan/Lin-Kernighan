@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
-from typing import Set
+from typing import Set, Tuple
 
-from src.utils import Edge
+Edge = Tuple[int, int]
 
 
 @dataclass

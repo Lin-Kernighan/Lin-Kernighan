@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from src.utils import Edge, Point
+Point = Tuple[float, float]
+Edge = Tuple[int, int]
 
 
 @dataclass

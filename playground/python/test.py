@@ -1,20 +1,15 @@
-import matplotlib.pyplot as plt
-
+from src.algorithms.heuristics.two_opt import TwoOpt
 from src.algorithms.initial_tour import InitialTour
-from src.algorithms.k_opt import KOpt
+from src.algorithms.tabu_search import TabuSearch
 from src.structures.matrix import Matrix
+from src.structures.tabu_list import TabuDict
 from src.tsp.generator import generator
-from src.utils import draw_tour, get_length
 
-tsp = [node for node in generator(100)]
+tsp = [node for node in generator(500)]
 
-weight_matrix = Matrix.weight_matrix(tsp)
-init = InitialTour.greedy(weight_matrix)
+matrix = Matrix.weight_matrix(tsp)
+init = InitialTour.greedy(matrix)
 
-k_opt = KOpt(weight_matrix, init)
-draw_tour(k_opt.tour, tsp, 'r')
-print(get_length(k_opt.matrix, k_opt.tour))
-k_opt.optimize()
-draw_tour(k_opt.tour, tsp, 'b')
-print(get_length(k_opt.matrix, k_opt.tour))
-plt.show()
+tabu = TabuSearch(TabuDict(-1), TwoOpt, init, matrix)
+tabu.optimize(100)
+print(tabu.best_result())

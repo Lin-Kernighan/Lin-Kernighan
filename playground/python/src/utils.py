@@ -11,7 +11,7 @@ Point = Tuple[float, float]
 Node = int
 
 
-def make_pair(i: int, j: int) -> Tuple[int, int]:
+def make_pair(i: int, j: int) -> Edge:
     """ Правильная пара для упрощения хранения ребер """
     return (i, j) if i > j else (j, i)
 
@@ -29,14 +29,16 @@ def right_rotate(tour: list, num: int) -> list:
     Костыль на крайние случаи масиива, чтобы алгоритм их тоже проверил
     Можно сделать иначе: но нужно переписать swap и взять индекс по модулю в алгоритме
     """
-    output_list = []
-    for item in range(len(tour) - num, len(tour)):
-        output_list.append(tour[item])
+    if num == 0:
+        return tour
+    return tour[-num:] + tour[:-num]
 
-    for item in range(0, len(tour) - num):
-        output_list.append(tour[item])
 
-    return output_list
+def rotate_zero(tour: List[int]) -> list:
+    """ Проворачиваем список так, что бы первым был ноль """
+    if tour[0] == 0:
+        return tour
+    return right_rotate(tour, -tour.index(0))
 
 
 def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:

@@ -14,7 +14,7 @@ class InitialTour:
         pass
 
     @staticmethod
-    def popmusic(self, weight_matrix) -> List[int]:
+    def popmusic(self, weight_matrix: Matrix) -> List[int]:
         # TODO: POPMUSIC
         pass
 
