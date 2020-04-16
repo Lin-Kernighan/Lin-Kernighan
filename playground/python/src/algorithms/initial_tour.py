@@ -20,6 +20,7 @@ class InitialTour:
 
     @staticmethod
     def greedy(matrix: Matrix, point: Optional[int] = None) -> List[int]:
+        """ Строим жадным методом """
         length = len(matrix)
         previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
         search = 0

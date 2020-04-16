@@ -5,11 +5,11 @@ from src.structures.matrix import Matrix
 from src.structures.tabu_list import TabuDict
 from src.tsp.generator import generator
 
-tsp = [node for node in generator(500)]
+tsp = [node for node in generator(200)]
 
 matrix = Matrix.weight_matrix(tsp)
 init = InitialTour.greedy(matrix)
 
 tabu = TabuSearch(TabuDict(-1), TwoOpt, init, matrix)
-tabu.optimize(100)
+tabu.optimize(100, len(init) // 3)
 print(tabu.best_result())

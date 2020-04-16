@@ -1,7 +1,8 @@
-from collections import OrderedDict
 from dataclasses import dataclass
 from sys import maxsize
 from typing import List, Tuple
+
+from orderedset import OrderedSet
 
 from src.utils import rotate_zero
 
@@ -25,12 +26,12 @@ class AbstractTabu:
 @dataclass
 class TabuDict(AbstractTabu):
     size: int
-    data = OrderedDict()
+    data = OrderedSet()
     index = 0
     best_length, this_index, best_route = maxsize, 0, None
 
     def contains(self, item: List[Node]) -> bool:
-        if str(rotate_zero(item)) in self.data:
+        if hash(str(rotate_zero(item))) in self.data:
             return True
         return False
 
@@ -39,8 +40,8 @@ class TabuDict(AbstractTabu):
         if self.contains(tour):
             return False
         if self.size != -1 and len(self.data) == self.size:
-            self.data.popitem(last=False)
-        self.data[str(tour)] = (self.index, length)
+            self.data.pop(last=False)
+        self.data.add(hash(str(tour)))
         if length < self.best_length:
             self.best_route, self.this_index, self.best_length = tour, self.index, length
         self.index += 1
