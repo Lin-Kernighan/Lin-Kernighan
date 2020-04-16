@@ -2,7 +2,6 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Tuple, Set, Dict
 
-from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import Matrix
 from src.utils import make_pair, get_length
 
@@ -56,7 +55,6 @@ class Tour:
         """
         # New edges: old edges minus broken, plus joined
         edges = (self.edges - broken) | joined
-
         # If we do not have enough edges, we cannot form a tour -- should not
         if len(edges) < self.size:
             return False, []
@@ -76,7 +74,6 @@ class Tour:
                     successors[node] = i
                     node = i
                     break
-
             edges.remove((i, j))
 
         # Similarly, if not every node has a successor, this can not work
@@ -99,9 +96,10 @@ class Tour:
 
 class KOpt:
 
-    def __init__(self, points: List[Tuple[float, float]]):
-        self.matrix: Matrix = Matrix.weight_matrix(points)
-        self.tour: List[Node] = InitialTour.greedy(self.matrix)
+    def __init__(self, matrix: Matrix, tour: List[Node]):
+        self.matrix: Matrix = matrix
+        self.tour: List[Node] = tour
+        self.length = get_length(self.matrix, self.tour)
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, List[Node]] = dict()
 
@@ -121,9 +119,8 @@ class KOpt:
             print(f'{iteration} : {get_length(self.matrix, self.tour)}')
             better = self.improve()
             # Paths always begin at 0 so this should manage to find duplicate solutions
-            self.solutions.add(str(self.tour))  # не уверен, что он прав
+            self.solutions.add(str(self.tour))  # блин, это работает, хз почему
             iteration += 1
-        print('done')
 
     def improve(self):
         """ Start the LK algorithm with the current tour. """
@@ -189,10 +186,6 @@ class KOpt:
 
             for successor in tour.around(node):  # и вот для соседа t2 мы берем соседа
                 xi = make_pair(node, successor)  # фигачим под него ребро
-
-                # TODO verify it is enough, but we do check if the tour is
-                # valid first thing in `choose_x` so this should be sufficient, что он имеет ввиду?
-                # Check that "x_i+1 exists"  # вообще оно всегда существует, если я верно понял
                 if xi not in broken and xi not in joined:  # тааак
                     # и вот diff для сосед t2 и сосед соседа t2 и t2 и сосед соседа t2
                     diff = self.matrix[node][successor] - self.matrix[t2i][node]
@@ -222,7 +215,7 @@ class KOpt:
         if len(broken) == 4:
             pred, suc = tour.around(last)
 
-            # Give priority to the longest edge for x_4
+            # Give priority to the longest edge for x_4  # почему? зачем?
             if self.matrix[pred][last] > self.matrix[suc][last]:
                 around = [pred]
             else:
@@ -273,7 +266,7 @@ class KOpt:
 
         return False
 
-    def choose_y(self, tour, t1, t2i, gain, broken, joined):
+    def choose_y(self, tour: Tour, t1: Node, t2i: Node, gain: float, broken: Set[Edge], joined: Set[Edge]):
         """ Choose an edge to add to the new tour.
         Parameters:
             - tour: current tour to optimise
@@ -293,13 +286,13 @@ class KOpt:
             # Otherwise the closest only
             top = 1
 
-        for node, (_, Gi) in ordered:
+        for node, (_, curr_gain) in ordered:
             yi = make_pair(t2i, node)
             added = deepcopy(joined)
             added.add(yi)
 
             # Stop at the first improving tour
-            if self.choose_x(tour, t1, node, Gi, broken, added):
+            if self.choose_x(tour, t1, node, curr_gain, broken, added):
                 return True
 
             top -= 1

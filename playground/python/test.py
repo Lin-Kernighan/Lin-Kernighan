@@ -11,7 +11,7 @@ tsp = [node for node in generator(100)]
 weight_matrix = Matrix.weight_matrix(tsp)
 init = InitialTour.greedy(weight_matrix)
 
-k_opt = KOpt(tsp)
+k_opt = KOpt(weight_matrix, init)
 draw_tour(k_opt.tour, tsp, 'r')
 print(get_length(k_opt.matrix, k_opt.tour))
 k_opt.optimize()
