@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from random import randint
+from sys import maxsize
 from typing import List, Type, Tuple
 
 from src.algorithms.heuristics.tsp_opt import TspOpt
@@ -29,13 +30,17 @@ class TabuSearch:
 
     def optimize(self, iteration=10, count=10) -> None:
         """ Прогон """
+        best_cost = maxsize
         while iteration > 0:
             tsp = self.tsp(self.tour, self.matrix)
-            self.tour = tsp.tabu_optimize(self.data)
-            print(f'{iteration} : {self.best_result()[1]} : {get_length(self.matrix, self.tour)}')
+            tour = tsp.tabu_optimize(self.data)
+            if best_cost > self.best_result()[1]:
+                self.tour = self.best_tour()
+            print(f'{iteration} : {self.best_result()[1]} : {get_length(self.matrix, tour)}')
             for _ in range(count):
                 self.swap()
             iteration -= 1
+        self.tour = self.best_tour()
 
     def swap(self) -> None:
         """ Попытка сломать тур """
