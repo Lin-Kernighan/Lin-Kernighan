@@ -2,13 +2,13 @@ from typing import List, Tuple
 
 from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import Matrix
-from src.utils import right_rotate, get_length
+from src.utils import right_rotate, get_length, Point
 
 
 class TwoOpt:
 
     @staticmethod
-    def run(points: List[Tuple[float, float]]) -> List[int]:
+    def run(points: List[Point]) -> List[int]:
         """ Полный запуск на точках """
         matrix = Matrix.weight_matrix(points)
         init_tour = InitialTour.greedy(matrix)

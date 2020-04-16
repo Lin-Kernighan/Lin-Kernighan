@@ -4,8 +4,20 @@ from dataclasses import dataclass, field
 from sys import maxsize
 from typing import List, Tuple
 
-from src.structures.graph import Edge
 from src.structures.heap import Heap
+
+
+@dataclass(order=True)
+class Edge:
+    price: float
+    src: int
+    dst: int
+
+    def __str__(self) -> str:
+        return f'{self.src}->{self.dst}'
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 @dataclass

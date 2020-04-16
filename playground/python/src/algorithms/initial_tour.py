@@ -42,7 +42,7 @@ class InitialTour:
         return order
 
     @staticmethod
-    def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: Optional[float]) -> List[int]:
+    def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: float) -> List[int]:
         """ Генерируем новый тур """
         length = len(alpha_matrix)
         previous = search = randrange(0, length)  # я ищу ребро из previous в search

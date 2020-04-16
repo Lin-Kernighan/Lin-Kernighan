@@ -1,9 +1,14 @@
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 
-from src.structures.graph import Edge
+import src.structures.one_tree as one_tree
 from src.structures.matrix import Matrix
+
+Edge = Tuple[int, int]
+Point = Tuple[float, float]
+Node = int
 
 
 def make_pair(i: int, j: int) -> Tuple[int, int]:
@@ -34,7 +39,7 @@ def right_rotate(tour: list, num: int) -> list:
     return output_list
 
 
-def draw_edges(edges: List[Edge], nodes: List[Tuple[float, float]], color: str) -> None:
+def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:
     """ Нарисовать граф по списку ребер типа Edge """
     for edge in edges:
         [x1, y1] = nodes[edge.dst]
@@ -42,7 +47,7 @@ def draw_edges(edges: List[Edge], nodes: List[Tuple[float, float]], color: str) 
         plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
 
 
-def draw_tour(tour: List[int], nodes: List[Tuple[float, float]], color: str) -> None:
+def draw_tour(tour: List[int], nodes: List[Point], color: str) -> None:
     """ Нарисовать граф по списку номеров вершин в порядке тура """
     first, second = tour[-1], tour[0]
     [x1, y1] = nodes[first]
@@ -54,14 +59,12 @@ def draw_tour(tour: List[int], nodes: List[Tuple[float, float]], color: str) -> 
         plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
 
 
-def candidates(alpha_matrix: Matrix, nodes: List[Tuple[float, float]], color: str, one_tree: float) -> None:
+def candidates(alpha_matrix: Matrix, nodes: List[Point], excess: float, color: str) -> None:
     """ Граф всех кандидатов """
     temp = []
-    precess = 1 / alpha_matrix.dimension * one_tree
-    print(precess)
     for idx in range(0, alpha_matrix.dimension):
         for idy in range(idx + 1, alpha_matrix.dimension):
-            if alpha_matrix[idx][idy] < precess:
+            if alpha_matrix[idx][idy] < excess:
                 temp.append((idx, idy))
     print(len(temp))
 

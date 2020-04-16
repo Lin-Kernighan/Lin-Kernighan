@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-from src.structures.graph import Edge
+from src.utils import Edge, Point
 
 
 @dataclass
@@ -39,7 +39,7 @@ class Route:
         self.blocks = [Block(0, 0, None)] * self.blocks_length
 
     @staticmethod
-    def build(points: List[Tuple[float, float]], order: List[int]) -> Route:
+    def build(points: List[Point], order: List[int]) -> Route:
         route = Route(len(points))
         previous_node = route.data[order[-1]]
         for node in order:

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from math import sqrt
-from typing import List, Tuple
+from typing import List
 
 from src.structures.one_tree import OneTree
+from src.utils import Point
 
 
 @dataclass
@@ -26,7 +27,7 @@ class Matrix:
         return alpha_matrix
 
     @staticmethod
-    def weight_matrix(points: List[Tuple[float, float]]) -> Matrix:
+    def weight_matrix(points: List[Point]) -> Matrix:
         weight_matrix = Matrix(len(points))
         for idx in range(0, weight_matrix.dimension):
             for idy in range(idx + 1, weight_matrix.dimension):

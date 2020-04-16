@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from src.algorithms.initial_tour import InitialTour
 from src.algorithms.subgradient_optimization import SubgradientOptimization
@@ -6,10 +6,11 @@ from src.structures.matrix import Matrix
 from src.structures.one_tree import OneTree
 from src.structures.route import Route
 from src.structures.solutions_set import SolutionSet
+from src.utils import Point
 
 
 class LKH:
-    nodes: List[Tuple[float, float]]  # вершины, вроде они не меняются по жизни, мб другой формат
+    nodes: List[Point]  # вершины, вроде они не меняются по жизни, мб другой формат
     solutions_set: SolutionSet  # набор уже полученных решений
     weight_matrix: Matrix  # матрица весов
 
@@ -20,7 +21,7 @@ class LKH:
 
     length: int
 
-    def __init__(self, points: List[Tuple[float, float]]) -> None:
+    def __init__(self, points: List[Point]) -> None:
         self.length = len(points)
         self.nodes = points
         self.weight_matrix = Matrix.weight_matrix(points)

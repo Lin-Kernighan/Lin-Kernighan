@@ -5,9 +5,8 @@ from typing import List
 
 import numpy as np
 
-from src.structures.graph import Edge
 from src.structures.matrix import Matrix
-from src.structures.one_tree import OneTree
+from src.structures.one_tree import OneTree, Edge
 
 
 class SubgradientOptimization:
