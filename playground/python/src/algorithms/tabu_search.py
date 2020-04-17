@@ -28,7 +28,7 @@ class TabuSearch:
         search.optimize()
         return search
 
-    def optimize(self, iteration=10, count=10) -> None:
+    def optimize(self, iteration=10, swap=10) -> None:
         """ Прогон """
         best_cost = maxsize
         while iteration > 0:
@@ -37,7 +37,7 @@ class TabuSearch:
             if best_cost > self.best_result()[1]:
                 self.tour = self.best_tour()
             print(f'{iteration} : {self.best_result()[1]} : {get_length(self.matrix, tour)}')
-            for _ in range(count):
+            for _ in range(swap):
                 self.swap()
             iteration -= 1
         self.tour = self.best_tour()
