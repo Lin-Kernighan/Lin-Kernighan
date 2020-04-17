@@ -2,6 +2,7 @@ from typing import List
 from typing import Tuple
 
 import matplotlib.pyplot as plt
+from numba import njit
 
 import src.structures.one_tree as one_tree
 from src.structures.matrix import Matrix
@@ -11,6 +12,7 @@ Point = Tuple[float, float]
 Node = int
 
 
+@njit
 def make_pair(i: int, j: int) -> Edge:
     """ Правильная пара для упрощения хранения ребер """
     return (i, j) if i > j else (j, i)

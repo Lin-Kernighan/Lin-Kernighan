@@ -25,7 +25,7 @@ class ThreeOpt(TspOpt):
             best_gain = self.__three_opt()
             if best_gain <= 0:
                 self.tour = right_rotate(self.tour, len(self.tour) // 3)  # костыль, велосипедов пока не завезли
-                best_gain, tour = self.__three_opt()
+                best_gain = self.__three_opt()
             self.length -= best_gain
             print(f'{iteration} : {self.length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
             iteration += 1

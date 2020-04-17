@@ -55,7 +55,7 @@ class TabuDict(AbstractTabu):
         return self.this_index, self.best_length
 
     def best_tour(self) -> List[Node]:
-        return self.best_route
+        return deepcopy(self.best_route)
 
 
 @dataclass
