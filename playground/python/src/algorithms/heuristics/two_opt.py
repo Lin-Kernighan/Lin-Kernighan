@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import List, Tuple
 
 from src.algorithms.heuristics.tsp_opt import TspOpt
+from src.structures.collector import Collector
 from src.structures.matrix import Matrix
 from src.structures.tabu_list import AbstractTabu
 from src.utils import right_rotate
@@ -13,12 +14,14 @@ Node = int
 class TwoOpt(TspOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
+        self.collector = Collector(['length', 'gain'], {'two_opt': len(tour)})
         super().__init__(tour, matrix)
 
     def optimize(self) -> List[int]:
         """ Запуск """
         best_change, iteration = -1, 0
         print(f'start : {self.length}')
+        self.collector.update({'length': self.length, 'gain': 0})
 
         while best_change < 0:
             best_change = self.__two_opt()
@@ -26,6 +29,7 @@ class TwoOpt(TspOpt):
                 self.tour = right_rotate(self.tour, len(self.tour) // 3)  # костыль
                 best_change = self.__two_opt()
             self.length += best_change
+            self.collector.update({'length': self.length, 'gain': -best_change})
             print(f'{iteration} : {self.length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
             iteration += 1
 

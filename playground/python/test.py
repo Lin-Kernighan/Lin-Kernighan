@@ -1,10 +1,14 @@
 from math import log2
 
+import matplotlib.pyplot as plt
+
+from src.algorithms.heuristics.two_opt import TwoOpt
 from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import Matrix
 from src.tsp.generator import generator
+from src.utils import draw_tour
 
-tsp = [node for node in generator(20)]
+tsp = [node for node in generator(500)]
 
 matrix = Matrix.weight_matrix(tsp)
 tour = InitialTour.greedy(matrix)
@@ -16,13 +20,11 @@ swap = int(log2(len(tour)))
 # print(tabu.best_result())
 # draw_tour(tabu.best_tour(), tsp, 'r')
 
-# tak = TwoOpt(tour, matrix).optimize()
-# draw_tour(tak, tsp, 'r')
-# plt.show()
-
-from src.tsp.tsp_loader import TspLoader
-
-print(TspLoader.tsplib_deserializer('http://elib.zib.de/pub/mp-testdata/tsp/tsplib/tsp/d657.tsp'))
+opt = TwoOpt(tour, matrix)
+tak = opt.optimize()
+print(opt.collector)
+draw_tour(tak, tsp, 'r')
+plt.show()
 
 # tabu = TabuSearch(TabuDict(-1), TwoOpt, tour, matrix)
 # tabu.optimize(iterations, swap)
