@@ -27,7 +27,7 @@ class Collector:
         self.time = time()
 
     def dump(self, filename: str) -> None:
-        with open(filename) as file:
+        with open(filename, 'w') as file:
             dump(self.info, file)
 
     def as_frame(self) -> DataFrame:
