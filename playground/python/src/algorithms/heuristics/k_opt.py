@@ -2,6 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Tuple, Set, Dict
 
+from src.structures.collector import Collector
 from src.structures.matrix import Matrix
 from src.utils import make_pair, get_length
 
@@ -99,6 +100,7 @@ class KOpt:
     def __init__(self, matrix: Matrix, tour: List[Node]):
         self.matrix: Matrix = matrix
         self.tour: List[Node] = tour
+        self.collector = Collector(['length', 'gain'], {'k_opt': len(tour)})
         self.length = get_length(self.matrix, self.tour)
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, List[Node]] = dict()
@@ -114,12 +116,16 @@ class KOpt:
                 if dist > 0 and j in self.tour:
                     self.neighbours[i].append(j)  # dict(i: [j1, j2, j3...])
 
-        iteration = 0
+        iteration, prev = 0, self.length
+        self.collector.update({'length': self.length, 'gain': 0})
         while better:  # Restart the loop each time we find an improving candidate
-            print(f'{iteration} : {get_length(self.matrix, self.tour)}')
+            print(f'{iteration} : {self.length}')
             better = self.improve()
             # Paths always begin at 0 so this should manage to find duplicate solutions
             self.solutions.add(str(self.tour))  # блин, это работает, хз почему
+            self.length = get_length(self.matrix, self.tour)
+            self.collector.update({'length': self.length, 'gain': prev - self.length})
+            prev = self.length
             iteration += 1
 
     def improve(self):

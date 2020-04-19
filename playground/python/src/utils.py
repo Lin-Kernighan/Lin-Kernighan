@@ -3,6 +3,7 @@ from typing import Tuple
 
 import matplotlib.pyplot as plt
 from numba import njit
+from pandas import DataFrame
 
 import src.structures.one_tree as one_tree
 from src.structures.matrix import Matrix
@@ -41,6 +42,23 @@ def rotate_zero(tour: List[int]) -> list:
     if tour[0] == 0:
         return tour
     return right_rotate(tour, -tour.index(0))
+
+
+def draw_plots(data: List[DataFrame], names: List[str], columns: List[str]) -> None:
+    """ Рисуем много графиков хрень от итерации """
+    for column in columns:
+        draw_plot(data, names, column)
+
+
+def draw_plot(data: List[DataFrame], names: List[str], column: str) -> None:
+    """ Рисуем график хрень от итерации """
+    frame = DataFrame()
+    if len(data) != len(names):
+        raise Exception('something goes wrong...')
+    for i in range(len(data)):
+        frame[names[i]] = data[i][column]
+    frame.plot()
+    plt.show()
 
 
 def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:
