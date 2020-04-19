@@ -2,35 +2,41 @@ from math import log2
 
 import matplotlib.pyplot as plt
 
+from src.algorithms.heuristics.k_opt import KOpt
+from src.algorithms.heuristics.three_opt import ThreeOpt
 from src.algorithms.heuristics.two_opt import TwoOpt
 from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import Matrix
 from src.tsp.generator import generator
-from src.utils import draw_tour
+from src.utils import draw_plots
 
-tsp = [node for node in generator(500)]
+tsp = [node for node in generator(250)]
 
+plt.style.use('ggplot')
 matrix = Matrix.weight_matrix(tsp)
 tour = InitialTour.greedy(matrix)
 iterations = 25
 swap = int(log2(len(tour)))
 
-# tabu = TabuSearch(TabuDict(-1), ThreeOpt, tour, matrix)
-# tabu.optimize(iterations, swap)
-# print(tabu.best_result())
-# draw_tour(tabu.best_tour(), tsp, 'r')
+k_opt = KOpt(matrix, tour)
+k_opt.optimize()
 
-opt = TwoOpt(tour, matrix)
-tak = opt.optimize()
-print(opt.collector)
-draw_tour(tak, tsp, 'r')
-plt.show()
+three_opt = ThreeOpt(tour, matrix)
+three_tour = three_opt.optimize()
 
-# tabu = TabuSearch(TabuDict(-1), TwoOpt, tour, matrix)
-# tabu.optimize(iterations, swap)
-# draw_tour(tabu.best_tour(), tsp, 'b')
-# plt.show()
+two_opt = TwoOpt(tour, matrix)
+two_tour = two_opt.optimize()
 
-# opt = KOpt(matrix, tabu.best_tour())
-# opt.optimize()
-# draw_tour(opt.tour, tsp, 'g')
+k_frame = k_opt.collector.as_frame()
+two_frame = two_opt.collector.as_frame()
+three_frame = three_opt.collector.as_frame()
+
+draw_plots([
+    k_opt.collector.as_frame(),
+    two_opt.collector.as_frame(),
+    three_opt.collector.as_frame()
+],
+    ['k_opt', 'two_opt', 'three_opt'],
+    ['length', 'gain', 'time'],
+    'test_250'
+)

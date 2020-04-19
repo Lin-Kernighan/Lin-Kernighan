@@ -1,5 +1,4 @@
-from typing import List
-from typing import Tuple
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 from numba import njit
@@ -44,13 +43,13 @@ def rotate_zero(tour: List[int]) -> list:
     return right_rotate(tour, -tour.index(0))
 
 
-def draw_plots(data: List[DataFrame], names: List[str], columns: List[str]) -> None:
+def draw_plots(data: List[DataFrame], names: List[str], columns: List[str], file: str) -> None:
     """ Рисуем много графиков хрень от итерации """
     for column in columns:
-        draw_plot(data, names, column)
+        draw_plot(data, names, column, file)
 
 
-def draw_plot(data: List[DataFrame], names: List[str], column: str) -> None:
+def draw_plot(data: List[DataFrame], names: List[str], column: str, file: str) -> None:
     """ Рисуем график хрень от итерации """
     frame = DataFrame()
     if len(data) != len(names):
@@ -58,7 +57,9 @@ def draw_plot(data: List[DataFrame], names: List[str], column: str) -> None:
     for i in range(len(data)):
         frame[names[i]] = data[i][column]
     frame.plot()
+    plt.ylabel('column')
     plt.show()
+    plt.savefig(f'{file}_{column}')
 
 
 def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:
