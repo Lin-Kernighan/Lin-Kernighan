@@ -44,13 +44,13 @@ def rotate_zero(tour: List[int]) -> list:
 
 
 def draw_plots(data: List[DataFrame], names: List[str], columns: List[str], file: str) -> None:
-    """ Рисуем много графиков хрень от итерации """
+    """ Рисуем и сохраняем много графиков хрень от итерации """
     for column in columns:
         draw_plot(data, names, column, file)
 
 
 def draw_plot(data: List[DataFrame], names: List[str], column: str, file: str) -> None:
-    """ Рисуем график хрень от итерации """
+    """ Рисуем график и сохраняем хрень от итерации """
     frame = DataFrame()
     if len(data) != len(names):
         raise Exception('something goes wrong...')
