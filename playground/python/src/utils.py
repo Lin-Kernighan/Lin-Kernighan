@@ -56,10 +56,10 @@ def draw_plot(data: List[DataFrame], names: List[str], column: str, file: str) -
         raise Exception('something goes wrong...')
     for i in range(len(data)):
         frame[names[i]] = data[i][column]
-    frame.plot()
-    plt.ylabel('column')
+    fig = frame.plot().get_figure()
+    plt.ylabel(column)
     plt.show()
-    plt.savefig(f'{file}_{column}')
+    fig.savefig(f'{file}_{column}.png')
 
 
 def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:

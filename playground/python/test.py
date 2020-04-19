@@ -1,7 +1,5 @@
 from math import log2
 
-import matplotlib.pyplot as plt
-
 from src.algorithms.heuristics.k_opt import KOpt
 from src.algorithms.heuristics.three_opt import ThreeOpt
 from src.algorithms.heuristics.two_opt import TwoOpt
@@ -10,9 +8,9 @@ from src.structures.matrix import Matrix
 from src.tsp.generator import generator
 from src.utils import draw_plots
 
-tsp = [node for node in generator(250)]
+tsp = [node for node in generator(50)]
 
-plt.style.use('ggplot')
+# plt.style.use('ggplot')
 matrix = Matrix.weight_matrix(tsp)
 tour = InitialTour.greedy(matrix)
 iterations = 25
@@ -38,5 +36,5 @@ draw_plots([
 ],
     ['k_opt', 'two_opt', 'three_opt'],
     ['length', 'gain', 'time'],
-    'test_250'
+    'test_250_3'
 )
