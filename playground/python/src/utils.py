@@ -43,23 +43,29 @@ def rotate_zero(tour: List[int]) -> list:
     return right_rotate(tour, -tour.index(0))
 
 
-def draw_plots(data: List[DataFrame], names: List[str], columns: List[str], file: str) -> None:
+def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], file: str = None) -> None:
     """ Рисуем и сохраняем много графиков хрень от итерации """
     for column in columns:
-        draw_plot(data, names, column, file)
+        frame = DataFrame()
+        for i in range(len(data)):
+            frame[names[i]] = data[i][column]
+        fig = frame.plot().get_figure()
+        plt.ylabel(column)
+        plt.xlabel('iteration')
+        plt.show()
+        if file is not None:
+            fig.savefig(f'{file}_{column}.png')
 
 
-def draw_plot(data: List[DataFrame], names: List[str], column: str, file: str) -> None:
-    """ Рисуем график и сохраняем хрень от итерации """
-    frame = DataFrame()
-    if len(data) != len(names):
-        raise Exception('something goes wrong...')
+def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: str, file: str = None) -> None:
     for i in range(len(data)):
-        frame[names[i]] = data[i][column]
-    fig = frame.plot().get_figure()
-    plt.ylabel(column)
+        plt.plot(data[i][x_name], data[i][y_name], label=names[i])
+    plt.xlabel(x_name)
+    plt.ylabel(y_name)
+    plt.legend()
+    if file is not None:
+        plt.savefig(f'{file}_{x_name}_{y_name}.png')
     plt.show()
-    fig.savefig(f'{file}_{column}.png')
 
 
 def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:
