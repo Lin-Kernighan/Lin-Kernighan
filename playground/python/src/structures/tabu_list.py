@@ -25,7 +25,7 @@ class AbstractTabu:
 
 
 @dataclass
-class TabuDict(AbstractTabu):
+class TabuSet(AbstractTabu):
     size: int
     data = OrderedSet()
     index = 0

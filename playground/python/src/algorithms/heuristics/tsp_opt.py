@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
+from src.structures.collector import Collector
 from src.structures.matrix import Matrix
 from src.structures.tabu_list import AbstractTabu
 from src.utils import get_length, rotate_zero
@@ -28,5 +29,5 @@ class TspOpt:
     def optimize(self) -> List[Node]:
         pass
 
-    def tabu_optimize(self, tabu_list: AbstractTabu) -> List[Node]:
+    def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
         pass

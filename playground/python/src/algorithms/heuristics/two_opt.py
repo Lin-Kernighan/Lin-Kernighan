@@ -14,38 +14,40 @@ Node = int
 class TwoOpt(TspOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
-        self.collector = Collector(['length', 'gain'], {'two_opt': len(tour)})
+        self.collector = None
         super().__init__(tour, matrix)
 
     def optimize(self) -> List[int]:
         """ Запуск """
-        best_change, iteration = -1, 0
-        print(f'start : {self.length}')
+        best_change, iteration, self.collector = -1, 0, Collector(['length', 'gain'], {'two_opt': len(self.tour)})
         self.collector.update({'length': self.length, 'gain': 0})
+        print(f'start : {self.length}')
 
         while best_change < 0:
             best_change = self.__two_opt()
             if best_change >= 0:
-                self.tour = right_rotate(self.tour, len(self.tour) // 3)  # костыль
+                self.tour = right_rotate(self.tour, len(self.tour) // 3)
                 best_change = self.__two_opt()
             self.length += best_change
             self.collector.update({'length': self.length, 'gain': -best_change})
-            print(f'{iteration} : {self.length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
+            print(f'{iteration} : {self.length}')
             iteration += 1
 
         return self.tour
 
-    def tabu_optimize(self, tabu_list: AbstractTabu) -> List[Node]:
+    def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
         """ 2-opt для Tabu search """
-        self.tabu_list, best_change, iteration = tabu_list, -1, 0
+        self.tabu_list, best_change, iteration, self.collector = tabu_list, -1, 0, collector
+
         while best_change < 0:
             best_change = self.__tabu_two_opt()
             if best_change >= 0:  # да, все тот же костыль
                 rotate = len(self.tour) // 3 * (iteration % 2 + 1)
                 best_change = self.__tabu_two_opt(rotate)
             self.length += best_change
-            iteration += 1
             tabu_list.append(self.tour, self.length)
+            self.collector.update({'length': self.length, 'gain': -best_change})
+            iteration += 1
 
         return self.tour
 

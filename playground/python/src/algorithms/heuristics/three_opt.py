@@ -15,30 +15,30 @@ Node = int
 class ThreeOpt(TspOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
-        self.collector = Collector(['length', 'gain'], {'three_opt': len(tour)})
+        self.collector = None
         super().__init__(tour, matrix)
 
     def optimize(self) -> List[int]:
         """ Запуск """
-        best_gain, iteration = 1, 0
-        print(f'start : {self.length}')
+        best_gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'three_opt': len(self.tour)})
         self.collector.update({'length': self.length, 'gain': 0})
+        print(f'start : {self.length}')
 
         while best_gain > 0:
             best_gain = self.__three_opt()
             if best_gain <= 0:
-                self.tour = right_rotate(self.tour, len(self.tour) // 3)  # костыль, велосипедов пока не завезли
+                self.tour = right_rotate(self.tour, len(self.tour) // 3)
                 best_gain = self.__three_opt()
             self.length -= best_gain
             self.collector.update({'length': self.length, 'gain': best_gain})
-            print(f'{iteration} : {self.length}')  # оставлю, чтобы видеть, что алгоритм не помер еще
+            print(f'{iteration} : {self.length}')
             iteration += 1
 
         return self.tour
 
-    def tabu_optimize(self, tabu_list: AbstractTabu) -> List[Node]:
+    def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
         """ 3-opt для Tabu search """
-        self.tabu_list, best_gain, iteration = tabu_list, 1, 0
+        self.tabu_list, best_gain, iteration, self.collector = tabu_list, 1, 0, collector
 
         while best_gain > 0:
             best_gain = self.__tabu_three_opt()
@@ -46,8 +46,9 @@ class ThreeOpt(TspOpt):
                 rotate = len(self.tour) // 3 * (iteration % 2 + 1)
                 best_gain = self.__tabu_three_opt(rotate)
             self.length -= best_gain
-            iteration += 1
+            self.collector.update({'length': self.length, 'gain': best_gain})
             tabu_list.append(self.tour, self.length)
+            iteration += 1
 
         return self.tour
 

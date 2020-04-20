@@ -44,7 +44,7 @@ def rotate_zero(tour: List[int]) -> list:
 
 
 def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], file: str = None) -> None:
-    """ Рисуем и сохраняем много графиков хрень от итерации """
+    """ Рисуем и сохраняем много графиков column == y_name от итерации """
     for column in columns:
         frame = DataFrame()
         for i in range(len(data)):
@@ -58,6 +58,7 @@ def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], 
 
 
 def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: str, file: str = None) -> None:
+    """ Рисуем и сохраняем график x_name от y_name """
     for i in range(len(data)):
         plt.plot(data[i][x_name], data[i][y_name], label=names[i])
     plt.xlabel(x_name)

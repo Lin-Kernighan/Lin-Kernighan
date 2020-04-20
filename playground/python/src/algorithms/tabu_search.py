@@ -5,9 +5,9 @@ from sys import maxsize
 from typing import List, Type, Tuple
 
 from src.algorithms.heuristics.tsp_opt import TspOpt
-from src.algorithms.heuristics.two_opt import TwoOpt
+from src.structures.collector import Collector
 from src.structures.matrix import Matrix
-from src.structures.tabu_list import TabuDict, AbstractTabu
+from src.structures.tabu_list import TabuSet, AbstractTabu
 from src.utils import get_length
 
 Node = int
@@ -16,27 +16,30 @@ Node = int
 class TabuSearch:
 
     def __init__(self, tabu_list: AbstractTabu, tsp: Type[TspOpt], tour: List[Node], matrix: Matrix):
+        self.collector = Collector(['length', 'gain'], {'two_opt': len(tour)})
         self.data = tabu_list
         self.tour = tour
         self.matrix = matrix
         self.tsp = tsp
+        self.length = get_length(self.matrix, tour)
 
     @staticmethod
-    def run(tour: List[Node], matrix: Matrix, depth: int) -> TabuSearch:
+    def run(tour: List[Node], matrix: Matrix, opt: Type[TspOpt], depth: int) -> TabuSearch:
         """ Полный цикл работы за вас """
-        search = TabuSearch(TabuDict(depth), TwoOpt, tour, matrix)
+        search = TabuSearch(TabuSet(depth), opt, tour, matrix)
         search.optimize()
         return search
 
-    def optimize(self, iteration=10, swap=10) -> None:
+    def optimize(self, iteration=10, swap=2) -> None:
         """ Прогон """
+        self.collector.update({'length': self.length, 'gain': 0})
         best_cost = maxsize
         while iteration > 0:
             tsp = self.tsp(self.tour, self.matrix)
-            tour = tsp.tabu_optimize(self.data)
+            tsp.tabu_optimize(self.data, self.collector)
             if best_cost > self.best_result()[1]:
                 self.tour = self.best_tour()
-            print(f'{iteration} : {self.best_result()[1]} : {get_length(self.matrix, tour)}')
+            print(f'{iteration} : {self.best_result()[1]} : {tsp.length}')
             for _ in range(swap):
                 self.swap()
             iteration -= 1
