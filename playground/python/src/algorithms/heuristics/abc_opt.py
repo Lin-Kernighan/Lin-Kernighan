@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from src.structures.collector import Collector
@@ -10,7 +11,7 @@ from src.utils import get_length, rotate_zero
 Node = int
 
 
-class TspOpt:
+class AbcOpt(ABC):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
         self.tour = rotate_zero(tour)
@@ -20,14 +21,16 @@ class TspOpt:
         self.length = get_length(matrix, tour)
 
     @staticmethod
-    def run(tour: List[Node], matrix: Matrix) -> TspOpt:
+    def run(tour: List[Node], matrix: Matrix) -> AbcOpt:
         """ Полный запуск на точках """
-        opt = TspOpt(tour, matrix)
+        opt = AbcOpt(tour, matrix)
         opt.optimize()
         return opt
 
+    @abstractmethod
     def optimize(self) -> List[Node]:
-        pass
+        """ Просто запуск эвристики """
 
+    @abstractmethod
     def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
-        pass
+        """ Запуск эвристики под управление tabu search """

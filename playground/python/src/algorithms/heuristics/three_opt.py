@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
-from src.algorithms.heuristics.tsp_opt import TspOpt
+from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
 from src.structures.matrix import Matrix
 from src.structures.tabu_list import AbstractTabu
@@ -12,7 +12,7 @@ Point = Tuple[float, float]
 Node = int
 
 
-class ThreeOpt(TspOpt):
+class ThreeOpt(AbcOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
         self.collector = None

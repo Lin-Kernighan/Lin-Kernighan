@@ -1,98 +1,13 @@
 from copy import deepcopy
-from dataclasses import dataclass, field
 from typing import List, Tuple, Set, Dict
 
 from src.structures.collector import Collector
 from src.structures.matrix import Matrix
+from src.structures.tour.list_tour import ListTour
 from src.utils import make_pair, get_length
 
 Edge = Tuple[int, int]
 Node = int
-
-
-@dataclass
-class Tour:
-    tour: List[Node]
-    size: int = field(init=False)
-    edges: Set[Edge] = field(init=False)
-
-    def __post_init__(self):
-        self.size = len(self.tour)
-        self.edges = set()
-        for i in range(self.size):
-            self.edges.add(make_pair(self.tour[i - 1], self.tour[i]))
-
-    def __len__(self):
-        return self.size
-
-    def __getitem__(self, index: int) -> Node:
-        """ Вершина по номеру в туре """
-        return self.tour[index % self.size]
-
-    def __contains__(self, edge: Edge) -> bool:
-        """ Наличие ребра в туре """
-        return edge in self.edges
-
-    def index(self, node: Node) -> int:
-        """ Номер вершины в туре """
-        return self.tour.index(node)
-
-    def around(self, node: int) -> Tuple[Node, Node]:
-        """ Предыдущая вершина и следующая текущей веришны """
-        index = self.index(node)
-        return self[index - 1], self[index + 1]
-
-    def successor(self, index: int) -> Node:
-        """ Следующий """
-        return self[index + 1]
-
-    def predecessor(self, index: int) -> Node:
-        """ Предыдущий """
-        return self[index - 1]
-
-    def generate(self, broken: Set[Edge], joined: Set[Edge]) -> Tuple[bool, list]:
-        """ Немного магии
-        Создаем новый тур, а потом проверяем его на целостность и наличие циклов
-        """
-        # New edges: old edges minus broken, plus joined
-        edges = (self.edges - broken) | joined
-        # If we do not have enough edges, we cannot form a tour -- should not
-        if len(edges) < self.size:
-            return False, []
-
-        successors = {}
-        node = 0
-
-        # Build the list of successors
-        while len(edges) > 0:
-            i = j = 0
-            for i, j in edges:
-                if i == node:
-                    successors[node] = j
-                    node = j
-                    break
-                elif j == node:
-                    successors[node] = i
-                    node = i
-                    break
-            edges.remove((i, j))
-
-        # Similarly, if not every node has a successor, this can not work
-        if len(successors) < self.size:
-            return False, []
-
-        successor = successors[0]
-        new_tour = [0]
-        visited = set(new_tour)
-
-        # If we already encountered a node it means we have a loop
-        while successor not in visited:
-            visited.add(successor)
-            new_tour.append(successor)
-            successor = successors[successor]
-
-        # If we visited all nodes without a loop we have a tour
-        return len(new_tour) == self.size, new_tour
 
 
 class KOpt:
@@ -130,7 +45,7 @@ class KOpt:
 
     def improve(self):
         """ Start the LK algorithm with the current tour. """
-        tour = Tour(self.tour)
+        tour = ListTour(self.tour)
 
         # Find all valid 2-opt moves and try them
         for index in range(len(tour)):  # сделано так, чтобы индекс не переполнялся, ох уж этот питон
@@ -165,7 +80,7 @@ class KOpt:
 
         return False
 
-    def closest(self, t2i: Node, tour: Tour, gain: float, broken: Set[Edge], joined: Set[Edge]) -> list:
+    def closest(self, t2i: Node, tour: ListTour, gain: float, broken: Set[Edge], joined: Set[Edge]) -> list:
         """
         Find the closest neighbours of a node ordered by potential gain.  As a
         side-effect, also compute the partial improvement of joining a node.
@@ -206,7 +121,7 @@ class KOpt:
         # Sort the neighbours by potential gain
         return sorted(neighbours.items(), key=lambda x: x[1][0], reverse=True)
 
-    def choose_x(self, tour: Tour, t1: Node, last: Node, gain: float, broken: Set[Edge], joined: Set[Edge]) -> bool:
+    def choose_x(self, tour: ListTour, t1: Node, last: Node, gain: float, broken: Set[Edge], joined: Set[Edge]) -> bool:
         """
         Choose an edge to omit from the tour.
         Parameters:
@@ -272,7 +187,7 @@ class KOpt:
 
         return False
 
-    def choose_y(self, tour: Tour, t1: Node, t2i: Node, gain: float, broken: Set[Edge], joined: Set[Edge]):
+    def choose_y(self, tour: ListTour, t1: Node, t2i: Node, gain: float, broken: Set[Edge], joined: Set[Edge]):
         """ Choose an edge to add to the new tour.
         Parameters:
             - tour: current tour to optimise
