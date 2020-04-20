@@ -12,6 +12,9 @@ Point = Tuple[float, float]
 Node = int
 
 
+# TODO: починить swap, чтобы не дергать rotate
+
+
 class ThreeOpt(AbcOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):

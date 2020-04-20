@@ -73,7 +73,7 @@ class KOpt(AbcOpt):
         tour = ListTour(self.tour)
 
         # Find all valid 2-opt moves and try them
-        for index in range(len(tour)):  # сделано так, чтобы индекс не переполнялся, ох уж этот питон
+        for index in range(len(tour)):
             t1 = tour[index]
             around = tour.around(t1)  # вытащили двух соседей
 

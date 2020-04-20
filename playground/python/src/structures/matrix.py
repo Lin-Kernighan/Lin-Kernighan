@@ -20,6 +20,7 @@ class Matrix:
 
     @staticmethod
     def alpha_matrix(weight_matrix: Matrix, optimal: OneTree) -> Matrix:
+        # TODO: optimize this shit
         alpha_matrix = Matrix(len(weight_matrix))
         for idx in range(0, alpha_matrix.dimension):
             for idy in range(idx + 1, alpha_matrix.dimension):
