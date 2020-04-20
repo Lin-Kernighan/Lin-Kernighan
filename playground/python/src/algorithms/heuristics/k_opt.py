@@ -1,47 +1,72 @@
 from copy import deepcopy
 from typing import List, Tuple, Set, Dict
 
+from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
 from src.structures.matrix import Matrix
+from src.structures.tabu_list import TabuSet
 from src.structures.tour.list_tour import ListTour
-from src.utils import make_pair, get_length
+from src.utils import make_pair
 
 Edge = Tuple[int, int]
 Node = int
 
 
-class KOpt:
+class KOpt(AbcOpt):
 
-    def __init__(self, matrix: Matrix, tour: List[Node]):
-        self.matrix: Matrix = matrix
-        self.tour: List[Node] = tour
-        self.collector = Collector(['length', 'gain'], {'k_opt': len(tour)})
-        self.length = get_length(self.matrix, self.tour)
+    def __init__(self, tour: List[Node], matrix: Matrix):
+        super().__init__(tour, matrix)
+        self.collector = None
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, List[Node]] = dict()
+        self.temp_length = self.length
 
-    def optimize(self) -> None:
+    def optimize(self) -> List[Node]:
         """ Global loop which restarts at each improving solution. """
-        better = True
-
         for i in self.tour:  # просто собираем всех соседей
             self.neighbours[i] = []
-
             for j, dist in enumerate(self.matrix[i]):
                 if dist > 0 and j in self.tour:
                     self.neighbours[i].append(j)  # dict(i: [j1, j2, j3...])
 
-        iteration, prev = 0, self.length
+        iteration, self.collector = 0, Collector(['length', 'gain'], {'k_opt': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
+
+        better = True
         while better:  # Restart the loop each time we find an improving candidate
             print(f'{iteration} : {self.length}')
             better = self.improve()
+            gain = self.length - self.temp_length
+            self.length = self.temp_length
+            self.collector.update({'length': self.length, 'gain': gain})
             # Paths always begin at 0 so this should manage to find duplicate solutions
-            self.solutions.add(str(self.tour))  # блин, это работает, хз почему
-            self.length = get_length(self.matrix, self.tour)
-            self.collector.update({'length': self.length, 'gain': prev - self.length})
-            prev = self.length
+            self.solutions.add(str(self.tour))
             iteration += 1
+
+        return self.tour
+
+    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> List[Node]:
+        """ Запуск эвристики под управление tabu search """
+        for i in self.tour:
+            self.neighbours[i] = []
+            for j, dist in enumerate(self.matrix[i]):
+                if dist > 0 and j in self.tour:
+                    self.neighbours[i].append(j)
+
+        self.solutions = self.solutions | tabu_list.data
+        self.collector = collector  # закинули существующие решения
+        self.collector.update({'length': self.length, 'gain': 0})
+
+        better = True
+        while better:
+            better = self.improve()
+            gain = self.length - self.temp_length
+            self.length = self.temp_length
+            self.collector.update({'length': self.length, 'gain': gain})
+            tabu_list.append(self.tour, self.length)
+            self.solutions.add(str(self.tour))
+
+        return self.tour
 
     def improve(self):
         """ Start the LK algorithm with the current tour. """
@@ -174,6 +199,7 @@ class KOpt:
                 # exchange with i = 2
                 if is_tour and relink > 0:
                     self.tour = new_tour
+                    self.temp_length -= relink
                     return True
                 else:
                     # Pass on the newly "removed" edge but not the relink

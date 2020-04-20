@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass
 from sys import maxsize
@@ -10,16 +11,21 @@ from src.utils import rotate_zero
 Node = int
 
 
-class AbstractTabu:
+class AbstractTabu(ABC):
+
+    @abstractmethod
     def contains(self, item: List[Node]) -> bool:
         pass
 
+    @abstractmethod
     def append(self, tour: List[Node], length: float) -> bool:
         pass
 
+    @abstractmethod
     def best_result(self) -> Tuple[int, float]:
         pass
 
+    @abstractmethod
     def best_tour(self) -> List[Node]:
         pass
 

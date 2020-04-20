@@ -16,7 +16,7 @@ Node = int
 class TabuSearch:
 
     def __init__(self, tabu_list: AbstractTabu, tsp: Type[AbcOpt], tour: List[Node], matrix: Matrix):
-        self.collector = Collector(['length', 'gain'], {'two_opt': len(tour)})
+        self.collector = Collector(['length', 'gain'], {'tabu search': len(tour), 'type': tsp.__name__})
         self.data = tabu_list
         self.tour = tour
         self.matrix = matrix

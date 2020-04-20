@@ -15,12 +15,12 @@ Node = int
 class ThreeOpt(AbcOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
-        self.collector = None
         super().__init__(tour, matrix)
+        self.collector = None
 
     def optimize(self) -> List[int]:
         """ Запуск """
-        best_gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'three_opt': len(self.tour)})
+        best_gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'three_opt': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
         print(f'start : {self.length}')
 
@@ -39,6 +39,7 @@ class ThreeOpt(AbcOpt):
     def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
         """ 3-opt для Tabu search """
         self.tabu_list, best_gain, iteration, self.collector = tabu_list, 1, 0, collector
+        self.collector.update({'length': self.length, 'gain': 0})
 
         while best_gain > 0:
             best_gain = self.__tabu_three_opt()

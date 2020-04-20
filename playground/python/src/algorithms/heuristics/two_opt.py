@@ -14,12 +14,12 @@ Node = int
 class TwoOpt(AbcOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
-        self.collector = None
         super().__init__(tour, matrix)
+        self.collector = None
 
     def optimize(self) -> List[int]:
         """ Запуск """
-        best_change, iteration, self.collector = -1, 0, Collector(['length', 'gain'], {'two_opt': len(self.tour)})
+        best_change, iteration, self.collector = -1, 0, Collector(['length', 'gain'], {'two_opt': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
         print(f'start : {self.length}')
 
@@ -38,6 +38,7 @@ class TwoOpt(AbcOpt):
     def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
         """ 2-opt для Tabu search """
         self.tabu_list, best_change, iteration, self.collector = tabu_list, -1, 0, collector
+        self.collector.update({'length': self.length, 'gain': 0})
 
         while best_change < 0:
             best_change = self.__tabu_two_opt()
