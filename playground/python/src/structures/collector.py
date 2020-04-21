@@ -1,3 +1,4 @@
+import os
 from json import dump
 from time import ctime, time
 from typing import List
@@ -35,9 +36,9 @@ class Collector:
         self.time = time()
         self.data['time'].append(self.time)
 
-    def dump(self, filename: str) -> None:
+    def dump(self, filename: str, directory: str) -> None:
         """ слить в какую-то json """
-        with open(filename, 'w') as file:
+        with open(os.path.join(directory, f'{filename}.json'), 'w') as file:
             dump(self.info, file)
 
     def as_frame(self) -> DataFrame:

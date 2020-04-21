@@ -18,19 +18,20 @@ def save_test(heuristics: List[Type[AbcOpt]], names: List[str], size: int) -> No
     tour = InitialTour.greedy(matrix)
 
     suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-    name = f'{"_".join(["test", suffix])}_{size}'
+    filename = f'{"_".join(["test", suffix])}_{size}'
     frames = []
 
-    os.mkdir(name)
-    TspLoader.python_serializer(tsp, name, name)
+    os.mkdir(filename)
+    TspLoader.python_serializer(tsp, filename, filename)
     heuristics = [heuristic(tour, matrix) for heuristic in heuristics]
 
-    for heuristic in heuristics:
-        heuristic.optimize()
-        frames.append(heuristic.collector.as_frame())
+    for idx in range(len(heuristics)):
+        heuristics[idx].optimize()
+        frames.append(heuristics[idx].collector.as_frame())
+        heuristics[idx].collector.dump(filename=f'{filename}_{names[idx]}', directory=filename)
 
     for frame in frames:
         frame['time'] -= frame['time'][0]
 
-    draw_plots_i_y(frames, names, ['delta', 'gain', 'time', 'length'], name, name)
-    draw_plot_x_y(frames, names, 'time', 'length', name, name)
+    draw_plots_i_y(frames, names, ['delta', 'gain', 'time', 'length'], filename, filename)
+    draw_plot_x_y(frames, names, 'time', 'length', filename, filename)
