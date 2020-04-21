@@ -18,6 +18,7 @@ class AbcOpt(ABC):
         self.matrix = matrix
         self.size = len(tour)
         self.tabu_list: Optional[AbstractTabu] = None
+        self.collector = None
         self.length = get_length(matrix, tour)
 
     @staticmethod

@@ -24,17 +24,17 @@ class TspLoader:
         return points
 
     @staticmethod
-    def python_serializer(points: List[Point], name: str) -> None:
+    def python_serializer(points: List[Point], name: str, directory: str) -> None:
         name = f'{name}.py'
         print(name)
-        with open(path.join('src', 'tsp', name), 'w') as file:
+        with open(path.join(directory, name), 'w') as file:
             file.write('tsp = [\n')
             for point in points:
                 file.write(f'\t{point},\n')
             file.write(']\n')
 
     @staticmethod
-    def tsplib_deserializer(url: str) -> List[Point]:
+    def tsplib_deserializer(url: str, directory: str) -> List[Point]:
         filename = download(url)
         points: List[Point] = []
         with open(filename, 'r') as file:
@@ -47,5 +47,5 @@ class TspLoader:
                 temp = file.readline().split()
                 points.append((float(temp[1]), float(temp[2])))
         remove(filename)
-        TspLoader.python_serializer(points, filename.replace('.tsp', ''))
+        TspLoader.python_serializer(points, filename.replace('.tsp', ''), directory)
         return points

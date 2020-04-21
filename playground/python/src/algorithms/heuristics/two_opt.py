@@ -28,7 +28,6 @@ class TwoOpt(AbcOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
         super().__init__(tour, matrix)
-        self.collector = None
 
     def optimize(self) -> List[int]:
         """ Запуск """

@@ -43,7 +43,7 @@ def rotate_zero(tour: List[int]) -> list:
     return right_rotate(tour, -tour.index(0))
 
 
-def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], file: str = None) -> None:
+def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], file: str, directory: str) -> None:
     """ Рисуем и сохраняем много графиков column == y_name от итерации """
     for column in columns:
         frame = DataFrame()
@@ -54,10 +54,10 @@ def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], 
         plt.xlabel('iteration')
         plt.show()
         if file is not None:
-            fig.savefig(f'{file}_{column}.png')
+            fig.savefig(f'{directory}/{file}_{column}.png')
 
 
-def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: str, file: str = None) -> None:
+def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: str, file: str, directory: str) -> None:
     """ Рисуем и сохраняем график x_name от y_name """
     for i in range(len(data)):
         plt.plot(data[i][x_name], data[i][y_name], label=names[i])
@@ -65,7 +65,7 @@ def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: 
     plt.ylabel(y_name)
     plt.legend()
     if file is not None:
-        plt.savefig(f'{file}_{x_name}_{y_name}.png')
+        plt.savefig(f'{directory}/{file}_{x_name}_{y_name}.png')
     plt.show()
 
 

@@ -16,7 +16,6 @@ class KOpt(AbcOpt):
 
     def __init__(self, tour: List[Node], matrix: Matrix):
         super().__init__(tour, matrix)
-        self.collector = None
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, List[Node]] = dict()
         self.temp_length = self.length
