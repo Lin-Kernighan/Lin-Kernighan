@@ -14,7 +14,7 @@ Point = Tuple[float, float]
 
 def save_test(heuristics: List[Type[AbcOpt]], names: List[str], size: int) -> None:
     tsp = [node for node in generator(size)]
-    matrix = Matrix.weight_matrix(tsp)
+    matrix = Matrix.adjacency_matrix(tsp)
     tour = InitialTour.greedy(matrix)
 
     suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")

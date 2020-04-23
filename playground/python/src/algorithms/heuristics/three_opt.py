@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
+from numpy import ndarray
+
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
-from src.structures.matrix import Matrix
 from src.structures.tabu_list import AbstractTabu
 from src.utils import right_rotate
 
@@ -17,7 +18,7 @@ Node = int
 
 class ThreeOpt(AbcOpt):
 
-    def __init__(self, tour: List[Node], matrix: Matrix):
+    def __init__(self, tour: List[Node], matrix: ndarray):
         super().__init__(tour, matrix)
 
     def optimize(self) -> List[int]:
@@ -77,7 +78,7 @@ class ThreeOpt(AbcOpt):
     def __improve(self, tour: List[int]) -> Tuple[int, float, tuple]:
         """ 3-opt пробег по вершинам """
         best_exchange, best_gain, best_nodes = 0, 0, None
-        size = self.matrix.dimension
+        size = self.matrix.shape[0]
 
         for x in range(size - 5):
             for y in range(x + 2, size - 3):
@@ -89,7 +90,7 @@ class ThreeOpt(AbcOpt):
         return best_exchange, best_gain, best_nodes
 
     @staticmethod
-    def __search(matrix: Matrix, tour: List[int], x: int, y: int, z: int) -> Tuple[int, float]:
+    def __search(matrix: ndarray, tour: List[int], x: int, y: int, z: int) -> Tuple[int, float]:
         """ Поиск лучшего среди переборов """
         a, b, c, d, e, f = tour[x], tour[x + 1], tour[y], tour[y + 1], tour[z], tour[z + 1]
         base = current_min = matrix[a][b] + matrix[c][d] + matrix[e][f]

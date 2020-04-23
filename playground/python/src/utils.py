@@ -2,10 +2,10 @@ from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 from numba import njit
+from numpy import ndarray
 from pandas import DataFrame
 
 import src.structures.one_tree as one_tree
-from src.structures.matrix import Matrix
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
@@ -18,7 +18,7 @@ def make_pair(i: int, j: int) -> Edge:
     return (i, j) if i > j else (j, i)
 
 
-def get_length(matrix: Matrix, tour: List[int]) -> float:
+def get_length(matrix: ndarray, tour: List[int]) -> float:
     """ Взятие длины по матрице смежности и туру в виде последовательных нод """
     length = matrix[tour[0]][tour[-1]]
     for idx in range(len(tour) - 1):
@@ -89,11 +89,11 @@ def draw_tour(tour: List[int], nodes: List[Point], color: str) -> None:
         plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
 
 
-def candidates(alpha_matrix: Matrix, nodes: List[Point], excess: float, color: str) -> None:
+def candidates(alpha_matrix: ndarray, nodes: List[Point], excess: float, color: str) -> None:
     """ Граф всех кандидатов """
     temp = []
-    for idx in range(0, alpha_matrix.dimension):
-        for idy in range(idx + 1, alpha_matrix.dimension):
+    for idx in range(0, alpha_matrix.shape[0]):
+        for idy in range(idx + 1, alpha_matrix.shape[0]):
             if alpha_matrix[idx][idy] < excess:
                 temp.append((idx, idy))
     print(len(temp))

@@ -1,9 +1,10 @@
 from copy import deepcopy
 from typing import List, Tuple, Set, Dict
 
+from numpy import ndarray
+
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
-from src.structures.matrix import Matrix
 from src.structures.tabu_list import TabuSet
 from src.structures.tour.list_tour import ListTour
 from src.utils import make_pair
@@ -14,7 +15,7 @@ Node = int
 
 class KOpt(AbcOpt):
 
-    def __init__(self, tour: List[Node], matrix: Matrix):
+    def __init__(self, tour: List[Node], matrix: ndarray):
         super().__init__(tour, matrix)
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, List[Node]] = dict()

@@ -3,8 +3,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
 
+from numpy import ndarray
+
 from src.structures.collector import Collector
-from src.structures.matrix import Matrix
 from src.structures.tabu_list import AbstractTabu
 from src.utils import get_length, rotate_zero
 
@@ -13,7 +14,7 @@ Node = int
 
 class AbcOpt(ABC):
 
-    def __init__(self, tour: List[Node], matrix: Matrix):
+    def __init__(self, tour: List[Node], matrix: ndarray):
         self.tour = rotate_zero(tour)
         self.matrix = matrix
         self.size = len(tour)
@@ -22,7 +23,7 @@ class AbcOpt(ABC):
         self.length = get_length(matrix, tour)
 
     @staticmethod
-    def run(tour: List[Node], matrix: Matrix) -> AbcOpt:
+    def run(tour: List[Node], matrix: ndarray) -> AbcOpt:
         """ Полный запуск на точках """
         opt = AbcOpt(tour, matrix)
         opt.optimize()

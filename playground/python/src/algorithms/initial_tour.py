@@ -2,24 +2,25 @@ from random import randrange, choice
 from sys import maxsize
 from typing import List, Optional
 
+from numpy import ndarray
+
 from src.structures.graph import Graph
-from src.structures.matrix import Matrix
 
 
 class InitialTour:
 
     @staticmethod
-    def clarke_wright(weight_matrix: Matrix) -> List[int]:
+    def clarke_wright(adjacency_matrix: ndarray) -> List[int]:
         # TODO: Clarke-Wright
         pass
 
     @staticmethod
-    def popmusic(self, weight_matrix: Matrix) -> List[int]:
+    def popmusic(self, adjacency_matrix: ndarray) -> List[int]:
         # TODO: POPMUSIC
         pass
 
     @staticmethod
-    def greedy(matrix: Matrix, point: Optional[int] = None) -> List[int]:
+    def greedy(matrix: ndarray, point: Optional[int] = None) -> List[int]:
         """ Строим жадным методом """
         length = len(matrix)
         previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
@@ -43,7 +44,7 @@ class InitialTour:
         return order
 
     @staticmethod
-    def helsgaun(alpha_matrix: Matrix, best_solution: Optional[Graph], excess: float) -> List[int]:
+    def helsgaun(alpha_matrix: ndarray, best_solution: Optional[Graph], excess: float) -> List[int]:
         """ Генерируем новый тур """
         length = len(alpha_matrix)
         previous = search = randrange(0, length)  # я ищу ребро из previous в search

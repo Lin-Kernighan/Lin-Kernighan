@@ -4,9 +4,10 @@ from random import randint
 from sys import maxsize
 from typing import List, Type, Tuple
 
+from numpy import ndarray
+
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
-from src.structures.matrix import Matrix
 from src.structures.tabu_list import TabuSet, AbstractTabu
 from src.utils import get_length
 
@@ -15,7 +16,7 @@ Node = int
 
 class TabuSearch:
 
-    def __init__(self, tabu_list: AbstractTabu, tsp: Type[AbcOpt], tour: List[Node], matrix: Matrix):
+    def __init__(self, tabu_list: AbstractTabu, tsp: Type[AbcOpt], tour: List[Node], matrix: ndarray):
         self.collector = Collector(['length', 'gain'], {'tabu search': len(tour), 'type': tsp.__name__})
         self.data = tabu_list
         self.tour = tour
@@ -24,7 +25,7 @@ class TabuSearch:
         self.length = get_length(self.matrix, tour)
 
     @staticmethod
-    def run(tour: List[Node], matrix: Matrix, opt: Type[AbcOpt], depth: int) -> TabuSearch:
+    def run(tour: List[Node], matrix: ndarray, opt: Type[AbcOpt], depth: int) -> TabuSearch:
         """ Полный цикл работы за вас """
         search = TabuSearch(TabuSet(depth), opt, tour, matrix)
         search.optimize()

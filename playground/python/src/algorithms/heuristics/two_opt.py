@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import List, Tuple
 
+from numpy import ndarray
+
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
-from src.structures.matrix import Matrix
 from src.structures.tabu_list import AbstractTabu
 from src.utils import right_rotate
 
@@ -26,7 +27,7 @@ def swap(tour: List[int], x: int, y: int) -> List[int]:
 
 class TwoOpt(AbcOpt):
 
-    def __init__(self, tour: List[Node], matrix: Matrix):
+    def __init__(self, tour: List[Node], matrix: ndarray):
         super().__init__(tour, matrix)
 
     def optimize(self) -> List[int]:
@@ -86,8 +87,8 @@ class TwoOpt(AbcOpt):
         """ Просто пробег по вершинам, ищем лучшее """
         best_change, saved = 0, None
 
-        for n in range(self.matrix.dimension):
-            for m in range(n + 2, self.matrix.dimension):
+        for n in range(self.matrix.shape[0]):
+            for m in range(n + 2, self.matrix.shape[0]):
                 i, j = tour[n % self.size], tour[m % self.size]
                 x, y = tour[(n + 1) % self.size], tour[(m + 1) % self.size]
                 change = self.matrix[i][j] + self.matrix[x][y]

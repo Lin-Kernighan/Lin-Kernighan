@@ -30,12 +30,12 @@ class OneTree:
         self.edges: List[Edge] = [Edge(0, 0, 0)] * self.length
 
     @staticmethod
-    def build(weight_matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> OneTree:
+    def build(adjacency_matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> OneTree:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree
         """
-        length = len(weight_matrix)
+        length = len(adjacency_matrix)
         tree = OneTree(length)
         # for n - 1 edges + one edge from node
         tree.total_price = 0
@@ -48,7 +48,7 @@ class OneTree:
             """ Add Edges from new node to heap
             """
             visited[idx] = True
-            for idy, price in enumerate(weight_matrix[idx]):
+            for idy, price in enumerate(adjacency_matrix[idx]):
                 if price == 0 or visited[idy] or without == idy:
                     continue
                 heap.push(Edge(price, idx, idy))
@@ -56,9 +56,9 @@ class OneTree:
         k = 0
         if with_edge is not None:  # add additional edge
             x, y = with_edge
-            tree.edges[0] = Edge(weight_matrix[x][y], x, y)
+            tree.edges[0] = Edge(adjacency_matrix[x][y], x, y)
             tree.__check_edge(node, x, y, checklist)
-            tree.total_price += weight_matrix[x][y]
+            tree.total_price += adjacency_matrix[x][y]
             visited[y] = visited[x] = True
             add(x, y)  # add all edges from x without y
             add(y)  # add all edges from y
@@ -77,7 +77,7 @@ class OneTree:
             add(new_edge.dst)
             k += 1
 
-        tree.edges[-1] = tree.__add_last_edge(weight_matrix[node], node, checklist)
+        tree.edges[-1] = tree.__add_last_edge(adjacency_matrix[node], node, checklist)
         return tree
 
     @staticmethod

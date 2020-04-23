@@ -1,64 +1,42 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from math import sqrt
 from typing import List, Tuple
+
+from numpy import ndarray, zeros
 
 from src.structures.one_tree import OneTree
 
 Point = Tuple[float, float]
 
 
-@dataclass
 class Matrix:
-    dimension: int
-    matrix: List[List[float]] = field(default_factory=list)
-
-    def __post_init__(self):
-        for idx in range(self.dimension):
-            self.matrix.append([0] * self.dimension)
 
     @staticmethod
-    def alpha_matrix(weight_matrix: Matrix, optimal: OneTree) -> Matrix:
+    def alpha_matrix(adjacency_matrix: ndarray, optimal: OneTree) -> ndarray:
+        alpha_matrix = zeros(shape=adjacency_matrix.shape)
         # TODO: optimize this shit
-        alpha_matrix = Matrix(len(weight_matrix))
-        for idx in range(0, alpha_matrix.dimension):
-            for idy in range(idx + 1, alpha_matrix.dimension):
-                alpha_nearness = OneTree.build(weight_matrix, with_edge=(idx, idy)).total_price - optimal.total_price
-                alpha_matrix.matrix[idx][idy] = alpha_matrix.matrix[idy][idx] = alpha_nearness
+        for idx in range(0, alpha_matrix.shape[0]):
+            for idy in range(idx + 1, alpha_matrix.shape[0]):
+                alpha_nearness = OneTree.build(adjacency_matrix, with_edge=(idx, idy)).total_price - optimal.total_price
+                alpha_matrix[idx][idy] = alpha_matrix[idy][idx] = alpha_nearness
         return alpha_matrix
 
     @staticmethod
-    def weight_matrix(points: List[Point]) -> Matrix:
-        weight_matrix = Matrix(len(points))
-        for idx in range(0, weight_matrix.dimension):
-            for idy in range(idx + 1, weight_matrix.dimension):
+    def adjacency_matrix(points: List[Point]) -> ndarray:
+        size = len(points)
+        adjacency_matrix = zeros(shape=(size, size))
+        for idx in range(0, size):
+            for idy in range(idx + 1, size):
                 distance = sqrt((points[idy][0] - points[idx][0]) ** 2 + (points[idy][1] - points[idx][1]) ** 2)
-                weight_matrix.matrix[idx][idy] = weight_matrix.matrix[idy][idx] = distance
-        return weight_matrix
+                adjacency_matrix[idx][idy] = adjacency_matrix[idy][idx] = distance
+        return adjacency_matrix
 
     @staticmethod
-    def savings_matrix(weight_matrix: Matrix, point: int) -> Matrix:
-        savings_matrix = Matrix(len(weight_matrix))
-        for idx in range(0, savings_matrix.dimension):
-            for idy in range(idx + 1, savings_matrix.dimension):
-                savings = weight_matrix[point][idx] + weight_matrix[point][idy] - weight_matrix[idx][idy]
-                savings_matrix.matrix[idx][idy] = savings_matrix.matrix[idy][idx] = savings
+    def savings_matrix(adjacency_matrix: ndarray, point: int) -> ndarray:
+        savings_matrix = zeros(shape=adjacency_matrix.shape)
+        for idx in range(0, savings_matrix.shape[0]):
+            for idy in range(idx + 1, savings_matrix.shape[0]):
+                savings = adjacency_matrix[point][idx] + adjacency_matrix[point][idy] - adjacency_matrix[idx][idy]
+                savings_matrix[idx][idy] = savings_matrix[idy][idx] = savings
         return savings_matrix
-
-    def __str__(self):
-        string = ''
-        for s in self.matrix:
-            for elem in s:
-                string += f'{elem:0.2f}\t'
-            string += '\n'
-        return string
-
-    def __len__(self) -> int:
-        return self.dimension
-
-    def __repr__(self):
-        return str(self)
-
-    def __getitem__(self, index: int) -> List[float]:
-        return self.matrix[index]

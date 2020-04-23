@@ -5,7 +5,6 @@ from typing import List
 
 import numpy as np
 
-from src.structures.matrix import Matrix
 from src.structures.one_tree import OneTree, Edge
 
 
@@ -15,9 +14,9 @@ class SubgradientOptimization:
     w_max: float
 
     @staticmethod
-    def run(weight_matrix: Matrix, max_iterations=500) -> SubgradientOptimization:
+    def run(adjacency_matrix: np.ndarray, max_iterations=500) -> SubgradientOptimization:
         opt = SubgradientOptimization()
-        length = len(weight_matrix)
+        length = adjacency_matrix.shape[0]
 
         pi = np.zeros(length)  # итерацию
         pi_sum = np.zeros(length)
@@ -33,8 +32,8 @@ class SubgradientOptimization:
         last_improve = 0
 
         for k in range(1, max_iterations):
-            SubgradientOptimization.make_move(pi, weight_matrix)
-            one_tree = OneTree.build(weight_matrix)  # с нулевой вершиной
+            SubgradientOptimization.make_move(pi, adjacency_matrix)
+            one_tree = OneTree.build(adjacency_matrix)  # с нулевой вершиной
             ll = one_tree.total_price  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 
@@ -73,28 +72,26 @@ class SubgradientOptimization:
 
             if period == 0 or t < 1e-10 or np.absolute(v).sum() == 0:  # условие выхода
                 break
-        SubgradientOptimization.get_back(pi_sum - pi, weight_matrix)
+        SubgradientOptimization.get_back(pi_sum - pi, adjacency_matrix)
         return opt
 
     @staticmethod
-    def make_move(pi: np.ndarray, weight_matrix: Matrix) -> None:
-        """ vertex pi[i] added to all elements of i-row and i-column of weight matrix
+    def make_move(pi: np.ndarray, adjacency_matrix: np.ndarray) -> None:
+        """ vertex pi[i] added to all elements of i-row and i-column of adjacency matrix
         """
-        length = len(weight_matrix)
         for i, k in enumerate(pi):
-            for index in range(length):
-                weight_matrix[i][index] += k
-                weight_matrix[index][i] += k
+            for index in range(adjacency_matrix.shape[0]):
+                adjacency_matrix[i][index] += k
+                adjacency_matrix[index][i] += k
 
     @staticmethod
-    def get_back(pi: np.ndarray, weight_matrix: Matrix) -> None:
+    def get_back(pi: np.ndarray, adjacency_matrix: np.ndarray) -> None:
         """ get matrix before move
         """
-        length = len(weight_matrix)
         for i, k in enumerate(pi):
-            for index in range(length):
-                weight_matrix[i][index] -= k
-                weight_matrix[index][i] -= k
+            for index in range(adjacency_matrix.shape[0]):
+                adjacency_matrix[i][index] -= k
+                adjacency_matrix[index][i] -= k
 
     @staticmethod
     def __get_degrees(edges: List[Edge], length: int) -> np.ndarray:
@@ -107,9 +104,3 @@ class SubgradientOptimization:
             v[edge.dst] += 1
             v[edge.src] += 1
         return v
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return f'pi_max:{self.pi_max}\nw_max:{self.w_max}'
