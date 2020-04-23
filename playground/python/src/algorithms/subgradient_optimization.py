@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from sys import maxsize
-from typing import List
+from typing import Tuple
 
 import numpy as np
+from numba import njit
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import minimum_spanning_tree
 
-from src.structures.one_tree import OneTree, Edge
+Edge = Tuple[int, int]
 
 
 class SubgradientOptimization:
@@ -14,7 +17,8 @@ class SubgradientOptimization:
     w_max: float
 
     @staticmethod
-    def run(adjacency_matrix: np.ndarray, max_iterations=500) -> SubgradientOptimization:
+    @njit
+    def run(adjacency_matrix: np.ndarray, max_iterations=100) -> SubgradientOptimization:
         opt = SubgradientOptimization()
         length = adjacency_matrix.shape[0]
 
@@ -33,15 +37,14 @@ class SubgradientOptimization:
 
         for k in range(1, max_iterations):
             SubgradientOptimization.make_move(pi, adjacency_matrix)
-            one_tree = OneTree.build(adjacency_matrix)  # с нулевой вершиной
-            ll = one_tree.total_price  # получаем длину нового деревого
+            ll, first, second = SubgradientOptimization.__one_tree(adjacency_matrix)  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 
             if w > opt.w_max + 1e-6:  # максимальная пока что длина
                 opt.w_max, opt.pi_max, opt.pi_sum = w, pi.copy(), pi_sum.copy()
                 last_improve = k
 
-            v_prev, v = v, opt.__get_degrees(one_tree.edges, length)  # получаем субградиенты
+            v_prev, v = v, opt.__get_degrees(first, second, length)  # получаем субградиенты
 
             # -------------------- обновляем pi -----------------------------------------------------
             pi = pi + t * (0.7 * v + 0.3 * v_prev)
@@ -76,6 +79,7 @@ class SubgradientOptimization:
         return opt
 
     @staticmethod
+    @njit
     def make_move(pi: np.ndarray, adjacency_matrix: np.ndarray) -> None:
         """ vertex pi[i] added to all elements of i-row and i-column of adjacency matrix
         """
@@ -85,6 +89,7 @@ class SubgradientOptimization:
                 adjacency_matrix[index][i] += k
 
     @staticmethod
+    @njit
     def get_back(pi: np.ndarray, adjacency_matrix: np.ndarray) -> None:
         """ get matrix before move
         """
@@ -94,13 +99,33 @@ class SubgradientOptimization:
                 adjacency_matrix[index][i] -= k
 
     @staticmethod
-    def __get_degrees(edges: List[Edge], length: int) -> np.ndarray:
+    @njit
+    def __get_degrees(first: np.ndarray, second: np.ndarray, length: int) -> np.ndarray:
         """ v^k = d^k - 2,
         where d is vector having as its elements the
         degrees of the nodes in the current minimum 1-tree
         """
         v = np.asarray([-2] * length)
-        for edge in edges:
-            v[edge.dst] += 1
-            v[edge.src] += 1
+        for idx in range(length):
+            v[first[idx]] += 1
+            v[second[idx]] += 1
         return v
+
+    @staticmethod
+    def __one_tree(adjacency_matrix: np.ndarray, node: int = 0) -> Tuple[float, np.ndarray, np.ndarray]:
+        # noinspection PyTypeChecker
+        mst: csr_matrix = minimum_spanning_tree(adjacency_matrix)
+        coo = mst.tocoo()
+        first, second, temp = coo.col, coo.row, coo.data.sum()
+
+        indexes = [second[idx] for idx in np.where(first == node)[0]] + \
+                  [first[idx] for idx in np.where(second == node)[0]]
+
+        that, minimum = -1, float('inf')
+        for idx, value in enumerate(adjacency_matrix[node]):
+            if node == idx or not value > 0:
+                continue
+            if value < minimum and idx not in indexes:
+                that, minimum = idx, value
+
+        return temp + minimum, np.append(first, node), np.append(second, that)

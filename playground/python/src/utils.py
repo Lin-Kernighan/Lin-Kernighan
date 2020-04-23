@@ -18,6 +18,16 @@ def make_pair(i: int, j: int) -> Edge:
     return (i, j) if i > j else (j, i)
 
 
+def print_matrix(matrix: ndarray):
+    """ Вывод матрицы """
+    string = ''
+    for s in matrix:
+        for elem in s:
+            string += f'{elem:0.2f}\t'
+        string += '\n'
+    print(string)
+
+
 def get_length(matrix: ndarray, tour: List[int]) -> float:
     """ Взятие длины по матрице смежности и туру в виде последовательных нод """
     length = matrix[tour[0]][tour[-1]]

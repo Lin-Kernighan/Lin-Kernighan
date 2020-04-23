@@ -78,6 +78,7 @@ class OneTree:
             k += 1
 
         tree.edges[-1] = tree.__add_last_edge(adjacency_matrix[node], node, checklist)
+        tree.total_price += tree.edges[-1].price
         return tree
 
     @staticmethod
