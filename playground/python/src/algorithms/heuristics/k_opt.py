@@ -22,11 +22,7 @@ class KOpt(AbcOpt):
 
     def optimize(self) -> List[Node]:
         """ Global loop which restarts at each improving solution. """
-        for i in self.tour:  # просто собираем всех соседей
-            self.neighbours[i] = []
-            for j, dist in enumerate(self.matrix[i]):
-                if dist > 0 and j in self.tour:
-                    self.neighbours[i].append(j)  # dict(i: [j1, j2, j3...])
+        self.calc_neighbours()
 
         iteration, self.collector = 0, Collector(['length', 'gain'], {'k_opt': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
@@ -46,12 +42,7 @@ class KOpt(AbcOpt):
 
     def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> List[Node]:
         """ Запуск эвристики под управление tabu search """
-        for i in self.tour:
-            self.neighbours[i] = []
-            for j, dist in enumerate(self.matrix[i]):
-                if dist > 0 and j in self.tour:
-                    self.neighbours[i].append(j)
-
+        self.calc_neighbours()
         self.solutions = self.solutions | tabu_list.data
         self.collector = collector  # закинули существующие решения
         self.collector.update({'length': self.length, 'gain': 0})
@@ -66,6 +57,14 @@ class KOpt(AbcOpt):
             self.solutions.add(str(self.tour))
 
         return self.tour
+
+    def calc_neighbours(self) -> None:
+        """ Просто собираем всех соседей """
+        for i in self.tour:
+            self.neighbours[i] = []
+            for j, dist in enumerate(self.matrix[i]):
+                if dist > 0 and j in self.tour:
+                    self.neighbours[i].append(j)  # dict(i: [j1, j2, j3...])
 
     def improve(self):
         """ Start the LK algorithm with the current tour. """

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List
 
 from src.structures.collector import Collector
 from src.structures.matrix import Matrix
@@ -17,7 +17,7 @@ class AbcOpt(ABC):
         self.tour = rotate_zero(tour)
         self.matrix = matrix
         self.size = len(tour)
-        self.tabu_list: Optional[AbstractTabu] = None
+        self.tabu_list = None
         self.collector = None
         self.length = get_length(matrix, tour)
 
