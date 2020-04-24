@@ -142,24 +142,18 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, Dict[int, in
     size = adjacency_matrix.shape[0]
     total_price, k = 0.0, 0
     topology: Dict[int, int] = {}
-    visited, checklist = np.zeros(size, dtype=bool), np.zeros(size, dtype=bool)
+    visited = np.zeros(size, dtype=bool)
     heap = Heap()
-
-    def check_edge(x: int, y: int) -> None:
-        if x == 0:
-            checklist[y] = True
-        elif y == 0:
-            checklist[x] = True
 
     def add(idx: int):
         visited[idx] = True
         for idy, value in enumerate(adjacency_matrix[idx]):
-            if not value > 0 or visited[idy]:
+            if not value > 0 or visited[idy] or idy == 0:
                 continue
             heap.push((value, idx, idy))
 
-    add(0)
-    while k < size - 1:
+    add(1)
+    while k < size - 2:
         was, price, src, dst = True, 0.0, 0, 0
         while was:
             price, src, dst = heap.pop()
@@ -167,16 +161,20 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, Dict[int, in
         topology[dst] = src
         total_price += price
         add(dst)
-        check_edge(src, dst)
         k += 1
 
-    n_node, min_edge = -1, maxsize
-    for index, price in enumerate(adjacency_matrix[0]):
-        if index == 0:
-            continue
-        if price < min_edge and not checklist[index]:
-            n_node, min_edge = index, price
-
-    topology[0] = n_node
-    total_price += min_edge
+    # f_node, s_node, f_min, s_min = -1, -1, float('+inf'), float('+inf')
+    # print(adjacency_matrix[0])
+    # for index, price in enumerate(adjacency_matrix[0]):
+    #     if index == 0:
+    #         continue
+    #     if price < f_min:
+    #         f_node, f_min = index, price
+    #     elif price < s_min:
+    #         s_node, s_min = index, price
+    #
+    # print(f_node, s_node)
+    # topology[f_node] = 0
+    # topology[s_node] = 0
+    # total_price = total_price + f_min + s_min
     return total_price, topology

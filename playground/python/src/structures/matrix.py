@@ -29,10 +29,11 @@ def betta_matrix(adjacency: np.ndarray) -> np.ndarray:
     matrix = np.zeros(shape=adjacency.shape)
     print(topology)
 
-    for idx in range(0, size):
+    for idx in range(1, size - 1):
         for idy in range(idx + 1, size):
             matrix[idx][idy] = matrix[idy][idx] = max(matrix[idx][topology[idy]], adjacency[idy][topology[idy]])
 
+    print_matrix(matrix)
     print_matrix(adjacency - matrix)
 
     return adjacency - matrix
