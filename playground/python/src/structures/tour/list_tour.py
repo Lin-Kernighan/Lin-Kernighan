@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple, Set
+from typing import Tuple, Set
+
+import numpy as np
 
 from src.structures.tour.abc_tour import AbcTour
 from src.utils import make_pair
@@ -10,7 +12,7 @@ Node = int
 
 @dataclass
 class ListTour(AbcTour):
-    tour: List[Node]
+    tour: np.ndarray
     size: int = field(init=False)
     edges: Set[Edge] = field(init=False)
 
@@ -34,7 +36,7 @@ class ListTour(AbcTour):
 
     def index(self, node: Node) -> int:
         """ Номер вершины в туре """
-        return self.tour.index(node)
+        return np.where(self.tour == node)[0][0]
 
     def around(self, node: Node) -> Tuple[Node, Node]:
         """ Предыдущая вершина и следующая текущей веришны """
@@ -61,7 +63,7 @@ class ListTour(AbcTour):
                 return True
         return False
 
-    def generate(self, broken: Set[Edge], joined: Set[Edge]) -> Tuple[bool, list]:
+    def generate(self, broken: Set[Edge], joined: Set[Edge]) -> Tuple[bool, np.ndarray]:
         """ Создаем новый тур, а потом проверяем его на целостность и наличие циклов
         broken: удаляемые ребра
         joined: добавляемые ребра
@@ -70,7 +72,7 @@ class ListTour(AbcTour):
         edges = (self.edges - broken) | joined
         # If we do not have enough edges, we cannot form a tour -- should not
         if len(edges) < self.size:
-            return False, []
+            return False, np.zeros(1)
 
         successors = {}
         node = 0
@@ -91,7 +93,7 @@ class ListTour(AbcTour):
 
         # Similarly, if not every node has a successor, this can not work
         if len(successors) < self.size:
-            return False, []
+            return False, np.zeros(1)
 
         successor = successors[0]
         new_tour = [0]
@@ -104,7 +106,7 @@ class ListTour(AbcTour):
             successor = successors[successor]
 
         # If we visited all nodes without a loop we have a tour
-        return len(new_tour) == self.size, new_tour
+        return len(new_tour) == self.size, np.array(new_tour)
 
     def reverse(self, start: int, end: int) -> None:
         """ Переворот куска тура """

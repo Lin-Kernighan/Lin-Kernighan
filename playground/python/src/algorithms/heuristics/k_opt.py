@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import List, Tuple, Set, Dict
+from typing import Tuple, Set, Dict
 
 from numpy import ndarray
 
@@ -15,13 +15,13 @@ Node = int
 
 class KOpt(AbcOpt):
 
-    def __init__(self, tour: List[Node], matrix: ndarray):
+    def __init__(self, tour: ndarray, matrix: ndarray):
         super().__init__(tour, matrix)
         self.solutions: Set[str] = set()
-        self.neighbours: Dict[Node, List[Node]] = dict()
+        self.neighbours: Dict[Node, list] = dict()
         self.temp_length = self.length
 
-    def optimize(self) -> List[Node]:
+    def optimize(self) -> ndarray:
         """ Global loop which restarts at each improving solution. """
         self.calc_neighbours()
 
@@ -41,7 +41,7 @@ class KOpt(AbcOpt):
 
         return self.tour
 
-    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> List[Node]:
+    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> ndarray:
         """ Запуск эвристики под управление tabu search """
         self.calc_neighbours()
         self.solutions = self.solutions | tabu_list.data

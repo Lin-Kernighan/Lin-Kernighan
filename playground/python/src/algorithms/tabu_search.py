@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from random import randint
 from sys import maxsize
-from typing import List, Type, Tuple
+from typing import Type, Tuple
 
-from numpy import ndarray
+import numpy as np
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
-from src.structures.tabu_list import TabuSet, AbstractTabu
+from src.structures.tabu_list import TabuSet
 from src.utils import get_length
 
 Node = int
@@ -16,18 +16,18 @@ Node = int
 
 class TabuSearch:
 
-    def __init__(self, tabu_list: AbstractTabu, tsp: Type[AbcOpt], tour: List[Node], matrix: ndarray):
+    def __init__(self, tsp: Type[AbcOpt], tour: np.ndarray, matrix: np.ndarray):
         self.collector = Collector(['length', 'gain'], {'tabu search': len(tour), 'type': tsp.__name__})
-        self.data = tabu_list
+        self.data = TabuSet()
         self.tour = tour
         self.matrix = matrix
         self.tsp = tsp
         self.length = get_length(self.matrix, tour)
 
     @staticmethod
-    def run(tour: List[Node], matrix: ndarray, opt: Type[AbcOpt], depth: int) -> TabuSearch:
+    def run(tour: np.ndarray, matrix: np.ndarray, opt: Type[AbcOpt]) -> TabuSearch:
         """ Полный цикл работы за вас """
-        search = TabuSearch(TabuSet(depth), opt, tour, matrix)
+        search = TabuSearch(opt, tour, matrix)
         search.optimize()
         return search
 
@@ -38,13 +38,13 @@ class TabuSearch:
         while iteration > 0:
             tsp = self.tsp(self.tour, self.matrix)
             tsp.tabu_optimize(self.data, self.collector)
-            if best_cost > self.best_result()[1]:
-                self.tour = self.best_tour()
-            print(f'{iteration} : {self.best_result()[1]} : {tsp.length}')
+            if best_cost > self.best_tour()[0]:
+                self.length, self.tour = self.best_tour()
+            print(f'{iteration} : {self.best_tour()[0]} : {tsp.length}')
             for _ in range(swap):
                 self.swap()
             iteration -= 1
-        self.tour = self.best_tour()
+        self.length, self.tour = self.best_tour()
 
     def swap(self) -> None:
         """ Попытка сломать тур """
@@ -54,10 +54,6 @@ class TabuSearch:
             continue
         self.tour[x], self.tour[y] = self.tour[y], self.tour[x]
 
-    def best_tour(self) -> List[Node]:
+    def best_tour(self) -> Tuple[float, np.ndarray]:
         """ Лучший тур """
-        return self.data.best_tour()
-
-    def best_result(self) -> Tuple[int, float]:
-        """ Когда был добавлен лучший тур и его длина """
-        return self.data.best_result()
+        return self.data.best_result(), self.data.best_tour()

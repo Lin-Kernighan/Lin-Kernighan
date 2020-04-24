@@ -25,8 +25,9 @@ def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
 
 def betta_matrix(adjacency: np.ndarray) -> np.ndarray:
     size = adjacency.shape[0]
-    topology = one_tree_topology(adjacency)
+    _, topology = one_tree_topology(adjacency)
     matrix = np.zeros(shape=adjacency.shape)
+    print(topology)
 
     for idx in range(0, size):
         for idy in range(idx + 1, size):

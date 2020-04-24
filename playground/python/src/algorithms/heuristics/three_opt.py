@@ -1,27 +1,88 @@
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import Tuple
 
-from numpy import ndarray
+# import numba as nb
+import numpy as np
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
-from src.structures.tabu_list import AbstractTabu
+from src.structures.tabu_list import TabuSet
 from src.utils import right_rotate
-
-Point = Tuple[float, float]
-Node = int
 
 
 # TODO: починить swap, чтобы не дергать rotate
 
+# @nb.njit
+def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[int, float, tuple]:
+    """ 3-opt пробег по вершинам """
+    best_exchange, best_gain, best_nodes = 0, 0, None
+    size = matrix.shape[0]
+
+    for x in range(size - 5):
+        for y in range(x + 2, size - 3):
+            for z in range(y + 2, size - 1):
+                exchange, gain = _search(matrix, tour, x, y, z)
+                if gain > best_gain:
+                    best_gain, best_exchange, best_nodes = gain, exchange, (x, y, z)
+
+    return best_exchange, best_gain, best_nodes
+
+
+# @nb.njit
+def _search(matrix: np.ndarray, tour: np.ndarray, x: int, y: int, z: int) -> Tuple[int, float]:
+    """ Поиск лучшего среди переборов """
+    a, b, c, d, e, f = tour[x], tour[x + 1], tour[y], tour[y + 1], tour[z], tour[z + 1]
+    base = current_min = matrix[a][b] + matrix[c][d] + matrix[e][f]
+    gain = 0
+    exchange = -1
+
+    if current_min > (current := matrix[a][e] + matrix[c][d] + matrix[b][f]):  # 2-opt (a, e) [d, c] (b, f)
+        gain, exchange, current_min = base - current, 0, current
+    if current_min > (current := matrix[a][b] + matrix[c][e] + matrix[d][f]):  # 2-opt [a, b] (c, e) (d, f)
+        gain, exchange, current_min = base - current, 1, current
+    if current_min > (current := matrix[a][c] + matrix[b][d] + matrix[e][f]):  # 2-opt (a, c) (b, d) [e, f]
+        gain, exchange, current_min = base - current, 2, current
+    if current_min > (current := matrix[a][d] + matrix[e][c] + matrix[b][f]):  # 3-opt (a, d) (e, c) (b, f)
+        gain, exchange, current_min = base - current, 3, current
+    if current_min > (current := matrix[a][d] + matrix[e][b] + matrix[c][f]):  # 3-opt (a, d) (e, b) (c, f)
+        gain, exchange, current_min = base - current, 4, current
+    if current_min > (current := matrix[a][e] + matrix[d][b] + matrix[c][f]):  # 3-opt (a, e) (d, b) (c, f)
+        gain, exchange, current_min = base - current, 5, current
+    if current_min > (current := matrix[a][c] + matrix[b][e] + matrix[d][f]):  # 3-opt (a, c) (b, e) (d, f)
+        gain, exchange, current_min = base - current, 6, current
+
+    return exchange, gain
+
+
+def _exchange(tour: np.ndarray, best_exchange: int, nodes: tuple) -> np.ndarray:
+    """ Конечная замена """
+    x, y, z = nodes
+    a, b, c, d, e, f = x, x + 1, y, y + 1, z, z + 1
+    sol = []
+    if best_exchange == 0:
+        sol = np.concatenate((tour[:a + 1], tour[e:d - 1:-1], tour[c:b - 1:-1], tour[f:]))
+    elif best_exchange == 1:
+        sol = np.concatenate((tour[:a + 1], tour[b:c + 1], tour[e:d - 1:-1], tour[f:]))
+    elif best_exchange == 2:
+        sol = np.concatenate((tour[:a + 1], tour[c:b - 1:-1], tour[d:e + 1], tour[f:]))
+    elif best_exchange == 3:
+        sol = np.concatenate((tour[:a + 1], tour[d:e + 1], tour[c:b - 1:-1], tour[f:]))
+    elif best_exchange == 4:
+        sol = np.concatenate((tour[:a + 1], tour[d:e + 1], tour[b:c + 1], tour[f:]))
+    elif best_exchange == 5:
+        sol = np.concatenate((tour[:a + 1], tour[e:d - 1:-1], tour[b:c + 1], tour[f:]))
+    elif best_exchange == 6:
+        sol = np.concatenate((tour[:a + 1], tour[c:b - 1:-1], tour[e:d - 1:-1], tour[f:]))
+    return sol
+
 
 class ThreeOpt(AbcOpt):
 
-    def __init__(self, tour: List[Node], matrix: ndarray):
+    def __init__(self, tour: np.ndarray, matrix: np.ndarray):
         super().__init__(tour, matrix)
 
-    def optimize(self) -> List[int]:
+    def optimize(self) -> np.ndarray:
         """ Запуск """
         best_gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'three_opt': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
@@ -39,7 +100,7 @@ class ThreeOpt(AbcOpt):
 
         return self.tour
 
-    def tabu_optimize(self, tabu_list: AbstractTabu, collector: Collector) -> List[Node]:
+    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
         """ 3-opt для Tabu search """
         self.tabu_list, best_gain, iteration, self.collector = tabu_list, 1, 0, collector
         self.collector.update({'length': self.length, 'gain': 0})
@@ -58,80 +119,20 @@ class ThreeOpt(AbcOpt):
 
     def __three_opt(self) -> float:
         """ 3-opt """
-        best_exchange, best_gain, best_nodes = self.__improve(self.tour)
+        best_exchange, best_gain, best_nodes = _improve(self.matrix, self.tour)
         if best_gain > 0:
-            self.tour = ThreeOpt.__exchange(self.tour, best_exchange, best_nodes)
+            self.tour = _exchange(self.tour, best_exchange, best_nodes)
         return best_gain
 
     def __tabu_three_opt(self, rotate=0) -> float:
+        """ under tabu 3-opt """
         tour = self.tour if rotate != 0 else right_rotate(self.tour, rotate)
-        best_exchange, best_gain, best_nodes = self.__improve(tour)
+        best_exchange, best_gain, best_nodes = _improve(self.matrix, tour)
         if best_gain > 0:
-            tour = ThreeOpt.__exchange(tour, best_exchange, best_nodes)
+            tour = _exchange(tour, best_exchange, best_nodes)
             tour = tour if rotate != 0 else right_rotate(tour, -rotate)
             if self.tabu_list.contains(tour):
                 return 0.0
             else:
                 self.tour = tour
         return best_gain
-
-    def __improve(self, tour: List[int]) -> Tuple[int, float, tuple]:
-        """ 3-opt пробег по вершинам """
-        best_exchange, best_gain, best_nodes = 0, 0, None
-        size = self.matrix.shape[0]
-
-        for x in range(size - 5):
-            for y in range(x + 2, size - 3):
-                for z in range(y + 2, size - 1):
-                    exchange, gain = ThreeOpt.__search(self.matrix, tour, x, y, z)
-                    if gain > best_gain:
-                        best_gain, best_exchange, best_nodes = gain, exchange, (x, y, z)
-
-        return best_exchange, best_gain, best_nodes
-
-    @staticmethod
-    def __search(matrix: ndarray, tour: List[int], x: int, y: int, z: int) -> Tuple[int, float]:
-        """ Поиск лучшего среди переборов """
-        a, b, c, d, e, f = tour[x], tour[x + 1], tour[y], tour[y + 1], tour[z], tour[z + 1]
-        base = current_min = matrix[a][b] + matrix[c][d] + matrix[e][f]
-        gain = 0
-        exchange = -1
-
-        if current_min > (current := matrix[a][e] + matrix[c][d] + matrix[b][f]):  # 2-opt (a, e) [d, c] (b, f)
-            gain, exchange, current_min = base - current, 0, current
-        if current_min > (current := matrix[a][b] + matrix[c][e] + matrix[d][f]):  # 2-opt [a, b] (c, e) (d, f)
-            gain, exchange, current_min = base - current, 1, current
-        if current_min > (current := matrix[a][c] + matrix[b][d] + matrix[e][f]):  # 2-opt (a, c) (b, d) [e, f]
-            gain, exchange, current_min = base - current, 2, current
-        if current_min > (current := matrix[a][d] + matrix[e][c] + matrix[b][f]):  # 3-opt (a, d) (e, c) (b, f)
-            gain, exchange, current_min = base - current, 3, current
-        if current_min > (current := matrix[a][d] + matrix[e][b] + matrix[c][f]):  # 3-opt (a, d) (e, b) (c, f)
-            gain, exchange, current_min = base - current, 4, current
-        if current_min > (current := matrix[a][e] + matrix[d][b] + matrix[c][f]):  # 3-opt (a, e) (d, b) (c, f)
-            gain, exchange, current_min = base - current, 5, current
-        if current_min > (current := matrix[a][c] + matrix[b][e] + matrix[d][f]):  # 3-opt (a, c) (b, e) (d, f)
-            gain, exchange, current_min = base - current, 6, current
-
-        return exchange, gain
-
-    @staticmethod
-    def __exchange(tour: List[int], best_exchange: int, nodes: tuple) -> List[int]:
-        """ Конечная замена """
-        x, y, z = nodes
-        a, b, c, d, e, f = x, x + 1, y, y + 1, z, z + 1
-        sol = []
-        if best_exchange == 0:
-            sol = tour[:a + 1] + tour[e:d - 1:-1] + tour[c:b - 1:-1] + tour[f:]
-        elif best_exchange == 1:
-            sol = tour[:a + 1] + tour[b:c + 1] + tour[e:d - 1:-1] + tour[f:]
-        elif best_exchange == 2:
-            sol = tour[:a + 1] + tour[c:b - 1:-1] + tour[d:e + 1] + tour[f:]
-        elif best_exchange == 3:
-            sol = tour[:a + 1] + tour[d:e + 1] + tour[c:b - 1:-1] + tour[f:]
-        elif best_exchange == 4:
-            sol = tour[:a + 1] + tour[d:e + 1] + tour[b:c + 1] + tour[f:]
-        elif best_exchange == 5:
-            sol = tour[:a + 1] + tour[e:d - 1:-1] + tour[b:c + 1] + tour[f:]
-        elif best_exchange == 6:
-            sol = tour[:a + 1] + tour[c:b - 1:-1] + tour[e:d - 1:-1] + tour[f:]
-        return sol
