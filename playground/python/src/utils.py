@@ -28,6 +28,14 @@ def print_matrix(matrix: ndarray):
     print(string)
 
 
+def to_list(points: ndarray) -> List[Point]:
+    """ array n * 2 to List[Point] """
+    temp = []
+    for point in points:
+        temp.append((point[0], point[1]))
+    return temp
+
+
 def get_length(matrix: ndarray, tour: List[int]) -> float:
     """ Взятие длины по матрице смежности и туру в виде последовательных нод """
     length = matrix[tour[0]][tour[-1]]

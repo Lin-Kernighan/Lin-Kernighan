@@ -1,12 +1,10 @@
 from math import sqrt
-from random import uniform
-from typing import Generator, Tuple
 
-Point = Tuple[float, float]
+import numpy as np
+from numba import njit
 
 
-def generator(count: int) -> Generator[Point, None, None]:
+@njit
+def numpy_generator(count: int) -> np.ndarray:
     """ Генерируем случайную TSP — задачу. """
-    max_x = max_y = sqrt(count) * 100
-    for _ in range(count):
-        yield uniform(0, max_x), uniform(0, max_y)
+    return np.random.random_sample((count, 2)) * sqrt(count) * 100
