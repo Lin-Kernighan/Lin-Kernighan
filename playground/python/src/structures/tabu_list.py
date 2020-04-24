@@ -10,7 +10,7 @@ def get_hash(tour: np.ndarray) -> int:
     return hash(str(tour))
 
 
-@nb.jitclass(spec=[
+@nb.experimental.jitclass(spec=[
     ('data', nb.types.Set(nb.i8)),
     ('best_length', nb.float64),
     ('best_route', nb.int64[:])

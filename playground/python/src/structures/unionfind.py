@@ -1,8 +1,8 @@
 import numpy as np
-from numba import int32, jitclass
+from numba import int32, experimental
 
 
-@jitclass(spec=[
+@experimental.jitclass(spec=[
     ('_size', int32[:]),
     ('_parent', int32[:]),
 ])
