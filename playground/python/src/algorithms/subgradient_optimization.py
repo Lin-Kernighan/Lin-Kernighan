@@ -5,8 +5,8 @@ from typing import Tuple
 
 import numpy as np
 from numba import njit
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import minimum_spanning_tree
+
+from src.structures.one_tree import one_tree
 
 Edge = Tuple[int, int]
 
@@ -36,14 +36,14 @@ class SubgradientOptimization:
 
         for k in range(1, max_iterations):
             SubgradientOptimization.make_move(pi, adjacency_matrix)
-            ll, first, second = SubgradientOptimization.__one_tree(adjacency_matrix)  # получаем длину нового деревого
+            ll, src, dst = one_tree(adjacency_matrix)  # получаем длину нового деревого
             w_prev, w = w, ll - 2 * pi.sum()  # считаем полученную длину
 
             if w > opt.w_max + 1e-6:  # максимальная пока что длина
                 opt.w_max, opt.pi_max, opt.pi_sum = w, pi.copy(), pi_sum.copy()
                 last_improve = k
 
-            v_prev, v = v, opt.__get_degrees(first, second, length)  # получаем субградиенты
+            v_prev, v = v, opt.__get_degrees(src, dst, length)  # получаем субградиенты
 
             # -------------------- обновляем pi -----------------------------------------------------
             pi = pi + t * (0.7 * v + 0.3 * v_prev)
@@ -109,22 +109,3 @@ class SubgradientOptimization:
             v[first[idx]] += 1
             v[second[idx]] += 1
         return v
-
-    @staticmethod
-    def __one_tree(adjacency_matrix: np.ndarray, node: int = 0) -> Tuple[float, np.ndarray, np.ndarray]:
-        # noinspection PyTypeChecker
-        mst: csr_matrix = minimum_spanning_tree(adjacency_matrix)
-        coo = mst.tocoo()
-        first, second, temp = coo.col, coo.row, coo.data.sum()
-
-        indexes = [second[idx] for idx in np.where(first == node)[0]] + \
-                  [first[idx] for idx in np.where(second == node)[0]]
-
-        that, minimum = -1, float('inf')
-        for idx, value in enumerate(adjacency_matrix[node]):
-            if node == idx or not value > 0:
-                continue
-            if value < minimum and idx not in indexes:
-                that, minimum = idx, value
-
-        return temp + minimum, np.append(first, node), np.append(second, that)

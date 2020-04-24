@@ -2,8 +2,8 @@ from random import randrange, choice
 from sys import maxsize
 from typing import List, Optional, Tuple
 
+import numpy as np
 from numba import njit, int64
-from numpy import ndarray, zeros
 
 from src.structures.graph import Graph
 
@@ -11,25 +11,25 @@ from src.structures.graph import Graph
 class InitialTour:
 
     @staticmethod
-    def clarke_wright(adjacency_matrix: ndarray) -> List[int]:
+    def clarke_wright(adjacency_matrix: np.ndarray) -> List[int]:
         # TODO: Clarke-Wright
         pass
 
     @staticmethod
-    def popmusic(self, adjacency_matrix: ndarray) -> List[int]:
+    def popmusic(self, adjacency_matrix: np.ndarray) -> List[int]:
         # TODO: POPMUSIC
         pass
 
     @staticmethod
     @njit
-    def greedy(matrix: ndarray, point: Optional[int] = None) -> Tuple[float, ndarray]:
+    def greedy(matrix: np.ndarray, point: Optional[int] = None) -> Tuple[float, np.ndarray]:
         """ Строим жадным методом """
         length = matrix.shape[0]
         start = previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
         search, path, k = 0, 0.0, 0
 
-        visited = zeros((length,), dtype=int64)
-        order = zeros((length,), dtype=int64)
+        visited = np.zeros((length,), dtype=int64)
+        order = np.zeros((length,), dtype=int64)
         visited[previous] = 1
 
         while k < length - 1:
@@ -48,7 +48,7 @@ class InitialTour:
         return path, order
 
     @staticmethod
-    def helsgaun(alpha_matrix: ndarray, best_solution: Optional[Graph], excess: float) -> List[int]:
+    def helsgaun(alpha_matrix: np.ndarray, best_solution: Optional[Graph], excess: float) -> List[int]:
         """ Генерируем новый тур """
         length = len(alpha_matrix)
         previous = search = randrange(0, length)  # я ищу ребро из previous в search

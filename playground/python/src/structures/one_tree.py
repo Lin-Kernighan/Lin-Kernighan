@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import field, dataclass
 from sys import maxsize
-from typing import List, Tuple
+from typing import Tuple, Dict, List
+
+import numpy as np
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import minimum_spanning_tree
 
 from src.structures.heap import Heap
 
@@ -113,3 +117,66 @@ class OneTree:
 
     def __str__(self):
         return f'{self.edges};\ntotal_price={self.total_price}'
+
+
+def one_tree(adjacency_matrix: np.ndarray, node: int = 0) -> Tuple[float, np.ndarray, np.ndarray]:
+    # noinspection PyTypeChecker
+    mst: csr_matrix = minimum_spanning_tree(adjacency_matrix)
+    coo = mst.tocoo()
+    src, dst, temp = coo.col, coo.row, coo.data.sum()
+
+    indexes = [dst[idx] for idx in np.where(src == node)[0]] + \
+              [src[idx] for idx in np.where(dst == node)[0]]
+
+    that, minimum = -1, float('inf')
+    for idx, value in enumerate(adjacency_matrix[node]):
+        if node == idx or not value > 0:
+            continue
+        if value < minimum and idx not in indexes:
+            that, minimum = idx, value
+
+    return temp + minimum, np.append(src, node), np.append(dst, that)
+
+
+def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, Dict[int, int]]:
+    size = adjacency_matrix.shape[0]
+    total_price, k = 0.0, 0
+    topology: Dict[int, int] = {}
+    visited, checklist = np.zeros(size, dtype=bool), np.zeros(size, dtype=bool)
+    heap = Heap()
+
+    def check_edge(x: int, y: int) -> None:
+        if x == 0:
+            checklist[y] = True
+        elif y == 0:
+            checklist[x] = True
+
+    def add(idx: int):
+        visited[idx] = True
+        for idy, value in enumerate(adjacency_matrix[idx]):
+            if not value > 0 or visited[idy]:
+                continue
+            heap.push((value, idx, idy))
+
+    add(0)
+    while k < size - 1:
+        was, price, src, dst = True, 0.0, 0, 0
+        while was:
+            price, src, dst = heap.pop()
+            was = visited[dst]
+        topology[dst] = src
+        total_price += price
+        add(dst)
+        check_edge(src, dst)
+        k += 1
+
+    n_node, min_edge = -1, maxsize
+    for index, price in enumerate(adjacency_matrix[0]):
+        if index == 0:
+            continue
+        if price < min_edge and not checklist[index]:
+            n_node, min_edge = index, price
+
+    topology[0] = n_node
+    total_price += min_edge
+    return total_price, topology
