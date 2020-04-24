@@ -17,7 +17,6 @@ class SubgradientOptimization:
     w_max: float
 
     @staticmethod
-    @njit
     def run(adjacency_matrix: np.ndarray, max_iterations=100) -> SubgradientOptimization:
         opt = SubgradientOptimization()
         length = adjacency_matrix.shape[0]

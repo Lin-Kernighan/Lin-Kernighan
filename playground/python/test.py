@@ -4,31 +4,31 @@
 # from src.test import save_test
 #
 # save_test([KOpt, TwoOpt, ThreeOpt], ['k_opt', 'two_opt', 'three_opt'], 500)
-
 from time import time
 
+from src.algorithms.subgradient_optimization import run
 from src.structures.matrix import Matrix
 from src.tsp.generator import generator
 
-tsp = [node for node in generator(100)]
+tsp = [node for node in generator(1000)]
 matrix = Matrix.adjacency_matrix(tsp)
+# import numba
+#
+# from scipy.sparse import csr_matrix
+# from scipy.sparse.csgraph import minimum_spanning_tree
+# #
+# X = csr_matrix(matrix)
+# # #
+# Tcsr: csr_matrix = minimum_spanning_tree(X)
+# coo = Tcsr.tocoo()
+# first = coo.col
+# second = coo.row
+# print(first)
+# print(second)
+# temp = np.dstack(first, second)
+# for x, y in temp:
+#     print(x, y)
 
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import minimum_spanning_tree
-
-X = csr_matrix(matrix)
 t_start = time()
-# noinspection PyTypeChecker
-Tcsr: csr_matrix = minimum_spanning_tree(X)
+run(matrix)
 print(time() - t_start)
-print(type(Tcsr.tocoo().col))
-print(type(Tcsr.tocoo().row))
-
-# t_start = time()
-# one = OneTree.build(matrix, 0)
-# print(time() - t_start)
-
-
-# t_start = time()
-# opt = SubgradientOptimization.run(matrix)
-# print(time() - t_start)
