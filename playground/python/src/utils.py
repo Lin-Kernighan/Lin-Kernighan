@@ -1,11 +1,9 @@
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
+import numpy as np
 from numba import njit
-from numpy import ndarray
 from pandas import DataFrame
-
-import src.structures.one_tree as one_tree
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
@@ -18,7 +16,7 @@ def make_pair(i: int, j: int) -> Edge:
     return (i, j) if i > j else (j, i)
 
 
-def print_matrix(matrix: ndarray):
+def print_matrix(matrix: np.ndarray):
     """ Вывод матрицы """
     string = ''
     for s in matrix:
@@ -28,15 +26,21 @@ def print_matrix(matrix: ndarray):
     print(string)
 
 
-def to_list(points: ndarray) -> List[Point]:
-    """ array n * 2 to List[Point] """
+def to_list(points: np.ndarray) -> List[Point]:
+    """ array n * 2 to List[Point], Point = float, float """
     temp = []
     for point in points:
         temp.append((point[0], point[1]))
     return temp
 
 
-def get_length(matrix: ndarray, tour: List[int]) -> float:
+def to_array(points: List[Point]) -> np.ndarray:
+    """ List[Point] to array, Point = float, float """
+    return np.array(points, dtype=('f8', 'f8'))
+
+
+@njit
+def get_length(matrix: np.ndarray, tour: np.ndarray) -> float:
     """ Взятие длины по матрице смежности и туру в виде последовательных нод """
     length = matrix[tour[0]][tour[-1]]
     for idx in range(len(tour) - 1):
@@ -44,21 +48,21 @@ def get_length(matrix: ndarray, tour: List[int]) -> float:
     return length
 
 
-def right_rotate(tour: list, num: int) -> list:
+def right_rotate(tour: np.ndarray, num: int) -> np.ndarray:
     """ Сдвиг массива вправо на n элементов
     Костыль на крайние случаи масиива, чтобы алгоритм их тоже проверил
     Можно сделать иначе: но нужно переписать swap и взять индекс по модулю в алгоритме
     """
     if num == 0:
         return tour
-    return tour[-num:] + tour[:-num]
+    return np.concatenate((tour[-num:], tour[:-num]), axis=None)
 
 
-def rotate_zero(tour: List[int]) -> list:
+def rotate_zero(tour: np.ndarray) -> np.ndarray:
     """ Проворачиваем список так, что бы первым был ноль """
     if tour[0] == 0:
         return tour
-    return right_rotate(tour, -tour.index(0))
+    return right_rotate(tour, -np.where(tour == 0)[0][0])
 
 
 def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], file: str, directory: str) -> None:
@@ -87,15 +91,7 @@ def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: 
     plt.show()
 
 
-def draw_edges(edges: List[one_tree.Edge], nodes: List[Point], color: str) -> None:
-    """ Нарисовать граф по списку ребер типа Edge """
-    for edge in edges:
-        [x1, y1] = nodes[edge.dst]
-        [x2, y2] = nodes[edge.src]
-        plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
-
-
-def draw_tour(tour: List[int], nodes: List[Point], color: str) -> None:
+def draw_tour(tour: np.ndarray, nodes: np.ndarray, color: str) -> None:
     """ Нарисовать граф по списку номеров вершин в порядке тура """
     first, second = tour[-1], tour[0]
     [x1, y1] = nodes[first]
@@ -107,14 +103,13 @@ def draw_tour(tour: List[int], nodes: List[Point], color: str) -> None:
         plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
 
 
-def candidates(alpha_matrix: ndarray, nodes: List[Point], excess: float, color: str) -> None:
+def candidates(alpha_matrix: np.ndarray, nodes: np.ndarray, excess: float, color: str) -> None:
     """ Граф всех кандидатов """
     temp = []
     for idx in range(0, alpha_matrix.shape[0]):
         for idy in range(idx + 1, alpha_matrix.shape[0]):
             if alpha_matrix[idx][idy] < excess:
                 temp.append((idx, idy))
-    print(len(temp))
 
     for edge in temp:
         [x1, y1] = nodes[edge[0]]

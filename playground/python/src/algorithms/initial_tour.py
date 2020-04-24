@@ -1,8 +1,9 @@
 from random import randrange, choice
 from sys import maxsize
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from numpy import ndarray
+from numba import njit, int64
+from numpy import ndarray, zeros
 
 from src.structures.graph import Graph
 
@@ -20,28 +21,31 @@ class InitialTour:
         pass
 
     @staticmethod
-    def greedy(matrix: ndarray, point: Optional[int] = None) -> List[int]:
+    @njit
+    def greedy(matrix: ndarray, point: Optional[int] = None) -> Tuple[float, ndarray]:
         """ Строим жадным методом """
-        length = len(matrix)
-        previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
-        search = 0
+        length = matrix.shape[0]
+        start = previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
+        search, path, k = 0, 0.0, 0
 
-        visited: List[bool] = [False] * length
-        order: List[int] = [0] * length
-        visited[previous] = True
+        visited = zeros((length,), dtype=int64)
+        order = zeros((length,), dtype=int64)
+        visited[previous] = 1
 
-        k = 0
         while k < length - 1:
             minimum, search = maxsize, -1
             for idx, price in enumerate(matrix[previous]):
-                if idx != previous and minimum > price and not visited[idx]:
+                if idx != previous and minimum > price and visited[idx] == 0:
                     minimum, search = price, idx
-            visited[search] = True
+            visited[search] = 1
+            path += minimum
             order[k] = previous
             previous = search
             k += 1
+
+        path += matrix[search][start]
         order[-1] = search
-        return order
+        return path, order
 
     @staticmethod
     def helsgaun(alpha_matrix: ndarray, best_solution: Optional[Graph], excess: float) -> List[int]:
