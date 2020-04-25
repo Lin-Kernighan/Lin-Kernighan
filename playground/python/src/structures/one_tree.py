@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import field, dataclass
-from sys import maxsize
 from typing import Tuple, Dict, List
 
 import numpy as np
@@ -11,41 +10,26 @@ from scipy.sparse.csgraph import minimum_spanning_tree
 from src.structures.heap import Heap
 
 
-@dataclass(order=True)
-class Edge:
-    price: float
-    src: int
-    dst: int
-
-    def __str__(self) -> str:
-        return f'{self.src}->{self.dst}'
-
-    def __repr__(self) -> str:
-        return str(self)
-
-
 @dataclass
 class OneTree:
     length: int
     total_price: float = field(default=0.0, init=False)
-    edges: List[Edge] = field(default_factory=list)
+    edges: List[Tuple[int, int]] = field(default_factory=list)
 
     def __post_init__(self):
-        self.edges: List[Edge] = [Edge(0, 0, 0)] * self.length
+        self.edges: List[Tuple[int, int]] = [(0, 0)] * self.length
 
     @staticmethod
-    def build(adjacency_matrix, node: int = 0, with_edge: Tuple[int, int] = None) -> OneTree:
+    def build(adjacency_matrix, with_edge: Tuple[int, int] = None) -> OneTree:
         """ One Tree for algorithms
         node: node for build one-tree for alpha nearness
         with_edge: pre-added edge to mst tree
         """
         length = len(adjacency_matrix)
         tree = OneTree(length)
-        # for n - 1 edges + one edge from node
         tree.total_price = 0
 
         heap = Heap()
-        checklist: List[bool] = [False] * length  # for checking before adding last edge in one-tree
         visited: List[bool] = [False] * length  # for searching not visited nodes in Prim's algorithm
 
         def add(idx: int, without: int = None):
@@ -53,89 +37,66 @@ class OneTree:
             """
             visited[idx] = True
             for idy, price in enumerate(adjacency_matrix[idx]):
-                if price == 0 or visited[idy] or without == idy:
+                if price == 0 or visited[idy] or without == idy or idy == 0:
                     continue
-                heap.push(Edge(price, idx, idy))
+                heap.push((price, idx, idy))
 
         k = 0
         if with_edge is not None:  # add additional edge
             x, y = with_edge
-            tree.edges[0] = Edge(adjacency_matrix[x][y], x, y)
-            tree.__check_edge(node, x, y, checklist)
+            tree.edges[0] = (x, y)
             tree.total_price += adjacency_matrix[x][y]
             visited[y] = visited[x] = True
             add(x, y)  # add all edges from x without y
             add(y)  # add all edges from y
             k += 1
         else:  # or just start
-            add(0)
+            add(1)
 
-        while k < length - 1:  # another
-            was, new_edge = True, None
+        while k < length - 2:  # another
+            was, src, dst, price = True, 0, 0, 0.0
             while was:
-                new_edge = heap.pop()
-                was = visited[new_edge.dst]  # check dst node
-            tree.edges[k] = new_edge
-            tree.__check_edge(node, new_edge.dst, new_edge.src, checklist)
-            tree.total_price += new_edge.price
-            add(new_edge.dst)
+                price, src, dst = heap.pop()
+                was = visited[dst]  # check dst node
+            tree.edges[k] = (src, dst)
+            tree.total_price += price
+            add(dst)
             k += 1
 
-        tree.edges[-1] = tree.__add_last_edge(adjacency_matrix[node], node, checklist)
-        tree.total_price += tree.edges[-1].price
+        f_node, s_node, f_min, s_min = -1, -1, float('+inf'), float('+inf')
+        for index, price in enumerate(adjacency_matrix[0]):
+            if 0 == index or not price > 0:
+                continue
+            if price < f_min:
+                s_node, s_min = f_node, f_min
+                f_node, f_min = index, price
+            elif price < s_min:
+                s_node, s_min = index, price
+
+        tree.total_price = tree.total_price + s_min + f_min
+        tree.edges[-1] = (0, f_node)
+        tree.edges[-2] = (0, s_node)
+
         return tree
 
-    @staticmethod
-    def __check_edge(node: int, x: int, y: int, checklist: List[bool]) -> None:
-        """ Check if one of node is Node... if that, mark it
-        """
-        if x == node:
-            checklist[y] = True
-        elif y == node:
-            checklist[x] = True
 
-    @staticmethod
-    def __add_last_edge(prices: List[float], node: int, checklist: List[bool]) -> Edge:
-        """ Add last edge, mst -> one tree
-        """
-        n_node, min_edge = -1, maxsize
-        for index, price in enumerate(prices):
-            if index == node:
-                continue
-
-            if price < min_edge and not checklist[index]:
-                n_node, min_edge = index, price
-        if n_node == -1 or min_edge == maxsize:
-            raise Exception('Bad one-tree, not found last edge')
-        return Edge(min_edge, node, n_node)
-
-    def __len__(self) -> int:
-        return self.length
-
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return f'{self.edges};\ntotal_price={self.total_price}'
-
-
-def one_tree(adjacency_matrix: np.ndarray, node: int = 0) -> Tuple[float, np.ndarray, np.ndarray]:
+def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
     # noinspection PyTypeChecker
-    mst: csr_matrix = minimum_spanning_tree(adjacency_matrix)
+    mst: csr_matrix = minimum_spanning_tree(adjacency_matrix[1:, 1:])
     coo = mst.tocoo()
-    src, dst, temp = coo.col, coo.row, coo.data.sum()
+    src, dst, temp = coo.col + 1, coo.row + 1, coo.data.sum()
 
-    indexes = [dst[idx] for idx in np.where(src == node)[0]] + \
-              [src[idx] for idx in np.where(dst == node)[0]]
-
-    that, minimum = -1, float('inf')
-    for idx, value in enumerate(adjacency_matrix[node]):
-        if node == idx or not value > 0:
+    f_node, s_node, f_min, s_min = -1, -1, float('+inf'), float('+inf')
+    for index, price in enumerate(adjacency_matrix[0]):
+        if 0 == index or not price > 0:
             continue
-        if value < minimum and idx not in indexes:
-            that, minimum = idx, value
+        if price < f_min:
+            s_node, s_min = f_node, f_min
+            f_node, f_min = index, price
+        elif price < s_min:
+            s_node, s_min = index, price
 
-    return temp + minimum, np.append(src, node), np.append(dst, that)
+    return temp + f_min + s_min, np.append(src, [0, 0]), np.append(dst, [f_node, s_node])
 
 
 def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, Dict[int, int]]:
@@ -169,6 +130,7 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, Dict[int, in
     #     if index == 0:
     #         continue
     #     if price < f_min:
+    #         s_node, s_min = f_node, f_min
     #         f_node, f_min = index, price
     #     elif price < s_min:
     #         s_node, s_min = index, price
