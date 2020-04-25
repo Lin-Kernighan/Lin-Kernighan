@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from collections import deque, defaultdict
 from math import sqrt
+from typing import Dict
 
 import numpy as np
 from numba import njit
@@ -22,14 +24,38 @@ def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
     return matrix
 
 
+def sort_topologically(first: int, topology: Dict):
+    """
+    node -> dad
+    """
+    ancestors = defaultdict(list)
+    for key, pred in topology.items():
+        ancestors[pred] += [key]
+
+    res = []
+    deq = deque()
+    deq.append(first)
+
+    while deq:
+        node = deq.popleft()
+        res += [node]
+        deq.extend(ancestors[node])
+
+    return res
+
+
 def betta_matrix(adjacency: np.ndarray) -> np.ndarray:
     size = adjacency.shape[0]
     _, topology = one_tree_topology(adjacency)
     matrix = np.zeros(shape=adjacency.shape)
-    print(topology)
 
-    for idx in range(1, size - 1):
-        for idy in range(idx + 1, size):
+    ordered_nodes = sort_topologically(1, topology)
+
+    for i in range(1, size - 1):
+        for j in range(i + 1, size):
+            idx = ordered_nodes[i-1]
+            idy = ordered_nodes[j-1]
+
             matrix[idx][idy] = matrix[idy][idx] = max(matrix[idx][topology[idy]], adjacency[idy][topology[idy]])
 
     print_matrix(matrix)

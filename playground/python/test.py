@@ -4,27 +4,34 @@
 # from src.test import save_test
 #
 # save_test([TwoOpt, ThreeOpt], ['two_opt', 'three_opt'], 500)
+import pickle
+from math import isclose
 
 from src.structures.matrix import adjacency_matrix, betta_matrix, alpha_matrix
 from src.tsp.generator import generator
 from src.utils import print_matrix
 
-tsp = generator(5)
-matrix = adjacency_matrix(tsp)
 
-# length, src, dst = one_tree(matrix)
-# print(length)
-# print(np.dstack((src, dst)))
-#
-# tree = OneTree.build(matrix)
-# print(tree.edges)
-# print(tree.total_price)
-#
-# topology = one_tree_topology(matrix)
-# print(topology)
+def main():
+    tsp = generator(30)
+    # with open('breaking.pkl', 'rb') as f:
+    #     tsp = pickle.load(f)
 
-print_matrix(matrix)
-b = betta_matrix(matrix)
-a = alpha_matrix(matrix)
+    matrix = adjacency_matrix(tsp)
 
-print_matrix(a - b)
+    print_matrix(matrix)
+    b = betta_matrix(matrix)
+    a = alpha_matrix(matrix)
+
+    new_matr = (a - b)[1:, 1:]
+    if not isclose(new_matr.sum(), 0, abs_tol=0.01):
+        with open('breaking.pkl', 'wb') as f:
+            pickle.dump(tsp, f)
+        print('-' * 100)
+        print_matrix(a - b)
+        exit()
+
+
+if __name__ == '__main__':
+    for i in range(10000):
+        main()

@@ -108,8 +108,16 @@ class InitialTour:
         return node if node != -1 else None
 
     @staticmethod
-    def __get_candidate_set(previous: int, prices: List[float], visited: List[bool], excess: float) -> Optional[int]:
-        """ Рандомный из кандидатов """
+    def __get_candidate_set(
+            previous: int,
+            prices: List[float],
+            visited: List[bool],
+            excess: float
+    ) -> Optional[int]:
+        """
+        Рандомный из кандидатов
+        :param previous:
+        """
         candidates = [idx
                       for idx, price in enumerate(prices)
                       if price < excess and idx != previous and not visited[idx]]
