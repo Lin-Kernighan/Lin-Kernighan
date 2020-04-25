@@ -19,7 +19,6 @@ def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
             alpha_nearness = OneTree.build(adjacency, with_edge=(idx, idy)).total_price - total_price
             matrix[idx][idy] = matrix[idy][idx] = alpha_nearness
 
-    print_matrix(matrix)
     return matrix
 
 
@@ -34,8 +33,6 @@ def betta_matrix(adjacency: np.ndarray) -> np.ndarray:
             matrix[idx][idy] = matrix[idy][idx] = max(matrix[idx][topology[idy]], adjacency[idy][topology[idy]])
 
     print_matrix(matrix)
-    print_matrix(adjacency - matrix)
-
     return adjacency - matrix
 
 

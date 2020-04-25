@@ -5,11 +5,26 @@
 #
 # save_test([TwoOpt, ThreeOpt], ['two_opt', 'three_opt'], 500)
 
-from src.structures.matrix import adjacency_matrix, betta_matrix
+from src.structures.matrix import adjacency_matrix, betta_matrix, alpha_matrix
 from src.tsp.generator import generator
+from src.utils import print_matrix
 
-tsp = generator(10)
+tsp = generator(5)
 matrix = adjacency_matrix(tsp)
 
-betta_matrix(matrix)
-# alpha_matrix(matrix)
+# length, src, dst = one_tree(matrix)
+# print(length)
+# print(np.dstack((src, dst)))
+#
+# tree = OneTree.build(matrix)
+# print(tree.edges)
+# print(tree.total_price)
+#
+# topology = one_tree_topology(matrix)
+# print(topology)
+
+print_matrix(matrix)
+b = betta_matrix(matrix)
+a = alpha_matrix(matrix)
+
+print_matrix(a - b)
