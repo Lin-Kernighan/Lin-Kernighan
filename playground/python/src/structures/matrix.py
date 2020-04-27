@@ -29,6 +29,7 @@ def _sort_topologically(first: int, topology: Dict):
 
 
 def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
+    """ Альфа матрица - изменение длины one tree, если пред добавить другое ребро """
     size = adjacency.shape[0]
     f, s, topology = one_tree_topology(adjacency)
     matrix = np.zeros(shape=adjacency.shape)
@@ -52,6 +53,7 @@ def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
 
 @njit
 def adjacency_matrix(points: np.ndarray) -> np.ndarray:
+    """ Матрица смежности """
     size = points.shape[0]
     matrix = np.zeros(shape=(size, size))
     for idx in range(0, size):
@@ -62,6 +64,7 @@ def adjacency_matrix(points: np.ndarray) -> np.ndarray:
 
 
 def savings_matrix(adjacency: np.ndarray, point: int) -> np.ndarray:
+    """ Матрица savings для Clarke-Wright """
     matrix = np.zeros(shape=adjacency.shape)
     for idx in range(0, matrix.shape[0]):
         for idy in range(idx + 1, matrix.shape[0]):

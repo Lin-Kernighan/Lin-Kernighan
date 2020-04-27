@@ -1,4 +1,3 @@
-from copy import deepcopy
 from typing import Tuple, Set, Dict
 
 from numpy import ndarray
@@ -176,8 +175,8 @@ class KOpt(AbcOpt):
             # Verify that X and Y are disjoint, though I also need to check
             # that we are not including an x_i again for some reason.
             if xi not in joined and xi not in broken:
-                added = deepcopy(joined)
-                removed = deepcopy(broken)
+                added = joined.copy()
+                removed = broken.copy()
 
                 removed.add(xi)
                 added.add(make_pair(t2i, t1))  # Try to relink the tour
@@ -234,7 +233,7 @@ class KOpt(AbcOpt):
 
         for node, (_, curr_gain) in ordered:
             yi = make_pair(t2i, node)
-            added = deepcopy(joined)
+            added = joined.copy()
             added.add(yi)
 
             # Stop at the first improving tour
