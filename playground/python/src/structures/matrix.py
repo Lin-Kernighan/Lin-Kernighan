@@ -37,9 +37,10 @@ def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
     ordered_nodes = _sort_topologically(1, topology)
 
     for i in range(1, size):
-        if i == f[0] or i == s[0]:
-            continue
-        matrix[0][i] = matrix[i][0] = s[1]
+        if i == f[0]:
+            matrix[0][i] = matrix[i][0] = f[1]
+        if i == s[0]:
+            matrix[0][i] = matrix[i][0] = s[1]
 
     for i in range(1, size - 1):
         for j in range(i + 1, size):
