@@ -15,7 +15,7 @@ Point = Tuple[float, float]
 def save_test(heuristics: List[Type[AbcOpt]], names: List[str], size: int) -> None:
     tsp = generator(size)
     matrix = adjacency_matrix(tsp)
-    tour = InitialTour.greedy(matrix)
+    length, tour = InitialTour.greedy(matrix)
 
     suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
     filename = f'{"_".join(["test", suffix])}_{size}'

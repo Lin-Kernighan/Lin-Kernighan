@@ -7,27 +7,11 @@ from typing import Dict
 import numpy as np
 from numba import njit
 
-from src.structures.one_tree import one_tree_topology, OneTree, one_tree
-from src.utils import print_matrix
+from src.structures.one_tree import one_tree_topology
 
 
-def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
-    total_price, _, _ = one_tree(adjacency)
-
-    matrix = np.zeros(shape=adjacency.shape)
-    # TODO: optimize this shit
-    for idx in range(0, matrix.shape[0]):
-        for idy in range(idx + 1, matrix.shape[0]):
-            alpha_nearness = OneTree.build(adjacency, with_edge=(idx, idy)).total_price - total_price
-            matrix[idx][idy] = matrix[idy][idx] = alpha_nearness
-
-    return matrix
-
-
-def sort_topologically(first: int, topology: Dict):
-    """
-    node -> dad
-    """
+def _sort_topologically(first: int, topology: Dict):
+    """ node -> dad; in fact this is Depth-first search """
     ancestors = defaultdict(list)
     for key, pred in topology.items():
         ancestors[pred] += [key]
@@ -44,21 +28,25 @@ def sort_topologically(first: int, topology: Dict):
     return res
 
 
-def betta_matrix(adjacency: np.ndarray) -> np.ndarray:
+def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
     size = adjacency.shape[0]
-    _, topology = one_tree_topology(adjacency)
+    f, s, topology = one_tree_topology(adjacency)
     matrix = np.zeros(shape=adjacency.shape)
 
-    ordered_nodes = sort_topologically(1, topology)
+    ordered_nodes = _sort_topologically(1, topology)
+
+    for i in range(1, size):
+        if i == f[0] or i == s[0]:
+            continue
+        matrix[0][i] = matrix[i][0] = s[1]
 
     for i in range(1, size - 1):
         for j in range(i + 1, size):
-            idx = ordered_nodes[i-1]
-            idy = ordered_nodes[j-1]
+            idx = ordered_nodes[i - 1]
+            idy = ordered_nodes[j - 1]
 
             matrix[idx][idy] = matrix[idy][idx] = max(matrix[idx][topology[idy]], adjacency[idy][topology[idy]])
 
-    print_matrix(matrix)
     return adjacency - matrix
 
 
