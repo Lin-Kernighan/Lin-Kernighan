@@ -58,7 +58,7 @@ class InitialTour:
         size, k, length = alpha_matrix.shape[0], 0, 0.0
         previous = search = randrange(0, size)  # я ищу ребро из previous в search
         visited = np.zeros(size, dtype=bool)
-        order = np.zeros(size, dtype=bool)
+        order = np.zeros(size, dtype=int)
         visited[previous] = True
 
         while k < size - 1:

@@ -31,11 +31,11 @@ def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarra
     return temp + f_min + s_min, np.append(src, [0, 0]), np.append(dst, [f_node, s_node])
 
 
-def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[tuple, tuple, Dict[int, int]]:
+def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple, Dict[int, int]]:
     """ One tree
-    return: два минимальных ребра от вершины 0 + словарь son -> dad для MST
+    return: два минимальных ребра от вершины 0 (f < s) + словарь son -> dad для MST
     """
-    size, k = adjacency_matrix.shape[0], 0
+    size, k, length = adjacency_matrix.shape[0], 0, 0.0
     topology: Dict[int, int] = {}
     visited = np.zeros(size, dtype=bool)
     heap = Heap()
@@ -55,6 +55,7 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[tuple, tuple, Dict[
             was = visited[dst]
         topology[dst] = src
         add(dst)
+        length += adjacency_matrix[src][dst]
         k += 1
 
     f_node, s_node, f_min, s_min = -1, -1, float('+inf'), float('+inf')
@@ -67,4 +68,4 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[tuple, tuple, Dict[
         elif price < s_min:
             s_node, s_min = index, price
 
-    return (f_node, f_min), (s_node, s_min), topology
+    return length + f_min + s_min, (f_node, f_min), (s_node, s_min), topology

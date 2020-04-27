@@ -14,8 +14,8 @@ Node = int
 
 class KOpt(AbcOpt):
 
-    def __init__(self, tour: ndarray, matrix: ndarray):
-        super().__init__(tour, matrix)
+    def __init__(self, length: float, tour: ndarray, matrix: ndarray):
+        super().__init__(length, tour, matrix)
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, list] = dict()
         self.temp_length = self.length

@@ -79,8 +79,8 @@ def _exchange(tour: np.ndarray, best_exchange: int, nodes: tuple) -> np.ndarray:
 
 class ThreeOpt(AbcOpt):
 
-    def __init__(self, tour: np.ndarray, matrix: np.ndarray):
-        super().__init__(tour, matrix)
+    def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray):
+        super().__init__(length, tour, matrix)
 
     def optimize(self) -> np.ndarray:
         """ Запуск """

@@ -7,10 +7,8 @@ from typing import Dict
 import numpy as np
 from numba import njit
 
-from src.structures.one_tree import one_tree_topology
 
-
-def _sort_topologically(first: int, topology: Dict):
+def _sort_topologically(first: int, topology: Dict[int, int]):
     """ node -> dad; in fact this is Depth-first search """
     ancestors = defaultdict(list)
     for key, pred in topology.items():
@@ -28,10 +26,14 @@ def _sort_topologically(first: int, topology: Dict):
     return res
 
 
-def alpha_matrix(adjacency: np.ndarray) -> np.ndarray:
-    """ Альфа матрица - изменение длины one tree, если пред добавить другое ребро """
+def alpha_matrix(adjacency: np.ndarray, f: tuple, s: tuple, topology: Dict[int, int]) -> np.ndarray:
+    """ Альфа матрица - изменение длины one tree, если пред добавить другое ребро
+    adjacency: матрица весов
+    f: минимальное ребро от 0 вершины (length, num)
+    s: пред минимальное ребро от 0 вершины (length, num)
+    topology: словарь son -> dad для вершин в MST графе
+    """
     size = adjacency.shape[0]
-    f, s, topology = one_tree_topology(adjacency)
     matrix = np.zeros(shape=adjacency.shape)
 
     ordered_nodes = _sort_topologically(1, topology)
