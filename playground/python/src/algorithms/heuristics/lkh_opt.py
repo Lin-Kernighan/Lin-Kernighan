@@ -17,7 +17,7 @@ Node = int
 
 class LkhOpt:
 
-    def __init__(self, adjacency: np.ndarray, excess: float = None):
+    def __init__(self, adjacency: np.ndarray, dlb: bool, excess: float = None):
         self.size, self.matrix = adjacency.shape[0], adjacency
         self.gradient = SubgradientOptimization.run(adjacency)
         SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
@@ -35,11 +35,13 @@ class LkhOpt:
         for _, candidate in self.candidates.items():
             candidate.sort()
 
-        self.length, self.tour = InitialTour.helsgaun(self.alpha, self.matrix, None, self.candidates, excess)
+        self.length, self.tour = InitialTour.greedy(self.matrix)
+        # self.length, self.tour = InitialTour.helsgaun(self.alpha, self.matrix, None, self.candidates, excess)
         self.temp_length = self.length
 
         self.solutions: Set[int] = set()
         self.collector: Optional[Collector] = None
+        self.dlb = np.zeros(self.size, dtype=bool) if dlb else None
 
     def optimize(self):
         iteration, self.collector = 0, Collector(['length', 'gain'], {'lkh': self.size})
@@ -62,6 +64,10 @@ class LkhOpt:
 
         for index in range(self.size):
             t1 = tour[index]
+            if self.dlb is not None \
+                    and self.dlb[t1] and self.dlb[(t1 - 1) % self.size] and self.dlb[(t1 + 1) % self.size]:
+                continue
+
             around = tour.around(t1)
 
             for t2 in around:
@@ -80,7 +86,17 @@ class LkhOpt:
 
                     joined = {make_pair(t2, t3)}
                     if self.choose_x(tour, t1, t3, curr_gain, broken, joined):
+
+                        if self.dlb is not None:
+                            for x, y in broken:
+                                self.dlb[x] = self.dlb[y] = False
+                            for x, y in joined:
+                                self.dlb[x] = self.dlb[y] = False
+
                         return True
+
+            if self.dlb is not None:
+                self.dlb[t1] = True
 
         return False
 
