@@ -125,7 +125,7 @@ class InitialTour:
     @staticmethod
     def __get_candidate_set(previous: int, candidates: dict, visited: np.ndarray) -> Optional[int]:
         """ Рандомный из кандидатов """
-        candidates = [idx for price, idx in candidates[previous] if not visited[idx]]
+        candidates = [idx for _, _, idx in candidates[previous] if not visited[idx]]
         if candidates:
             return choice(candidates)
         return None

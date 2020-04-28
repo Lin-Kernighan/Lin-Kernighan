@@ -7,6 +7,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 
 from src.structures.heap import Heap
+from src.utils import make_pair
 
 
 def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
@@ -31,14 +32,14 @@ def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarra
     return temp + f_min + s_min, np.append(src, [0, 0]), np.append(dst, [f_node, s_node])
 
 
-def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple, Dict[int, int]]:
-    """ One tree
-    return: два минимальных ребра от вершины 0 (f < s) + словарь son -> dad для MST
+def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple, set, Dict[int, int]]:
+    """ build One tree
+    return: длина one tree; минимальное ребро; пред минмальное ребро; set ребер; словарь son -> dad для MST
     """
     size, k, length = adjacency_matrix.shape[0], 0, 0.0
     topology: Dict[int, int] = {}
     visited = np.zeros(size, dtype=bool)
-    heap = Heap()
+    heap, edges = Heap(), set()
 
     def add(idx: int):
         visited[idx] = True
@@ -54,6 +55,7 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple
             price, src, dst = heap.pop()
             was = visited[dst]
         topology[dst] = src
+        edges.add(make_pair(dst, src))
         add(dst)
         length += adjacency_matrix[src][dst]
         k += 1
@@ -68,4 +70,6 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple
         elif price < s_min:
             s_node, s_min = index, price
 
-    return length + f_min + s_min, (f_node, f_min), (s_node, s_min), topology
+    edges.add(make_pair(0, f_node))
+    edges.add(make_pair(0, s_node))
+    return length + f_min + s_min, (f_node, f_min), (s_node, s_min), edges, topology

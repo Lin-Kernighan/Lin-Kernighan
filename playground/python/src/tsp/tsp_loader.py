@@ -51,6 +51,6 @@ class TspLoader:
                 temp = file.readline().split()
                 points.append((float(temp[1]), float(temp[2])))
         remove(filename)
-        points = to_list(points)
+        points: np.ndarray = to_array(points)
         TspLoader.python_serializer(points, filename.replace('.tsp', ''), directory)
         return points

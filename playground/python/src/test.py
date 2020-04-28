@@ -23,7 +23,7 @@ def save_test(heuristics: List[Type[AbcOpt]], names: List[str], size: int) -> No
 
     os.mkdir(filename)
     TspLoader.python_serializer(tsp, filename, filename)
-    heuristics = [heuristic(tour, matrix) for heuristic in heuristics]
+    heuristics = [heuristic(length, tour, matrix) for heuristic in heuristics]
 
     for idx in range(len(heuristics)):
         heuristics[idx].optimize()
