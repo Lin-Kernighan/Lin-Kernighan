@@ -229,7 +229,7 @@ class LkhOpt:
         """
         ordered = self.closest(t2i, tour, gain, broken, joined)
 
-        top = 5 if len(broken) == 2 else 1
+        top = len(ordered) if len(broken) == 2 else 1
 
         for node, (_, curr_gain) in ordered:
             yi = make_pair(t2i, node)

@@ -1,8 +1,9 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Tuple, Set
 
 import numba as nb
 import numpy as np
+from blist import blist
 
 from src.structures.tour.abc_tour import AbcTour
 from src.utils import make_pair
@@ -12,7 +13,7 @@ Node = int
 
 
 @nb.njit
-def generate(size: int, edges: Set[Edge], broken: Set[Edge], joined: Set[Edge]) -> np.ndarray:
+def _generate(size: int, edges: Set[Edge], broken: Set[Edge], joined: Set[Edge]) -> np.ndarray:
     """ Создаем новый тур, а потом проверяем его на целостность и наличие циклов
     broken: удаляемые ребра
     joined: добавляемые ребра
@@ -60,11 +61,9 @@ def generate(size: int, edges: Set[Edge], broken: Set[Edge], joined: Set[Edge]) 
 
 @dataclass
 class ListTour(AbcTour):
-    tour: np.ndarray
-    size: int = field(init=False)
-    edges: Set[Edge] = field(init=False)
 
-    def __post_init__(self):
+    def __init__(self, tour: np.ndarray):
+        self.tour: blist = blist(tour.tolist())
         self.size = len(self.tour)
         self.edges = set()
         for i in range(self.size):
@@ -84,7 +83,7 @@ class ListTour(AbcTour):
 
     def index(self, node: Node) -> int:
         """ Номер вершины в туре """
-        return np.where(self.tour == node)[0][0]
+        return self.tour.index(node)
 
     def around(self, node: Node) -> Tuple[Node, Node]:
         """ Предыдущая вершина и следующая текущей веришны """
@@ -117,7 +116,7 @@ class ListTour(AbcTour):
         joined: добавляемые ребра
         """
         # New edges: old edges minus broken, plus joined
-        return generate(self.size, self.edges, broken, joined)
+        return _generate(self.size, self.edges, broken, joined)
 
     def reverse(self, start: int, end: int) -> None:
         """ Переворот куска тура """
