@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Tuple, Set
 
+import numba as nb
 import numpy as np
 
 from src.structures.tour.abc_tour import AbcTour
@@ -8,6 +9,53 @@ from src.utils import make_pair
 
 Edge = Tuple[int, int]
 Node = int
+
+
+@nb.njit
+def generate(size: int, edges: Set[Edge], broken: Set[Edge], joined: Set[Edge]) -> np.ndarray:
+    """ Создаем новый тур, а потом проверяем его на целостность и наличие циклов
+    broken: удаляемые ребра
+    joined: добавляемые ребра
+    """
+    edges = (edges - broken) | joined
+    # If we do not have enough edges, we cannot form a tour -- should not
+    if len(edges) < size:
+        return np.zeros(1, dtype=nb.int64)
+
+    successors = {}
+    node = 0
+
+    # Build the list of successors
+    while len(edges) > 0:
+        i = j = 0
+        for i, j in edges:
+            if i == node:
+                successors[node] = j
+                node = j
+                break
+            elif j == node:
+                successors[node] = i
+                node = i
+                break
+        edges.remove((i, j))
+
+    # Similarly, if not every node has a successor, this can not work
+    if len(successors) < size:
+        return np.zeros(1, dtype=nb.int64)
+
+    successor, k = successors[0], 1
+    new_tour = np.zeros(size, dtype=nb.int64)
+    visited = set(new_tour)
+
+    # If we already encountered a node it means we have a loop
+    while successor not in visited:
+        visited.add(successor)
+        new_tour[k] = successor
+        successor = successors[successor]
+        k += 1
+
+    # If we visited all nodes without a loop we have a tour
+    return new_tour
 
 
 @dataclass
@@ -63,50 +111,13 @@ class ListTour(AbcTour):
                 return True
         return False
 
-    def generate(self, broken: Set[Edge], joined: Set[Edge]) -> Tuple[bool, np.ndarray]:
+    def generate(self, broken: Set[Edge], joined: Set[Edge]) -> np.ndarray:
         """ Создаем новый тур, а потом проверяем его на целостность и наличие циклов
         broken: удаляемые ребра
         joined: добавляемые ребра
         """
         # New edges: old edges minus broken, plus joined
-        edges = (self.edges - broken) | joined
-        # If we do not have enough edges, we cannot form a tour -- should not
-        if len(edges) < self.size:
-            return False, np.zeros(1)
-
-        successors = {}
-        node = 0
-
-        # Build the list of successors
-        while len(edges) > 0:
-            i = j = 0
-            for i, j in edges:
-                if i == node:
-                    successors[node] = j
-                    node = j
-                    break
-                elif j == node:
-                    successors[node] = i
-                    node = i
-                    break
-            edges.remove((i, j))
-
-        # Similarly, if not every node has a successor, this can not work
-        if len(successors) < self.size:
-            return False, np.zeros(1)
-
-        successor = successors[0]
-        new_tour = [0]
-        visited = set(new_tour)
-
-        # If we already encountered a node it means we have a loop
-        while successor not in visited:
-            visited.add(successor)
-            new_tour.append(successor)
-            successor = successors[successor]
-
-        # If we visited all nodes without a loop we have a tour
-        return len(new_tour) == self.size, np.array(new_tour)
+        return generate(self.size, self.edges, broken, joined)
 
     def reverse(self, start: int, end: int) -> None:
         """ Переворот куска тура """

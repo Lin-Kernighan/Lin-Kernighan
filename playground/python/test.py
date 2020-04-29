@@ -1,37 +1,66 @@
-# from src.algorithms.heuristics.k_opt import KOpt
-# from src.algorithms.heuristics.three_opt import ThreeOpt
-# from src.algorithms.heuristics.two_opt import TwoOpt
-# from src.test import save_test
-#
-# save_test([TwoOpt, ThreeOpt], ['two_opt', 'three_opt'], 500)
-import pickle
-from math import isclose
+import warnings
+from time import time
 
-from src.structures.matrix import adjacency_matrix, betta_matrix, alpha_matrix
+import matplotlib.pyplot as plt
+from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+
+from src.algorithms.heuristics.k_opt import KOpt
+from src.algorithms.heuristics.lkh_opt import LkhOpt
+from src.algorithms.heuristics.three_opt import ThreeOpt
+from src.algorithms.heuristics.two_opt import TwoOpt
+from src.algorithms.initial_tour import InitialTour
+from src.structures.matrix import adjacency_matrix
 from src.tsp.generator import generator
-from src.utils import print_matrix
+from src.utils import draw_tour, draw_plot_x_y
 
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
-def main():
-    tsp = generator(30)
-    # with open('breaking.pkl', 'rb') as f:
-    #     tsp = pickle.load(f)
+size = 500
+tsp = generator(size)
+matrix = adjacency_matrix(tsp)
+l, t = InitialTour.greedy(matrix)
+print(l)
 
-    matrix = adjacency_matrix(tsp)
+t_start = time()
+lkh = LkhOpt(matrix, True)
+lkh.optimize()
+print(time() - t_start)
+print(lkh.length)
+draw_tour(lkh.tour, tsp, 'r')
+plt.show()
 
-    print_matrix(matrix)
-    b = betta_matrix(matrix)
-    a = alpha_matrix(matrix)
+t_start = time()
+lk = KOpt(l, t, matrix, True)
+lk.optimize()
+print(time() - t_start)
+print(lk.length)
+draw_tour(lk.tour, tsp, 'b')
+plt.show()
 
-    new_matr = (a - b)[1:, 1:]
-    if not isclose(new_matr.sum(), 0, abs_tol=0.01):
-        with open('breaking.pkl', 'wb') as f:
-            pickle.dump(tsp, f)
-        print('-' * 100)
-        print_matrix(a - b)
-        exit()
+t_start = time()
+two = TwoOpt(l, t, matrix)
+two.optimize()
+print(time() - t_start)
+print(two.length)
+draw_tour(two.tour, tsp, 'g')
+plt.show()
 
+t_start = time()
+three = ThreeOpt(l, t, matrix)
+three.optimize()
+print(time() - t_start)
+print(three.length)
+draw_tour(three.tour, tsp, 'y')
+plt.show()
 
-if __name__ == '__main__':
-    for i in range(10000):
-        main()
+a = lkh.collector.as_frame()
+b = lk.collector.as_frame()
+c = two.collector.as_frame()
+d = three.collector.as_frame()
+a['time'] -= a['time'][0]
+b['time'] -= b['time'][0]
+c['time'] -= c['time'][0]
+d['time'] -= d['time'][0]
+
+draw_plot_x_y([a, b, c, d], ['lkh', 'lk', 'two', 'three'], 'time', 'length', 'plot', 'src')

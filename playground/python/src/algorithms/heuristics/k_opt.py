@@ -1,6 +1,6 @@
 from typing import Tuple, Set, Dict
 
-from numpy import ndarray
+from numpy import ndarray, zeros
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
@@ -14,10 +14,11 @@ Node = int
 
 class KOpt(AbcOpt):
 
-    def __init__(self, length: float, tour: ndarray, matrix: ndarray):
+    def __init__(self, length: float, tour: ndarray, matrix: ndarray, dlb=True):
         super().__init__(length, tour, matrix)
         self.solutions: Set[str] = set()
         self.neighbours: Dict[Node, list] = dict()
+        self.dlb = zeros(self.size, dtype=bool) if dlb else None
         self.temp_length = self.length
 
     def optimize(self) -> ndarray:
@@ -73,6 +74,10 @@ class KOpt(AbcOpt):
         # Find all valid 2-opt moves and try them
         for index in range(len(tour)):
             t1 = tour[index]
+            if self.dlb is not None \
+                    and self.dlb[t1] and self.dlb[(t1 - 1) % self.size] and self.dlb[(t1 + 1) % self.size]:
+                continue
+
             around = tour.around(t1)  # вытащили двух соседей
 
             for t2 in around:  # для каждой соседней вершины
@@ -93,6 +98,13 @@ class KOpt(AbcOpt):
                     # The positive curr_gain is taken care of by `closest()`
                     if self.choose_x(tour, t1, t3, curr_gain, broken, joined):
                         # Return to Step 2, that is the initial loop
+
+                        if self.dlb is not None:
+                            for x, y in broken:
+                                self.dlb[x] = self.dlb[y] = False
+                            for x, y in joined:
+                                self.dlb[x] = self.dlb[y] = False
+
                         return True
                     # Else try the other options
 
@@ -100,6 +112,9 @@ class KOpt(AbcOpt):
                     # Explored enough nodes, change t_2
                     if tries == 0:
                         break
+
+            if self.dlb is not None:
+                self.dlb[t1] = True
 
         return False
 
@@ -182,7 +197,8 @@ class KOpt(AbcOpt):
                 added.add(make_pair(t2i, t1))  # Try to relink the tour
 
                 relink = curr_gain - self.matrix[t2i][t1]
-                is_tour, new_tour = tour.generate(removed, added)
+                new_tour = tour.generate(removed, added)
+                is_tour = False if len(new_tour) == 1 else True
 
                 # The current solution does not form a valid tour
                 if not is_tour and len(added) > 2:

@@ -17,7 +17,7 @@ Node = int
 
 class LkhOpt:
 
-    def __init__(self, adjacency: np.ndarray, dlb: bool, excess: float = None):
+    def __init__(self, adjacency: np.ndarray, dlb=True, excess: float = None):
         self.size, self.matrix = adjacency.shape[0], adjacency
         self.gradient = SubgradientOptimization.run(adjacency)
         SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
@@ -163,7 +163,8 @@ class LkhOpt:
                 removed.add(xi)
                 added.add(make_pair(t2i, t1))
                 relink = curr_gain - self.matrix[t2i][t1]
-                is_tour, new_tour = tour.generate(removed, added)
+                new_tour = tour.generate(removed, added)
+                is_tour = False if len(new_tour) == 1 else True
 
                 if not is_tour and len(added) > 2:
                     continue
