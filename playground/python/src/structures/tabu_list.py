@@ -3,11 +3,7 @@ from sys import maxsize
 import numba as nb
 import numpy as np
 
-from src.utils import rotate_zero
-
-
-def get_hash(tour: np.ndarray) -> int:
-    return hash(str(tour))
+from src.utils import rotate_zero, get_hash
 
 
 @nb.experimental.jitclass(spec=[

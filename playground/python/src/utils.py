@@ -16,6 +16,11 @@ def make_pair(i: int, j: int) -> Edge:
     return (i, j) if i > j else (j, i)
 
 
+def get_hash(tour: np.ndarray) -> int:
+    """ хеш тура """
+    return hash(str(tour))
+
+
 def print_matrix(matrix: np.ndarray):
     """ Вывод матрицы """
     string = ''
@@ -24,6 +29,14 @@ def print_matrix(matrix: np.ndarray):
             string += f'{elem:0.2f}\t'
         string += '\n'
     print(string)
+
+
+def get_set(tour: np.ndarray) -> set:
+    """ ребра тура """
+    edges = set()
+    for i in range(len(tour)):
+        edges.add(make_pair(tour[i - 1], tour[i]))
+    return edges
 
 
 def to_list(points: np.ndarray) -> List[Point]:

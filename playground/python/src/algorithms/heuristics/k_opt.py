@@ -6,7 +6,7 @@ from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
 from src.structures.tabu_list import TabuSet
 from src.structures.tour.list_tour import ListTour
-from src.utils import make_pair
+from src.utils import make_pair, get_hash
 
 Edge = Tuple[int, int]
 Node = int
@@ -16,7 +16,7 @@ class KOpt(AbcOpt):
 
     def __init__(self, length: float, tour: ndarray, matrix: ndarray, dlb=True):
         super().__init__(length, tour, matrix)
-        self.solutions: Set[str] = set()
+        self.solutions: Set[int] = set()
         self.neighbours: Dict[Node, list] = dict()
         self.dlb = zeros(self.size, dtype=bool) if dlb else None
         self.temp_length = self.length
@@ -36,7 +36,7 @@ class KOpt(AbcOpt):
             self.length = self.temp_length
             self.collector.update({'length': self.length, 'gain': gain})
             # Paths always begin at 0 so this should manage to find duplicate solutions
-            self.solutions.add(str(self.tour))
+            self.solutions.add(get_hash(self.tour))
             iteration += 1
 
         return self.tour
@@ -55,7 +55,7 @@ class KOpt(AbcOpt):
             self.length = self.temp_length
             self.collector.update({'length': self.length, 'gain': gain})
             tabu_list.append(self.tour, self.length)
-            self.solutions.add(str(self.tour))
+            self.solutions.add(get_hash(self.tour))
 
         return self.tour
 
@@ -205,7 +205,7 @@ class KOpt(AbcOpt):
                     continue
 
                 # Stop the search if we come back to the same solution
-                if str(new_tour) in self.solutions:
+                if get_hash(new_tour) in self.solutions:
                     return False
 
                 # Save the current solution if the tour is better, we need

@@ -8,8 +8,9 @@ from src.algorithms.subgradient_optimization import SubgradientOptimization
 from src.structures.collector import Collector
 from src.structures.matrix import alpha_matrix
 from src.structures.one_tree import one_tree_topology
+from src.structures.tabu_list import TabuSet
 from src.structures.tour.list_tour import ListTour
-from src.utils import make_pair
+from src.utils import make_pair, get_hash, get_set
 
 Edge = Tuple[int, int]
 Node = int
@@ -36,14 +37,13 @@ class LkhOpt:
             candidate.sort()
 
         self.length, self.tour = InitialTour.greedy(self.matrix)
-        # self.length, self.tour = InitialTour.helsgaun(self.alpha, self.matrix, None, self.candidates, excess)
         self.temp_length = self.length
 
         self.solutions: Set[int] = set()
         self.collector: Optional[Collector] = None
         self.dlb = np.zeros(self.size, dtype=bool) if dlb else None
 
-    def optimize(self):
+    def optimize(self) -> np.ndarray:
         iteration, self.collector = 0, Collector(['length', 'gain'], {'lkh': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
 
@@ -54,9 +54,42 @@ class LkhOpt:
             gain = self.length - self.temp_length
             self.length = self.temp_length
             self.collector.update({'length': self.length, 'gain': gain})
-            self.solutions.add(hash(str(self.tour)))
+            self.solutions.add(get_hash(self.tour))
             iteration += 1
 
+        return self.tour
+
+    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
+        self.solutions = self.solutions | tabu_list.data
+        self.collector = collector
+        self.collector.update({'length': self.length, 'gain': 0})
+
+        better = True
+        while better:
+            better = self.improve()
+            gain = self.length - self.temp_length
+            self.length = self.temp_length
+            self.solutions.add(get_hash(self.tour))
+            self.collector.update({'length': self.length, 'gain': gain})
+
+        return self.tour
+
+    def lkh_optimize(self, iterations=10) -> np.ndarray:
+        self.optimize()
+        best_length, best_tour = self.length, self.tour
+        best_solution = get_set(self.tour)
+
+        for _ in range(iterations):
+            self.dlb = np.zeros(self.size, dtype=bool) if self.dlb is not None else None
+            self.length, self.tour = \
+                InitialTour.helsgaun(self.alpha, self.matrix, best_solution, self.candidates, self.excess)
+            self.temp_length = self.length
+            self.optimize()
+            if self.length < best_length:
+                best_length, best_tour = self.length, self.tour
+                best_solution = get_set(self.tour)
+
+        self.length, self.tour = best_length, best_tour
         return self.tour
 
     def improve(self) -> bool:
@@ -169,7 +202,7 @@ class LkhOpt:
                 if not is_tour and len(added) > 2:
                     continue
 
-                if hash(str(new_tour)) in self.solutions:
+                if get_hash(new_tour) in self.solutions:
                     return False
 
                 if is_tour and relink > 0:
