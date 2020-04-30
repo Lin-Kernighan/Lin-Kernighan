@@ -63,7 +63,7 @@ def _generate(size: int, edges: Set[Edge], broken: Set[Edge], joined: Set[Edge])
 class ListTour(AbcTour):
 
     def __init__(self, tour: np.ndarray):
-        self.tour: blist = blist(tour.tolist())
+        self.tour: blist = blist(tour)
         self.size = len(self.tour)
         self.edges = set()
         for i in range(self.size):
