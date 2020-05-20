@@ -8,7 +8,6 @@ import numpy as np
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.structures.collector import Collector
 from src.structures.tabu_list import TabuSet
-from src.utils import right_rotate
 
 
 # @nb.njit
@@ -57,9 +56,6 @@ class TwoOpt(AbcOpt):
 
         while best_change < 0:
             best_change = self.__two_opt()
-            if best_change >= 0:
-                self.tour = right_rotate(self.tour, len(self.tour) // 3)
-                best_change = self.__two_opt()
             self.length += best_change
             self.collector.update({'length': self.length, 'gain': -best_change})
             print(f'{iteration} : {self.length}')

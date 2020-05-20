@@ -18,13 +18,13 @@ Node = int
 
 class LkhOpt:
 
-    def __init__(self, adjacency: np.ndarray, dlb=True, excess: float = None):
+    def __init__(self, length: float, tour: np.ndarray, adjacency: np.ndarray, dlb=True, excess: float = None):
         self.size, self.matrix = adjacency.shape[0], adjacency
         self.gradient = SubgradientOptimization.run(adjacency)
         SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
-        length, f, s, self.best_solution, topology = one_tree_topology(self.matrix)
-        self.excess = excess if excess is not None else 1 / self.size * length
-        self.alpha = alpha_matrix(self.matrix, f, s, topology)
+        _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
+        self.excess = excess if excess is not None else 1 / self.size * _length
+        self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
         SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
 
         self.candidates = defaultdict(list)
@@ -36,7 +36,7 @@ class LkhOpt:
         for _, candidate in self.candidates.items():
             candidate.sort()
 
-        self.length, self.tour = InitialTour.greedy(self.matrix)
+        self.length, self.tour = length, tour
         self.temp_length = self.length
 
         self.solutions: Set[int] = set()
