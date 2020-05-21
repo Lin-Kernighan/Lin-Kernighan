@@ -5,7 +5,7 @@ import numpy as np
 
 from src.structures.collector import Collector
 from src.structures.tabu_list import TabuSet
-from src.utils import rotate_zero
+from src.utils import rotate_zero, get_length
 
 
 class AbcOpt(ABC):
@@ -42,6 +42,9 @@ class AbcOpt(ABC):
             if gain > 0:
                 logging.info(f'{iteration} : {self.length}')
                 iteration += 1
+
+            assert round(get_length(self.matrix, self.tour), 6) == round(self.length, 6), \
+                f'{get_length(self.matrix, self.tour)} != {self.length}'
 
         return self.tour
 

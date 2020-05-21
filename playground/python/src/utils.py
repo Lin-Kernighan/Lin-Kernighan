@@ -11,6 +11,23 @@ Node = int
 
 
 @njit
+def between(tour: np.ndarray, first: int, second: int, third: int) -> bool:
+    if first < second:  # [ ... start -> ... search ... <- end ... ]
+        if first < third < second:
+            return True
+    else:  # [ ? ... <- end ... start -> ... ? ]
+        if 0 <= third < second or first < third < len(tour):
+            return True
+    return False
+
+
+@njit
+def around(tour: np.ndarray, it: int) -> tuple:
+    s = len(tour)
+    return ((it + 1) % s, tour[(it + 1) % s]), ((it - 1) % s, tour[(it - 1) % s])
+
+
+@njit
 def swap(tour: np.ndarray, x: int, y: int) -> np.ndarray:
     """ Переворот куска тура: [x, y], включительно!
     tour: список городов

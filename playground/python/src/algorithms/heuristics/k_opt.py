@@ -174,7 +174,7 @@ class KOpt(AbcOpt):
         if len(broken) == 4:
             pred, suc = tour.around(last)
 
-            # Give priority to the longest edge for x_4  # почему? зачем?
+            # Give priority to the longest edge for x_4
             if self.matrix[pred][last] > self.matrix[suc][last]:
                 around = [pred]
             else:
