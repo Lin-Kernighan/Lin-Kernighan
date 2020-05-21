@@ -1,38 +1,28 @@
 import warnings
-from time import time
 
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
-from src.algorithms.heuristics.lkh_opt import LkhOpt
+from src.algorithms.heuristics.three_opt import ThreeOpt
+from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import adjacency_matrix
 from src.tsp.generator import generator
+from src.utils import get_length
 
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
-size = 200
+size = 100
 
-x = 0
-for _ in range(25):
-    tsp = generator(size)
-    matrix = adjacency_matrix(tsp)
-    t_start = time()
-    lkh = LkhOpt(matrix, False)
-    lkh.optimize()
-    x += (time() - t_start)
-print(x / 25)
+import logging
 
-# t_start = time()
-# lk = KOpt(l, t, matrix, True)
-# lk.optimize()
-# print(time() - t_start)
-# print(lk.length)
-# draw_tour(lk.tour, tsp, 'b')
-# plt.show()
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
-# a = lkh.collector.as_frame()
-# b = lk.collector.as_frame()
-# a['time'] -= a['time'][0]
-# b['time'] -= b['time'][0]
+tsp = generator(size)
+matrix = adjacency_matrix(tsp)
+length, tour = InitialTour.greedy(matrix)
 
-# draw_plot_x_y([a, b], ['lkh', 'lk'], 'time', 'length', 'plot', 'src')
+two = ThreeOpt(length, tour, matrix)
+two.optimize()
+
+print(get_length(matrix, two.tour))
+print(two.length)

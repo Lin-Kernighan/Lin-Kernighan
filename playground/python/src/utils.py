@@ -11,6 +11,24 @@ Node = int
 
 
 @njit
+def swap(tour: np.ndarray, x: int, y: int) -> np.ndarray:
+    """ Переворот куска тура: [x, y], включительно!
+    tour: список городов
+    x, y: индексы
+    return: измененный список
+    """
+    size, temp = len(tour), 0
+    if x < y:
+        temp = (y - x + 1) // 2
+    elif x > y:
+        temp = ((size - x) + y + 2) // 2
+    for i in range(temp):
+        first, second = (x + i) % size, (y - i) % size
+        tour[first], tour[second] = tour[second], tour[first]
+    return tour
+
+
+@njit
 def make_pair(i: int, j: int) -> Edge:
     """ Правильная пара для упрощения хранения ребер """
     return (i, j) if i > j else (j, i)

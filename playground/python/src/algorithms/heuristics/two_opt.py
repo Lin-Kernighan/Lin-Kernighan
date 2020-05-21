@@ -1,99 +1,54 @@
-from __future__ import annotations
-
 from typing import Tuple
 
-# import numba as nb
+import numba as nb
 import numpy as np
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
-from src.structures.collector import Collector
-from src.structures.tabu_list import TabuSet
-
-
-# @nb.njit
-def _swap(tour: np.ndarray, x: int, y: int) -> np.ndarray:
-    """ Меняем местами два элемента и разворачивает все что между ними """
-    size, temp = len(tour), 0
-    if x < y:
-        temp = (y - x + 1) // 2
-    elif x > y:
-        temp = ((size - x) + y + 2) // 2
-    for i in range(temp):
-        first, second = (x + i) % size, (y - i) % size
-        tour[first], tour[second] = tour[second], tour[first]
-    return tour
-
-
-# @nb.njit
-def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[tuple, float]:
-    """ Просто пробег по вершинам, ищем лучшее """
-    best_change, saved = 0, None
-    size = matrix.shape[0]
-
-    for n in range(matrix.shape[0]):
-        for m in range(n + 2, matrix.shape[0]):
-            i, j = tour[n % size], tour[m % size]
-            x, y = tour[(n + 1) % size], tour[(m + 1) % size]
-            change = matrix[i][j] + matrix[x][y]
-            change -= matrix[i][x] + matrix[j][y]
-            if change < best_change:
-                best_change = change
-                saved = (n, m)
-
-    return saved, best_change
+from src.utils import swap
 
 
 class TwoOpt(AbcOpt):
+    """ Локальный поиск: 2-opt
+    Ищем два ребра, которые можно перецепить, чтобы уменьшить длину тура.
+    Продолжаем до тех пор, пока есть такое преобразование.
+    Вычислительная сложность поиска локального минимума: O(n^2)
+    """
 
-    def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray):
-        super().__init__(length, tour, matrix)
+    def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
+        super().__init__(length, tour, matrix, **kwargs)
 
-    def optimize(self) -> np.ndarray:
-        """ Запуск """
-        best_change, iteration, self.collector = -1, 0, Collector(['length', 'gain'], {'two_opt': self.size})
-        self.collector.update({'length': self.length, 'gain': 0})
-        print(f'start : {self.length}')
-
-        while best_change < 0:
-            best_change = self.__two_opt()
-            self.length += best_change
-            self.collector.update({'length': self.length, 'gain': -best_change})
-            print(f'{iteration} : {self.length}')
-            iteration += 1
-
-        return self.tour
-
-    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
-        """ 2-opt для Tabu search """
-        self.tabu_list, best_change, self.collector = tabu_list, -1, collector
-        self.collector.update({'length': self.length, 'gain': 0})
-
-        while best_change < 0:
-            best_change = self.__tabu_two_opt()
-            self.length += best_change
-            tabu_list.append(self.tour, self.length)
-            self.collector.update({'length': self.length, 'gain': -best_change})
-
-        return self.tour
-
-    def __two_opt(self) -> float:
-        """ Просто 2-opt """
-        saved, best_change = _improve(self.matrix, self.tour)
+    def improve(self) -> float:
+        """ Локальный поиск (поиск изменения + само изменение)
+        return: выигрыш от локального поиска
+        """
+        saved, best_change = self._improve(self.matrix, self.tour)
         if best_change < 0:
             i, j = saved
-            self.tour = _swap(self.tour, i + 1, j)
-        return best_change
+            self.tour = swap(self.tour, i + 1, j)
+            self.length += best_change
+            self.collector.update({'length': self.length, 'gain': -best_change})
+            return -best_change
+        return 0.0
 
-    def __tabu_two_opt(self) -> float:
-        """ 2-opt и проверка """
-        saved, best_change = _improve(self.matrix, self.tour)  # улучшили
+    @staticmethod
+    @nb.njit
+    def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[tuple, float]:
+        """ Основной цикл 2-opt: поиск лучшего измения тура
+        matrix: Матрица весов
+        tour: Список городов
+        return: переворачиваемый интервал, выигрыш
+        """
+        best_change, saved = 0, None
+        size = matrix.shape[0]
 
-        if best_change < 0:
-            i, j = saved
-            tour = _swap(self.tour, i + 1, j)
-            if self.tabu_list.contains(tour):
-                return 0.0
-            else:
-                self.tour = tour  # если не в табу, сохранили
+        for n in range(size):
+            for m in range(n + 2, size):
+                i, j = tour[n % size], tour[m % size]
+                x, y = tour[(n + 1) % size], tour[(m + 1) % size]
+                change = matrix[i][j] + matrix[x][y]
+                change -= matrix[i][x] + matrix[j][y]
+                if change < best_change:
+                    best_change = change
+                    saved = (n, m)
 
-        return best_change
+        return saved, best_change

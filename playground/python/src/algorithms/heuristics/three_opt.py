@@ -1,47 +1,30 @@
-from __future__ import annotations
-
 from typing import Tuple
 
-# import numba as nb
+import numba as nb
 import numpy as np
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
-from src.structures.collector import Collector
-from src.structures.tabu_list import TabuSet
-from src.utils import right_rotate
+from src.utils import swap
 
 
-# TODO: починить swap, чтобы не дергать rotate
-
-# @nb.njit
-def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[int, float, tuple]:
-    """ 3-opt пробег по вершинам """
-    best_exchange, best_gain, best_nodes = 0, 0, None
-    size = matrix.shape[0]
-
-    for x in range(size - 5):
-        for y in range(x + 2, size - 3):
-            for z in range(y + 2, size - 1):
-                exchange, gain = _search(matrix, tour, x, y, z)
-                if gain > best_gain:
-                    best_gain, best_exchange, best_nodes = gain, exchange, (x, y, z)
-
-    return best_exchange, best_gain, best_nodes
-
-
-# @nb.njit
+@nb.njit
 def _search(matrix: np.ndarray, tour: np.ndarray, x: int, y: int, z: int) -> Tuple[int, float]:
-    """ Поиск лучшего среди переборов """
-    a, b, c, d, e, f = tour[x], tour[x + 1], tour[y], tour[y + 1], tour[z], tour[z + 1]
+    """ Поиск лучшей замены, среди всех возможных замен
+    matrix: Матрица весов
+    tour: Список городов
+    x, y, z: Города, для которых пробуем найти изменение тура
+    return: Тип переворота, выигрыш
+    """
+    s = len(tour)
+    a, b, c, d, e, f = tour[x % s], tour[(x + 1) % s], tour[y % s], tour[(y + 1) % s], tour[z % s], tour[(z + 1) % s]
     base = current_min = matrix[a][b] + matrix[c][d] + matrix[e][f]
-    gain = 0
-    exchange = -1
+    gain, exchange = 0, -1
 
-    if current_min > (current := matrix[a][e] + matrix[c][d] + matrix[b][f]):  # 2-opt (a, e) [d, c] (b, f)
+    if current_min > (current := matrix[a][e] + matrix[c][d] + matrix[b][f]):  # 2-opt (a, e) (d, c) (b, f)
         gain, exchange, current_min = base - current, 0, current
-    if current_min > (current := matrix[a][b] + matrix[c][e] + matrix[d][f]):  # 2-opt [a, b] (c, e) (d, f)
+    if current_min > (current := matrix[a][b] + matrix[c][e] + matrix[d][f]):  # 2-opt (a, b) (c, e) (d, f)
         gain, exchange, current_min = base - current, 1, current
-    if current_min > (current := matrix[a][c] + matrix[b][d] + matrix[e][f]):  # 2-opt (a, c) (b, d) [e, f]
+    if current_min > (current := matrix[a][c] + matrix[b][d] + matrix[e][f]):  # 2-opt (a, c) (b, d) (e, f)
         gain, exchange, current_min = base - current, 2, current
     if current_min > (current := matrix[a][d] + matrix[e][c] + matrix[b][f]):  # 3-opt (a, d) (e, c) (b, f)
         gain, exchange, current_min = base - current, 3, current
@@ -55,84 +38,74 @@ def _search(matrix: np.ndarray, tour: np.ndarray, x: int, y: int, z: int) -> Tup
     return exchange, gain
 
 
+@nb.njit
 def _exchange(tour: np.ndarray, best_exchange: int, nodes: tuple) -> np.ndarray:
-    """ Конечная замена """
+    """ Изменение тура, после нахождения лучшего изменения 3-opt
+    tour: Список городов
+    best_exchange: Тип замены
+    nodes: Города
+    return: Новый список городов
+    """
     x, y, z = nodes
-    a, b, c, d, e, f = x, x + 1, y, y + 1, z, z + 1
-    sol = []
+    s = len(tour)
+    a, b, c, d, e, f = x % s, (x + 1) % s, y % s, (y + 1) % s, z % s, (z + 1) % s
     if best_exchange == 0:
-        sol = np.concatenate((tour[:a + 1], tour[e:d - 1:-1], tour[c:b - 1:-1], tour[f:]))
+        tour = swap(tour, b, e)
     elif best_exchange == 1:
-        sol = np.concatenate((tour[:a + 1], tour[b:c + 1], tour[e:d - 1:-1], tour[f:]))
+        tour = swap(tour, d, e)
     elif best_exchange == 2:
-        sol = np.concatenate((tour[:a + 1], tour[c:b - 1:-1], tour[d:e + 1], tour[f:]))
+        tour = swap(tour, b, c)
     elif best_exchange == 3:
-        sol = np.concatenate((tour[:a + 1], tour[d:e + 1], tour[c:b - 1:-1], tour[f:]))
+        tour = swap(swap(tour, b, e), b, b + (e - d))
     elif best_exchange == 4:
-        sol = np.concatenate((tour[:a + 1], tour[d:e + 1], tour[b:c + 1], tour[f:]))
+        tour = swap(swap(swap(tour, b, e), b, b + (e - d)), e - (c - b), e)
     elif best_exchange == 5:
-        sol = np.concatenate((tour[:a + 1], tour[e:d - 1:-1], tour[b:c + 1], tour[f:]))
+        tour = swap(swap(tour, b, e), e - (c - b), e)
     elif best_exchange == 6:
-        sol = np.concatenate((tour[:a + 1], tour[c:b - 1:-1], tour[e:d - 1:-1], tour[f:]))
-    return sol
+        tour = swap(swap(tour, d, e), b, c)
+    return tour
 
 
 class ThreeOpt(AbcOpt):
+    """ Локальный поиск: 3-opt
+    Ищем три ребра, которые можно перецепить, чтобы уменьшить длину тура.
+    Продолжаем до тех пор, пока есть такой случай.
+    Вычислительная сложность поиска локального минимума: O(n^3)
+    """
 
-    def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray):
-        super().__init__(length, tour, matrix)
+    def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
+        super().__init__(length, tour, matrix, **kwargs)
 
-    def optimize(self) -> np.ndarray:
-        """ Запуск """
-        best_gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'three_opt': self.size})
-        self.collector.update({'length': self.length, 'gain': 0})
-        print(f'start : {self.length}')
-
-        while best_gain > 0:
-            best_gain = self.__three_opt()
-            if best_gain <= 0:
-                self.tour = right_rotate(self.tour, len(self.tour) // 3)
-                best_gain = self.__three_opt()
-            self.length -= best_gain
-            self.collector.update({'length': self.length, 'gain': best_gain})
-            print(f'{iteration} : {self.length}')
-            iteration += 1
-
-        return self.tour
-
-    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
-        """ 3-opt для Tabu search """
-        self.tabu_list, best_gain, iteration, self.collector = tabu_list, 1, 0, collector
-        self.collector.update({'length': self.length, 'gain': 0})
-
-        while best_gain > 0:
-            best_gain = self.__tabu_three_opt()
-            if best_gain <= 0:
-                rotate = len(self.tour) // 3 * (iteration % 2 + 1)
-                best_gain = self.__tabu_three_opt(rotate)
-            self.length -= best_gain
-            self.collector.update({'length': self.length, 'gain': best_gain})
-            tabu_list.append(self.tour, self.length)
-            iteration += 1
-
-        return self.tour
-
-    def __three_opt(self) -> float:
-        """ 3-opt """
-        best_exchange, best_gain, best_nodes = _improve(self.matrix, self.tour)
+    def improve(self, **kwargs) -> float:
+        """ Локальный поиск (поиск изменения + само изменение)
+        return: выигрыш от локального поиска
+        """
+        best_exchange, best_gain, best_nodes = self._improve(self.matrix, self.tour)
         if best_gain > 0:
             self.tour = _exchange(self.tour, best_exchange, best_nodes)
-        return best_gain
+            self.length -= best_gain
+            self.collector.update({'length': self.length, 'gain': best_gain})
+            return best_gain
+        return 0.0
 
-    def __tabu_three_opt(self, rotate=0) -> float:
-        """ under tabu 3-opt """
-        tour = self.tour if rotate != 0 else right_rotate(self.tour, rotate)
-        best_exchange, best_gain, best_nodes = _improve(self.matrix, tour)
-        if best_gain > 0:
-            tour = _exchange(tour, best_exchange, best_nodes)
-            tour = tour if rotate != 0 else right_rotate(tour, -rotate)
-            if self.tabu_list.contains(tour):
-                return 0.0
-            else:
-                self.tour = tour
-        return best_gain
+    @staticmethod
+    @nb.njit
+    def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[int, float, tuple]:
+        """ Основной цикл 3-opt: поиск лучшего измения тура
+        matrix: Матрица весов
+        tour: Список городов
+        return: Тип переворота, выигрыш, переворачиваемый интервал
+        """
+        best_exchange, best_gain, best_nodes = 0, 0, None
+        size = matrix.shape[0]
+
+        for x in range(size):
+            for y in range(x + 2, size):
+                for z in range(y + 2, size):
+                    if (z + 1) % size == x:
+                        continue
+                    exchange, gain = _search(matrix, tour, x, y, z)
+                    if gain > best_gain:
+                        best_gain, best_exchange, best_nodes = gain, exchange, (x, y, z)
+
+        return best_exchange, best_gain, best_nodes
