@@ -51,6 +51,17 @@ def make_pair(i: int, j: int) -> Edge:
     return (i, j) if i > j else (j, i)
 
 
+@njit(cache=True)
+def check_dlb(dlb: np.ndarray, idx: int) -> bool:
+    """ Проверка don't look bites
+    idx: индекс города в туре
+    """
+    s = len(dlb)
+    if s != 1 and dlb[idx] and dlb[(idx - 1) % s] and dlb[(idx + 1) % s]:
+        return True
+    return False
+
+
 def get_hash(tour: np.ndarray) -> int:
     """ хеш тура """
     return hash(str(rotate_zero(tour)))

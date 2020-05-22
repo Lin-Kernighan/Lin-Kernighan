@@ -8,7 +8,7 @@ from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWa
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.algorithms.heuristics.double_bridge import double_bridge
-from src.utils import make_pair, swap, between, around
+from src.utils import make_pair, swap, between, around, check_dlb
 
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
@@ -65,7 +65,7 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: 
                 if t4 == t1 or t4 == t2 or t1t4 in set_x or t1t4 in set_y:
                     continue
                 gain = (matrix[t1][t2] + matrix[t3][t4]) - (matrix[t2][t3] + matrix[t4][t1])
-                if gain < 0:
+                if gain <= 0:
                     continue
                 tour = __get_tour(tour, it1, it2, it3, it4)  # проверяем, свапаем
                 if fast:
@@ -108,7 +108,7 @@ class LKOpt(AbcOpt):
         gain, x, y = 0.0, {(0, 0)}, {(0, 0)}
 
         for t1, city in enumerate(self.tour):
-            if self._check_dlb(city):
+            if check_dlb(self.dlb, city):
                 continue
             iteration, gain, tour = _improve(self.tour, self.matrix, self.neighbours, self.dlb, t1, city, 0, x, y)
             if gain > 1.e-10:
@@ -157,12 +157,3 @@ class LKOpt(AbcOpt):
             for idx, node in enumerate(temp):
                 neighbours[i][idx] = node[1]
         return neighbours
-
-    def _check_dlb(self, idx: int) -> bool:
-        """ Проверка don't look bites
-        idx: индекс города в туре
-        """
-        s = self.size
-        if len(self.dlb) != 1 and self.dlb[idx] and self.dlb[(idx - 1) % s] and self.dlb[(idx + 1) % s]:
-            return True
-        return False

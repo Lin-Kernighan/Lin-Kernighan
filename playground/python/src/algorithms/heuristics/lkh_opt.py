@@ -1,246 +1,146 @@
+import logging
 from collections import defaultdict
-from typing import Tuple, Set, Optional
+from typing import Tuple
 
+import numba as nb
 import numpy as np
 
-from src.algorithms.initial_tour import InitialTour
+from src.algorithms.heuristics.abc_opt import AbcOpt
+from src.algorithms.heuristics.lk_opt import __get_tour
 from src.algorithms.subgradient_optimization import SubgradientOptimization
-from src.structures.collector import Collector
 from src.structures.matrix import alpha_matrix
 from src.structures.one_tree import one_tree_topology
-from src.structures.tabu_list import TabuSet
-from src.structures.tour.list_tour import ListTour
-from src.utils import make_pair, get_hash, get_set
-
-Edge = Tuple[int, int]
-Node = int
+from src.utils import check_dlb, around, make_pair, between
 
 
-class LkhOpt:
+@nb.njit(cache=True)
+def _improve(tour: np.ndarray, matrix: np.ndarray, candidates: np.ndarray, dlb: np.ndarray,
+             it1: int, t1: int, iteration: int, best: set, set_y: set) -> Tuple[int, float, np.ndarray]:
+    """ Последовательный 2-opt для эвристики Лина-Кернига-Хельсгауна
+    tour: список городов
+    matrix: матрица весов
+    candidates: набор кандидатов
+    dlb: don't look bits
+    it1, t1: индекс, значение города, с которого начинать
+    iteration: номер итерации var-opt
+    best, set_y: наборы лучших, добавленных ребер
+    """
+    fast = len(dlb) != 1
+    around_t1 = around(tour, it1)
+    for it2, t2 in around_t1:  # кандидаты на t2 (их два)
+        t1t2 = make_pair(t1, t2)
+        if iteration == 0 and t1t2 in best:
+            continue
+        candidates_t3 = candidates[t1]
 
-    def __init__(self, length: float, tour: np.ndarray, adjacency: np.ndarray, dlb=True, excess: float = None):
-        self.size, self.matrix = adjacency.shape[0], adjacency
-        self.gradient = SubgradientOptimization.run(adjacency)
+        for t3 in candidates_t3:  # кандидаты на t3 (их много)
+            if t3 == t2 or t3 == -1 or (matrix[t1][t2] - matrix[t2][t3]) < 0:
+                continue
+            t2t3 = make_pair(t2, t3)
+            it3 = np.where(tour == t3)[0][0]
+            around_t3 = around(tour, it3)
+
+            for it4, t4 in around_t3:  # кандидаты на t4
+                t1t4 = make_pair(t1, t4)
+                if t4 == t1 or t4 == t2:
+                    continue
+                if t1t4 in set_y:
+                    continue
+                if not between(tour, it1, it3, it4) or not between(tour, it4, it2, it1):
+                    continue
+                gain = (matrix[t1][t2] + matrix[t3][t4]) - (matrix[t2][t3] + matrix[t4][t1])
+                if gain <= 0:
+                    continue
+                tour = __get_tour(tour, it1, it2, it3, it4)  # проверяем, свапаем
+                if fast:
+                    dlb[t1] = dlb[t2] = False
+                    dlb[t3] = dlb[t4] = False
+                it4 = np.where(tour == t4)[0][0]
+                set_y.add(t1t4)
+                set_y.add(t2t3)
+                iteration, up, tour = _improve(tour, matrix, candidates, dlb, it4, t4, iteration + 1, best, set_y)
+                gain += up
+                return iteration, gain, tour
+    return iteration, 0.0, tour
+
+
+class LKHOpt(AbcOpt):
+
+    def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
+        super().__init__(length, tour, matrix, **kwargs)
+
+        self.gradient = SubgradientOptimization.run(self.matrix)
         SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
         _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
-        self.excess = excess if excess is not None else 1 / self.size * _length
         self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
         SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
 
+        dlb = kwargs.get('dlb', False)
+        excess = kwargs.get('excess', 1 / self.size * _length)
+        self.bridge, self.fast = kwargs.get('bridge', (2, True))
+
         self.candidates = defaultdict(list)
-        for i in range(0, self.size):
-            for j in range(i + 1, self.size):
-                if self.alpha[i][j] < self.excess:
-                    self.candidates[i].append((self.alpha[i][j], self.matrix[i][j], j))
-                    self.candidates[j].append((self.alpha[i][j], self.matrix[i][j], i))
-        for _, candidate in self.candidates.items():
-            candidate.sort()
+        self.candidates = self._calc_candidates(self.tour, self.alpha, self.matrix, excess)
+        self.dlb = np.zeros(self.size if dlb else 1, dtype=bool)
 
-        self.length, self.tour = length, tour
-        self.temp_length = self.length
+    @staticmethod
+    def _calc_candidates(tour: np.ndarray, alpha: np.ndarray, matrix: np.ndarray, excess: float) -> np.ndarray:
+        max_num, size, candidates = 0, len(matrix), defaultdict(list)
+        for i in tour:
+            for j, dist in enumerate(matrix[i]):
+                if alpha[i][j] < excess:
+                    candidates[i].append((alpha[i][j], matrix[i][j], j))
+            if max_num < len(candidates[i]):
+                max_num = len(candidates[i])
+            candidates[i].sort()
+        temp = np.full((size, max_num), -1, dtype=int)
+        for i, candidate in candidates.items():
+            idx = 0
+            for _, _, j in candidate:
+                temp[i][idx] = j
+                idx += 1
+        return temp
 
-        self.solutions: Set[int] = set()
-        self.collector: Optional[Collector] = None
-        self.dlb = np.zeros(self.size, dtype=bool) if dlb else None
+    def improve(self) -> float:
+        """ Локальный поиск (поиск изменения + само изменение)
+        return: выигрыш от локального поиска
+        """
+        gain, y = 0.0, {(0, 0)}
 
-    def optimize(self) -> np.ndarray:
-        iteration, self.collector = 0, Collector(['length', 'gain'], {'lkh': self.size})
-        self.collector.update({'length': self.length, 'gain': 0})
-
-        better = True
-        while better:
-            print(f'{iteration} : {self.length}')
-            better = self.improve()
-            gain = self.length - self.temp_length
-            self.length = self.temp_length
-            self.collector.update({'length': self.length, 'gain': gain})
-            self.solutions.add(get_hash(self.tour))
-            iteration += 1
-
-        return self.tour
-
-    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
-        self.solutions = self.solutions | tabu_list.data
-        self.collector = collector
-        self.collector.update({'length': self.length, 'gain': 0})
-
-        better = True
-        while better:
-            better = self.improve()
-            gain = self.length - self.temp_length
-            self.length = self.temp_length
-            self.solutions.add(get_hash(self.tour))
-            self.collector.update({'length': self.length, 'gain': gain})
-
-        return self.tour
-
-    def lkh_optimize(self, iterations=10) -> np.ndarray:
-        self.optimize()
-        best_length, best_tour = self.length, self.tour
-        best_solution = get_set(self.tour)
-
-        for _ in range(iterations):
-            self.dlb = np.zeros(self.size, dtype=bool) if self.dlb is not None else None
-            self.length, self.tour = \
-                InitialTour.helsgaun(self.alpha, self.matrix, best_solution, self.candidates, self.excess)
-            self.temp_length = self.length
-            self.optimize()
-            if self.length < best_length:
-                best_length, best_tour = self.length, self.tour
-                best_solution = get_set(self.tour)
-
-        self.length, self.tour = best_length, best_tour
-        return self.tour
-
-    def improve(self) -> bool:
-        tour = ListTour(self.tour)
-
-        for index in range(self.size):
-            t1 = tour[index]
-            if self.dlb is not None \
-                    and self.dlb[t1] and self.dlb[(t1 - 1) % self.size] and self.dlb[(t1 + 1) % self.size]:
+        for t1, city in enumerate(self.tour):
+            if check_dlb(self.dlb, city):
                 continue
+            iteration, gain, tour = _improve(
+                self.tour, self.matrix, self.candidates, self.dlb, t1, city, 0, self.best_solution, y
+            )
+            if gain > 1.e-10:
+                logging.info(f'iteration k-opt : {iteration}')
+                self.tour = tour
+                self.length -= gain
+                self.collector.update({'length': self.length, 'gain': gain})
+                return gain
 
-            around = tour.around(t1)
-
-            for t2 in around:
-                broken = {make_pair(t1, t2)}
-
-                # LKH rule(1)
-                if broken in self.best_solution:
-                    continue
-
-                gain = self.matrix[t1][t2]
-                close = self.closest(t2, tour, gain, broken, set())
-
-                for t3, (_, curr_gain) in close:
-                    if t3 in around:
-                        continue
-
-                    joined = {make_pair(t2, t3)}
-                    if self.choose_x(tour, t1, t3, curr_gain, broken, joined):
-
-                        if self.dlb is not None:
-                            for x, y in broken:
-                                self.dlb[x] = self.dlb[y] = False
-                            for x, y in joined:
-                                self.dlb[x] = self.dlb[y] = False
-
-                        return True
-
-            if self.dlb is not None:
+            if len(self.dlb) != 1:
                 self.dlb[t1] = True
-
-        return False
-
-    def closest(self, t2i: Node, tour: ListTour, gain: float, broken: Set[Edge], joined: Set[Edge]) -> list:
-        """ Find the closest neighbours of a node ordered by potential gain.
-        As a side-effect, also compute the partial improvement of joining a node.
-        t2i: node to relink from
-        tour: current tour to optimise
-        gain: current gain
-        broken: set of edges to remove (X)
-        joined: set of edges to join (Y)
-        return: sorted list of neighbours based on potential improvement with next omission
-        """
-        neighbours = {}
-
-        for _, _, node in self.candidates[t2i]:
-            yi = make_pair(t2i, node)
-            curr_gain = gain - self.matrix[t2i][node]
-
-            # LK rule(2), LK rule(4)
-            if curr_gain <= 0 or yi in broken or yi in tour:
-                continue
-
-            for successor in tour.around(node):
-                xi = make_pair(node, successor)
-
-                # LK rule(4)
-                if xi not in broken and xi not in joined:
-                    diff = self.matrix[node][successor] - self.matrix[t2i][node]
-
-                    if node in neighbours and diff > neighbours[node][0]:
-                        neighbours[node][0] = diff
-                    else:
-                        neighbours[node] = [diff, curr_gain]
-
-        return sorted(neighbours.items(), key=lambda x: x[1][0], reverse=True)
-
-    def choose_x(self, tour: ListTour, t1: Node, last: Node, gain: float, broken: Set[Edge], joined: Set[Edge]) -> bool:
-        """ Choose an edge to omit from the tour.
-        tour: current tour to optimise
-        t1: starting node for the current k-opt
-        last: tail of the last edge added (t_2i-1)
-        gain: current gain (curr_gain)
-        broken: potential edges to remove (X)
-        joined: potential edges to add (Y)
-        return: whether we found an improved tour
-        """
-        if len(broken) == 4:
-            pred, suc = tour.around(last)
-
-            if self.matrix[pred][last] > self.matrix[suc][last]:
-                around = [pred]
-            else:
-                around = [suc]
         else:
-            around = tour.around(last)
+            pass
 
-        for t2i in around:
-            xi = make_pair(last, t2i)
-            curr_gain = gain + self.matrix[last][t2i]
-            if xi not in joined and xi not in broken:
-                added = joined.copy()
-                removed = broken.copy()
-                removed.add(xi)
-                added.add(make_pair(t2i, t1))
-                relink = curr_gain - self.matrix[t2i][t1]
-                new_tour = tour.generate(removed, added)
-                is_tour = False if len(new_tour) == 1 else True
+        return 0.
 
-                if not is_tour and len(added) > 2:
-                    continue
-
-                if get_hash(new_tour) in self.solutions:
-                    return False
-
-                if is_tour and relink > 0:
-                    self.tour = new_tour
-                    self.temp_length -= relink
-                    return True
-                else:
-                    choice = self.choose_y(tour, t1, t2i, curr_gain, removed, joined)
-                    if len(broken) == 2 and choice:
-                        return True
-                    else:
-                        return choice
-        return False
-
-    def choose_y(self, tour: ListTour, t1: Node, t2i: Node, gain: float, broken: Set[Edge], joined: Set[Edge]):
-        """ Choose an edge to add to the new tour.
-        tour: current tour to optimise
-        t1: starting node for the current k-opt
-        t2i: tail of the last edge removed (t_2i)
-        gain: current gain (Gi)
-        broken: potential edges to remove (X)
-        joined: potential edges to add (Y)
-        return: whether we found an improved tour
-        """
-        ordered = self.closest(t2i, tour, gain, broken, joined)
-
-        top = len(ordered) if len(broken) == 2 else 1
-
-        for node, (_, curr_gain) in ordered:
-            yi = make_pair(t2i, node)
-            added = joined.copy()
-            added.add(yi)
-
-            if self.choose_x(tour, t1, node, curr_gain, broken, added):
-                return True
-
-            top -= 1
-            if top == 0:
-                return False
-
-        return False
+    # def lkh_optimize(self, iterations=10) -> np.ndarray:
+    #     self.optimize()
+    #     best_length, best_tour = self.length, self.tour
+    #     best_solution = get_set(self.tour)
+    #
+    #     for _ in range(iterations):
+    #         self.dlb = np.zeros(self.size, dtype=bool) if self.dlb is not None else None
+    #         self.length, self.tour = \
+    #             InitialTour.helsgaun(self.alpha, self.matrix, best_solution, self.candidates, self.excess)
+    #         self.temp_length = self.length
+    #         self.optimize()
+    #         if self.length < best_length:
+    #             best_length, best_tour = self.length, self.tour
+    #             best_solution = get_set(self.tour)
+    #
+    #     self.length, self.tour = best_length, best_tour
+    #     return self.tour
