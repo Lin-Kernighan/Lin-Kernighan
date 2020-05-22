@@ -22,10 +22,13 @@ class InitialTour:
 
     @staticmethod
     @njit(cache=True)
-    def greedy(matrix: np.ndarray, point: Optional[int] = None) -> Tuple[float, np.ndarray]:
-        """ Строим жадным методом """
+    def greedy(matrix: np.ndarray) -> Tuple[float, np.ndarray]:
+        """ Генерация начального тура жадным методом
+        matrix: матрица весов
+        return: длина, список городов
+        """
         length = matrix.shape[0]
-        start = previous = point if point is not None else randrange(0, length)  # я ищу ребро из previous в search
+        start = previous = randrange(0, length)  # я ищу ребро из previous в search
         search, path, k = 0, 0.0, 0
 
         visited = np.zeros((length,), dtype=int64)
@@ -48,13 +51,16 @@ class InitialTour:
         return path, order
 
     @staticmethod
-    def helsgaun(alpha_matrix: np.ndarray,
-                 adjacency_matrix: np.ndarray,
-                 best_solution: Optional[Set[Edge]],
-                 candidates: Dict[int, list],
-                 excess: float) -> Tuple[float, np.ndarray]:
-
-        """ Генерируем новый тур """
+    def helsgaun(alpha_matrix: np.ndarray, adjacency_matrix: np.ndarray, best_solution: Optional[Set[Edge]],
+                 candidates: Dict[int, list], excess: float) -> Tuple[float, np.ndarray]:
+        """ Генерируем новый тур по рецепту Хельгауна, не рекомендуется, если нет лучшего тура
+        alpha_matrix: альфа-матрица
+        adjacency_matrix: матрица весов
+        best_solution: лучший тур в виде ребер
+        candidates: сгенерированные кандидаты для LKH
+        excess: уровень по которому отсекаются кандидаты
+        return: длина, список городов
+        """
         size, k, length = alpha_matrix.shape[0], 0, 0.0
         previous = search = randrange(0, size)  # я ищу ребро из previous в search
         visited = np.zeros(size, dtype=bool)
@@ -104,13 +110,9 @@ class InitialTour:
         return temp
 
     @staticmethod
-    def __best_tour(previous: int,
-                    prices: np.ndarray,
-                    excess: float,
-                    best_solution: Optional[Set[Edge]],
-                    visited: np.ndarray) -> Optional[int]:
+    def __best_tour(previous: int, prices: np.ndarray, excess: float,
+                    best_solution: Optional[Set[Edge]], visited: np.ndarray) -> Optional[int]:
         """ Ищем в лучшем туре """
-
         if best_solution is None:
             return None
 
