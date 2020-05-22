@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from collections import deque, defaultdict
 from math import sqrt
 from typing import Dict

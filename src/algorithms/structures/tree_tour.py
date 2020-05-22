@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import math
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional
+from typing import Tuple
 
 Point = Tuple[float, float]
 Edge = Tuple[int, int]
-
-from abc import ABC, abstractmethod
-from typing import Tuple
 
 
 class AbcTour(ABC):

@@ -129,8 +129,8 @@ class LKHOpt(AbcOpt):
 
             if gain > 1.e-10:
                 logging.info(f'non-seq 4-opt')
-                self.length -= gain
                 self.tour = tour
+                self.length -= gain
 
                 if len(self.dlb) != 1:
                     self.dlb = np.zeros(self.size, dtype=bool)
