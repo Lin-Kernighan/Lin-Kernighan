@@ -54,7 +54,7 @@ def alpha_matrix(adjacency: np.ndarray, f: tuple, s: tuple, topology: Dict[int, 
     return adjacency - matrix
 
 
-@njit
+@njit(parallel=True, cache=True)
 def adjacency_matrix(points: np.ndarray) -> np.ndarray:
     """ Матрица смежности """
     size = points.shape[0]
@@ -66,6 +66,7 @@ def adjacency_matrix(points: np.ndarray) -> np.ndarray:
     return matrix
 
 
+@njit(parallel=True, cache=True)
 def savings_matrix(adjacency: np.ndarray, point: int) -> np.ndarray:
     """ Матрица savings для Clarke-Wright """
     matrix = np.zeros(shape=adjacency.shape)

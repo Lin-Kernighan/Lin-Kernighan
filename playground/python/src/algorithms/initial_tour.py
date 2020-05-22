@@ -21,7 +21,7 @@ class InitialTour:
         pass
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def greedy(matrix: np.ndarray, point: Optional[int] = None) -> Tuple[float, np.ndarray]:
         """ Строим жадным методом """
         length = matrix.shape[0]
@@ -84,7 +84,7 @@ class InitialTour:
         return length, order
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def __zero_alpha(previous: int, prices: np.ndarray, visited: np.ndarray) -> Optional[int]:
         """ Перебираем все ребра с альфа-близостью равной нулю и выбираем из них рандомное """
         zeros = np.array([idx
@@ -131,7 +131,7 @@ class InitialTour:
         return None
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def __just_random(previous: int, prices: np.ndarray, visited: np.ndarray) -> Optional[int]:
         """ Хоть какой-нибудь """
         candidates = np.array([idx for idx, price in enumerate(prices) if not visited[idx] and previous != idx])
