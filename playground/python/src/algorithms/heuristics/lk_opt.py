@@ -89,14 +89,14 @@ class LKOpt(AbcOpt):
     def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
         """
         dlb: don't look bits [boolean]
-        bridge: make double bridge [boolean]
+        bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
         neighbours: number of neighbours [int]
         """
         super().__init__(length, tour, matrix, **kwargs)
 
         dlb = kwargs.get('dlb', False)
         neighbours = kwargs.get('neighbours', 5)
-        self.bridge = kwargs.get('bridge', True)
+        self.bridge, self.fast = kwargs.get('bridge', (2, True))
 
         self.neighbours = self._calc_neighbours(neighbours)
         self.dlb = np.zeros(self.size if dlb else 1, dtype=bool)
@@ -121,8 +121,14 @@ class LKOpt(AbcOpt):
             if len(self.dlb) != 1:
                 self.dlb[t1] = True
 
-        if self.bridge:
-            gain, tour = double_bridge(self.tour, self.matrix)
+        if self.bridge != 0:
+            gain, tour = 0, None
+
+            if self.bridge == 1:
+                gain, tour = double_bridge(self.tour, self.matrix, np.zeros([2, 2], dtype=int), self.fast)
+            elif self.bridge == 2:
+                gain, tour = double_bridge(self.tour, self.matrix, self.neighbours, self.fast)
+
             if gain > 1.e-10:
                 logging.info(f'non-seq 4-opt')
                 self.length -= gain
