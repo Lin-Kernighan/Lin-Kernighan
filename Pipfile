@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+matplotlib = "==3.2.1"
+numpy = "~=1.18.3"
+numba = "~=0.49.0"
+wget = "~=3.2"
+pandas = "~=1.0.3"
+scipy = "~=1.4.1"
+
+[requires]
+python_version = "3.8"
