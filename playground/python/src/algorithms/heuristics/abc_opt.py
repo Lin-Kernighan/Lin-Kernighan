@@ -1,11 +1,12 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Set
 
 import numpy as np
 
 from src.structures.collector import Collector
 from src.structures.tabu_list import TabuSet
-from src.utils import rotate_zero, get_length
+from src.utils import get_length, get_hash
 
 
 class AbcOpt(ABC):
@@ -18,7 +19,8 @@ class AbcOpt(ABC):
         tour: Список городов
         adjacency: Матрица весов
         """
-        self.length, self.tour, self.matrix = length, rotate_zero(tour), adjacency
+        self.length, self.tour, self.matrix = length, tour, adjacency
+        self.solutions: Set[int] = {get_hash(self.tour)}
         self.size = len(tour)
         self.tabu_list = None  # проверенные ранее туры
         self.collector = None  # для сбора данных
@@ -42,6 +44,12 @@ class AbcOpt(ABC):
             if gain > 0:
                 logging.info(f'{iteration} : {self.length}')
                 iteration += 1
+
+            h = get_hash(self.tour)
+            if h in self.solutions:
+                break
+            else:
+                self.solutions.add(h)
 
             assert round(get_length(self.matrix, self.tour), 6) == round(self.length, 6), \
                 f'{get_length(self.matrix, self.tour)} != {self.length}'

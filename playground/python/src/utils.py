@@ -53,7 +53,7 @@ def make_pair(i: int, j: int) -> Edge:
 
 def get_hash(tour: np.ndarray) -> int:
     """ хеш тура """
-    return hash(str(tour))
+    return hash(str(rotate_zero(tour)))
 
 
 def print_matrix(matrix: np.ndarray):

@@ -42,7 +42,7 @@ class TwoOpt(AbcOpt):
         size = matrix.shape[0]
 
         for n in range(size):
-            for m in range(n + 2, size):
+            for m in range(n + 1, size):
                 i, j = tour[n % size], tour[m % size]
                 x, y = tour[(n + 1) % size], tour[(m + 1) % size]
                 change = matrix[i][j] + matrix[x][y]

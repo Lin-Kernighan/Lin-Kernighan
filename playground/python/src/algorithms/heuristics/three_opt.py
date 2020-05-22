@@ -81,7 +81,7 @@ class ThreeOpt(AbcOpt):
         return: выигрыш от локального поиска
         """
         best_exchange, best_gain, best_nodes = self._improve(self.matrix, self.tour)
-        if best_gain > 0:
+        if best_gain > 1.e-10:
             self.tour = _exchange(self.tour, best_exchange, best_nodes)
             self.length -= best_gain
             self.collector.update({'length': self.length, 'gain': best_gain})
@@ -100,10 +100,8 @@ class ThreeOpt(AbcOpt):
         size = matrix.shape[0]
 
         for x in range(size):
-            for y in range(x + 2, size):
-                for z in range(y + 2, size):
-                    if (z + 1) % size == x:
-                        continue
+            for y in range(x + 1, size):
+                for z in range(y + 1, size):
                     exchange, gain = _search(matrix, tour, x, y, z)
                     if gain > best_gain:
                         best_gain, best_exchange, best_nodes = gain, exchange, (x, y, z)
