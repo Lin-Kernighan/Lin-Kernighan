@@ -64,11 +64,13 @@ def __find_neighbours(tour: np.ndarray, matrix: np.ndarray, candidates: np.ndarr
     for ix in range(size):
         x = tour[ix]
         for y in candidates[x]:
+            if y == -1:
+                continue
             for z in candidates[y]:
-                if z == x:
+                if z == x or z == -1:
                     continue
                 for w in candidates[z]:
-                    if w == y or w == x:
+                    if w == y or w == x or w == -1:
                         continue
                     iy, iz, iw = __get_indexes(tour, y, z, w)
                     if not ix < iy < iz < iw:

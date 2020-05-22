@@ -2,9 +2,9 @@ import datetime
 import os
 from typing import List, Tuple, Type
 
-from src.algorithms.heuristics.abc_opt import AbcOpt
-from src.algorithms.initial_tour import InitialTour
-from src.structures.matrix import adjacency_matrix
+from src.algorithms.utils.abc_opt import AbcOpt
+from src.algorithms.utils.initial_tour import InitialTour
+from src.algorithms.structures import adjacency_matrix
 from src.tsp.generator import generator
 from src.tsp.tsp_loader import TspLoader
 from src.utils import draw_plots_i_y, draw_plot_x_y

@@ -3,7 +3,7 @@ from sys import maxsize
 import numba as nb
 import numpy as np
 
-from src.utils import rotate_zero, get_hash
+from src.algorithms.utils.utils import get_hash, rotate_zero
 
 
 @nb.experimental.jitclass(spec=[

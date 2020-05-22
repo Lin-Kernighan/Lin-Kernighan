@@ -4,9 +4,9 @@ from sys import maxsize
 from typing import Tuple
 
 import numpy as np
-from numba import njit
+import numba as nb
 
-from src.structures.one_tree import one_tree
+from src.algorithms.structures.one_tree import one_tree
 
 Edge = Tuple[int, int]
 
@@ -78,7 +78,7 @@ class SubgradientOptimization:
         return opt
 
     @staticmethod
-    @njit(cache=True)
+    @nb.njit(cache=True)
     def make_move(pi: np.ndarray, adjacency_matrix: np.ndarray) -> None:
         """ vertex pi[i] added to all elements of i-row and i-column of adjacency matrix
         """
@@ -88,7 +88,7 @@ class SubgradientOptimization:
                 adjacency_matrix[index][i] += k
 
     @staticmethod
-    @njit(cache=True)
+    @nb.njit(cache=True)
     def get_back(pi: np.ndarray, adjacency_matrix: np.ndarray) -> None:
         """ get matrix before move
         """
@@ -98,7 +98,7 @@ class SubgradientOptimization:
                 adjacency_matrix[index][i] -= k
 
     @staticmethod
-    @njit(cache=True)
+    @nb.njit(cache=True)
     def __get_degrees(first: np.ndarray, second: np.ndarray, length: int) -> np.ndarray:
         """ v^k = d^k - 2,
         where d is vector having as its elements the

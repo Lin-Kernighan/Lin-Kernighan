@@ -5,12 +5,13 @@ from typing import Tuple
 import numba as nb
 import numpy as np
 
-from src.algorithms.heuristics.abc_opt import AbcOpt
-from src.algorithms.heuristics.lk_opt import __get_tour
-from src.algorithms.subgradient_optimization import SubgradientOptimization
-from src.structures.matrix import alpha_matrix
-from src.structures.one_tree import one_tree_topology
-from src.utils import check_dlb, around, make_pair, between
+from src.algorithms.lk_opt import __get_tour
+from src.algorithms.structures.matrix import alpha_matrix
+from src.algorithms.utils.abc_opt import AbcOpt
+from src.algorithms.utils.double_bridge import double_bridge
+from src.algorithms.utils.subgradient_optimization import SubgradientOptimization
+from src.algorithms.structures.one_tree import one_tree_topology
+from src.algorithms.utils.utils import around, make_pair, between, check_dlb
 
 
 @nb.njit(cache=True)
@@ -122,8 +123,20 @@ class LKHOpt(AbcOpt):
 
             if len(self.dlb) != 1:
                 self.dlb[t1] = True
-        else:
-            pass
+
+        if self.bridge != 0:
+            gain, tour = double_bridge(self.tour, self.matrix, self.candidates, self.fast)
+
+            if gain > 1.e-10:
+                logging.info(f'non-seq 4-opt')
+                self.length -= gain
+                self.tour = tour
+
+                if len(self.dlb) != 1:
+                    self.dlb = np.zeros(self.size, dtype=bool)
+
+                self.collector.update({'length': self.length, 'gain': gain})
+                return gain
 
         return 0.
 

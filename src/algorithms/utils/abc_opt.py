@@ -4,9 +4,9 @@ from typing import Set
 
 import numpy as np
 
-from src.structures.collector import Collector
-from src.structures.tabu_list import TabuSet
-from src.utils import get_length, get_hash
+from src.algorithms.structures.collector import Collector
+from src.algorithms.structures.tabu_list import TabuSet
+from src.algorithms.utils.utils import get_hash, get_length
 
 
 class AbcOpt(ABC):

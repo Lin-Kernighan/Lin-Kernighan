@@ -6,8 +6,8 @@ from typing import Tuple
 
 import numpy as np
 
-from src.structures.collector import Collector
-from src.structures.tabu_list import TabuSet
+from src.algorithms.structures.collector import Collector
+from src.algorithms.structures.tabu_list import TabuSet
 
 Node = int
 

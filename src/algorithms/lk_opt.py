@@ -6,9 +6,9 @@ import numba as nb
 import numpy as np
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
-from src.algorithms.heuristics.abc_opt import AbcOpt
-from src.algorithms.heuristics.double_bridge import double_bridge
-from src.utils import make_pair, swap, between, around, check_dlb
+from src.algorithms.utils.abc_opt import AbcOpt
+from src.algorithms.utils.double_bridge import double_bridge
+from src.algorithms.utils.utils import swap, around, make_pair, between, check_dlb
 
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)

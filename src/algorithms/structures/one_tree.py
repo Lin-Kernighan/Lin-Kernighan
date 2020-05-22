@@ -1,11 +1,12 @@
 from typing import Tuple, Dict
 
+import numba as nb
 import numpy as np
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 
-from src.structures.heap import Heap
-from src.utils import make_pair
+from src.algorithms.structures.heap import Heap
+from src.algorithms.utils.utils import make_pair
 
 
 def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
@@ -13,11 +14,15 @@ def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarra
     return: длина графа, два массива в формате начало (src array) - конец (dst array)
     """
     # noinspection PyTypeChecker
-    mst: csr_matrix = minimum_spanning_tree(adjacency_matrix[1:, 1:])
-    coo = mst.tocoo()
+    coo: coo_matrix = minimum_spanning_tree(adjacency_matrix[1:, 1:]).tocoo()
     src, dst, temp = coo.col + 1, coo.row + 1, coo.data.sum()
+    f_node, s_node, f_min, s_min = __search(adjacency_matrix)
+    return temp + f_min + s_min, np.append(src, [0, 0]), np.append(dst, [f_node, s_node])
 
-    f_node, s_node, f_min, s_min = -1, -1, float('+inf'), float('+inf')
+
+@nb.njit(cache=True)
+def __search(adjacency_matrix: np.ndarray) -> tuple:
+    f_node, s_node, f_min, s_min = -1, -1, np.inf, np.inf
     for index, price in enumerate(adjacency_matrix[0]):
         if 0 == index or not price > 0:
             continue
@@ -26,8 +31,7 @@ def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarra
             f_node, f_min = index, price
         elif price < s_min:
             s_node, s_min = index, price
-
-    return temp + f_min + s_min, np.append(src, [0, 0]), np.append(dst, [f_node, s_node])
+    return f_node, s_node, f_min, s_min
 
 
 def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple, set, Dict[int, int]]:
@@ -58,15 +62,7 @@ def one_tree_topology(adjacency_matrix: np.ndarray) -> Tuple[float, tuple, tuple
         length += adjacency_matrix[src][dst]
         k += 1
 
-    f_node, s_node, f_min, s_min = -1, -1, float('+inf'), float('+inf')
-    for index, price in enumerate(adjacency_matrix[0]):
-        if index == 0:
-            continue
-        if price < f_min:
-            s_node, s_min = f_node, f_min
-            f_node, f_min = index, price
-        elif price < s_min:
-            s_node, s_min = index, price
+    f_node, s_node, f_min, s_min = __search(adjacency_matrix)
 
     edges.add(make_pair(0, f_node))
     edges.add(make_pair(0, s_node))
