@@ -1,26 +1,21 @@
-import warnings
-
-from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import logging
+from time import time
 
 from src.algorithms.heuristics.lk_opt import LKOpt
 from src.algorithms.initial_tour import InitialTour
 from src.structures.matrix import adjacency_matrix
 from src.tsp.generator import generator
 
-warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
-warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
-
-size = 1000
-
-import logging
-
+size = 200
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 for _ in range(1):
+    t_start = time()
     tsp = generator(size)
     matrix = adjacency_matrix(tsp)
     length, tour = InitialTour.greedy(matrix)
 
-    two = LKOpt(length, tour, matrix, neighbours=25, bridge=False)
+    two = LKOpt(length, tour, matrix, neighbours=5, bridge=True)
     two.optimize()
-    print(two.length)
+    logging.info(f'time: {time() - t_start}')
+    logging.info(f'length: {two.length}')

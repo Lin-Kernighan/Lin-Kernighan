@@ -1,15 +1,21 @@
 import logging
+import warnings
 from typing import Tuple
 
 import numba as nb
 import numpy as np
+from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
 from src.algorithms.heuristics.abc_opt import AbcOpt
+from src.algorithms.heuristics.double_bridge import double_bridge
 from src.utils import make_pair, swap, between, around
+
+warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 @nb.njit(cache=True)
-def _get_tour(tour: np.ndarray, it1: int, it2: int, it3: int, it4: int) -> np.ndarray:
+def __get_tour(tour: np.ndarray, it1: int, it2: int, it3: int, it4: int) -> np.ndarray:
     """ Выполняем k-opt для указанных города
     tour: список городов
     it1, it2, it3, it4: найденные города
@@ -61,7 +67,7 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: 
                 gain = (matrix[t1][t2] + matrix[t3][t4]) - (matrix[t2][t3] + matrix[t4][t1])
                 if gain < 0:
                     continue
-                tour = _get_tour(tour, it1, it2, it3, it4)  # проверяем, свапаем
+                tour = __get_tour(tour, it1, it2, it3, it4)  # проверяем, свапаем
                 if fast:
                     dlb[t1] = dlb[t2] = dlb[t3] = dlb[t4] = False
                 set_x.add(t1t2)
@@ -73,60 +79,6 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: 
                 gain += up
                 return iteration, gain, tour
     return iteration, 0.0, tour
-
-
-@nb.njit(cache=True)
-def _double_bridge(tour: np.ndarray, matrix: np.ndarray) -> Tuple[float, np.ndarray]:
-    """ Двойной мост - непоследовательный 4-opt
-    tour: список городов
-    matrix: матрица весов
-    return: выигрыш, новый тур
-    """
-    best_gain, exchange, size = 0.0, None, len(tour)
-
-    for x in range(size):
-        for y in range(x + 1, size):
-            for z in range(y + 1, size):
-                for w in range(z + 1, size):
-                    if (w + 1) % size == x:
-                        continue
-                    it11, it12 = tour[x % size], tour[(x + 1) % size]
-                    it21, it22 = tour[y % size], tour[(y + 1) % size]
-                    it31, it32 = tour[z % size], tour[(z + 1) % size]
-                    it41, it42 = tour[w % size], tour[(w + 1) % size]
-                    old = matrix[it11][it12] + matrix[it21][it22] + matrix[it31][it32] + matrix[it41][it42]
-                    new = matrix[it11][it32] + matrix[it12][it31] + matrix[it21][it42] + matrix[it22][it41]
-                    gain = old - new
-                    if best_gain < gain:
-                        best_gain, exchange = gain, (x, y, z, w)
-                        break
-
-    if best_gain > 1.e-10:
-        (x, y, z, w), idx = exchange, 0
-        temp = np.zeros(size, dtype=nb.int64)
-        idx = _copy_slice(temp, tour, x + 1, y, idx)
-        idx = _copy_slice(temp, tour, w + 1, x, idx)
-        idx = _copy_slice(temp, tour, z + 1, w, idx)
-        _copy_slice(temp, tour, y + 1, z, idx)
-        return best_gain, temp
-
-    return 0., tour
-
-
-@nb.njit(cache=True)
-def _copy_slice(temp: np.ndarray, tour: np.ndarray, x: int, y: int, idx: int) -> int:
-    """ Перекопирование тура в правильном порудке для двойного моста
-    temp: куда копируем
-    tour: текущий тур
-    x, y, idx: откуда, докуда, куда
-    """
-    size = len(tour)
-    i, j = x % size, (y + 1) % size
-    while i != j:
-        temp[idx] = tour[i]
-        i = (i + 1) % size
-        idx += 1
-    return idx
 
 
 class LKOpt(AbcOpt):
@@ -170,7 +122,7 @@ class LKOpt(AbcOpt):
                 self.dlb[t1] = True
 
         if self.bridge:
-            gain, tour = _double_bridge(self.tour, self.matrix)
+            gain, tour = double_bridge(self.tour, self.matrix)
             if gain > 1.e-10:
                 logging.info(f'non-seq 4-opt')
                 self.length -= gain

@@ -31,7 +31,7 @@ class AbcOpt(ABC):
         return: выигрыш от локального поиска
         """
 
-    def optimize(self, **kwargs) -> np.ndarray:
+    def optimize(self) -> np.ndarray:
         """ Запуск локального поиска
         return: новый маршрут
         """
@@ -45,18 +45,18 @@ class AbcOpt(ABC):
                 logging.info(f'{iteration} : {self.length}')
                 iteration += 1
 
-            h = get_hash(self.tour)
-            if h in self.solutions:
-                break
-            else:
-                self.solutions.add(h)
+            # h = get_hash(self.tour)
+            # if h in self.solutions:
+            #     break
+            # else:
+            #     self.solutions.add(h)
 
             assert round(get_length(self.matrix, self.tour), 6) == round(self.length, 6), \
                 f'{get_length(self.matrix, self.tour)} != {self.length}'
 
         return self.tour
 
-    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector, **kwargs) -> np.ndarray:
+    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
         """ Запуск локального поиска под управление tabu search
         tabu_list: проверенные ранее маршруты
         collector: структура для сбора данных о локальном поиске

@@ -10,7 +10,7 @@ Point = Tuple[float, float]
 Node = int
 
 
-@njit
+@njit(cache=True)
 def between(tour: np.ndarray, first: int, second: int, third: int) -> bool:
     if first < second:  # [ ... start -> ... search ... <- end ... ]
         if first < third < second:
@@ -21,13 +21,13 @@ def between(tour: np.ndarray, first: int, second: int, third: int) -> bool:
     return False
 
 
-@njit
+@njit(cache=True)
 def around(tour: np.ndarray, it: int) -> tuple:
     s = len(tour)
     return ((it + 1) % s, tour[(it + 1) % s]), ((it - 1) % s, tour[(it - 1) % s])
 
 
-@njit
+@njit(cache=True)
 def swap(tour: np.ndarray, x: int, y: int) -> np.ndarray:
     """ Переворот куска тура: [x, y], включительно!
     tour: список городов
@@ -45,7 +45,7 @@ def swap(tour: np.ndarray, x: int, y: int) -> np.ndarray:
     return tour
 
 
-@njit
+@njit(cache=True)
 def make_pair(i: int, j: int) -> Edge:
     """ Правильная пара для упрощения хранения ребер """
     return (i, j) if i > j else (j, i)
@@ -87,7 +87,7 @@ def to_array(points: List[Point]) -> np.ndarray:
     return np.array(points, dtype=('f8', 'f8'))
 
 
-@njit
+@njit(cache=True)
 def get_length(matrix: np.ndarray, tour: np.ndarray) -> float:
     """ Взятие длины по матрице смежности и туру в виде последовательных нод """
     length = matrix[tour[0]][tour[-1]]

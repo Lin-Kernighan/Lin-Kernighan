@@ -7,7 +7,7 @@ from src.algorithms.heuristics.abc_opt import AbcOpt
 from src.utils import swap
 
 
-@nb.njit
+@nb.njit(cache=True)
 def _search(matrix: np.ndarray, tour: np.ndarray, x: int, y: int, z: int) -> Tuple[int, float]:
     """ Поиск лучшей замены, среди всех возможных замен
     matrix: Матрица весов
@@ -38,7 +38,7 @@ def _search(matrix: np.ndarray, tour: np.ndarray, x: int, y: int, z: int) -> Tup
     return exchange, gain
 
 
-@nb.njit
+@nb.njit(cache=True)
 def _exchange(tour: np.ndarray, best_exchange: int, nodes: tuple) -> np.ndarray:
     """ Изменение тура, после нахождения лучшего изменения 3-opt
     tour: Список городов
@@ -89,14 +89,14 @@ class ThreeOpt(AbcOpt):
         return 0.0
 
     @staticmethod
-    @nb.njit
+    @nb.njit(cache=True)
     def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[int, float, tuple]:
         """ Основной цикл 3-opt: поиск лучшего измения тура
         matrix: Матрица весов
         tour: Список городов
         return: Тип переворота, выигрыш, переворачиваемый интервал
         """
-        best_exchange, best_gain, best_nodes = 0, 0, None
+        best_exchange, best_gain, best_nodes = 0, 0, (0, 0, 0)
         size = matrix.shape[0]
 
         for x in range(size):

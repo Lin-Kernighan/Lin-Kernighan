@@ -31,14 +31,14 @@ class TwoOpt(AbcOpt):
         return 0.0
 
     @staticmethod
-    @nb.njit
+    @nb.njit(cache=True)
     def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[tuple, float]:
         """ Основной цикл 2-opt: поиск лучшего измения тура
         matrix: Матрица весов
         tour: Список городов
         return: переворачиваемый интервал, выигрыш
         """
-        best_change, saved = 0, None
+        best_change, saved = 0, (0, 0)
         size = matrix.shape[0]
 
         for n in range(size):
