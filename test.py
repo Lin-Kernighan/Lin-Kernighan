@@ -2,12 +2,13 @@ import faulthandler
 import logging
 
 from src.algorithms.lk_opt import LKOpt
+from src.algorithms.lkh_opt import LKHOpt
 from src.algorithms.structures.matrix import adjacency_matrix
 from src.algorithms.two_opt import TwoOpt
 from src.algorithms.utils.initial_tour import InitialTour
 from src.tsp.generator import generator
 
-size = 1500
+size = 600
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 faulthandler.enable()
@@ -18,7 +19,7 @@ for _ in range(num):
     matrix = adjacency_matrix(tsp)
     length, tour = InitialTour.greedy(matrix)
 
-    lk = LKOpt(length, tour.copy(), matrix.copy(), neighbours=5, k=5, dlb=True)
+    lk = LKHOpt(length, tour.copy(), matrix.copy())
     lk.optimize()
 
     # two = TwoOpt(length, tour.copy(), matrix.copy(), mul=15)

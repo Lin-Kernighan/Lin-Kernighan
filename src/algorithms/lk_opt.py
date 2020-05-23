@@ -50,7 +50,7 @@ def __validation(size: int, it1: int, it2: int, it3: int, it4: int) -> bool:
 
 @nb.njit
 def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: np.ndarray,
-             it1: int, t1: int, solutions: set, i: int) -> Tuple[float, np.ndarray]:
+             it1: int, t1: int, solutions: set, k: int) -> Tuple[float, np.ndarray]:
     """ Последовательный 2-opt для эвристики Лина-Кернига
     tour: список городов
     matrix: матрица весов
@@ -59,7 +59,7 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: 
     it1, t1: индекс, значение города, с которого начинать
     solutions: полученные ранее туры
     set_x, set_y: наборы удаленных, добавленных ребер
-    i: i-opt, сколько можно сделать последовательных улучшений
+    k: k-opt, k - кол-во сколько можно сделать последовательных улучшений
     return: выигрыш, новый тур
     """
     around_t1 = around(tour, it1)
@@ -72,7 +72,7 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: 
                 continue
             set_y = {make_pair(t2, t3)}
             it3 = np.where(tour == t3)[0][0]
-            _gain, _tour = __choose_t4(tour, matrix, it1, it2, it3, neighbours, gain, set_x, set_y, dlb, solutions, i)
+            _gain, _tour = __choose_t4(tour, matrix, it1, it2, it3, neighbours, gain, set_x, set_y, dlb, solutions, k)
             if _gain > 1.e-10:
                 return _gain, _tour
 
@@ -81,7 +81,7 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, neighbours: np.ndarray, dlb: 
 
 @nb.njit
 def __choose_t4(tour: np.ndarray, matrix: np.ndarray, it1: int, it2: int, it3: int, neighbours: np.ndarray,
-                gain: float, set_x: set, set_y: set, dlb: np.ndarray, sol: set, i: int) -> Tuple[float, np.ndarray]:
+                gain: float, set_x: set, set_y: set, dlb: np.ndarray, sol: set, k: int) -> Tuple[float, np.ndarray]:
     """ Выбираем город t2i - город, который создаст ребро на удаление
     tour: список городов
     matrix: матрица весов
@@ -91,14 +91,14 @@ def __choose_t4(tour: np.ndarray, matrix: np.ndarray, it1: int, it2: int, it3: i
     set_x, set_y: наборы удаленных, добавленных ребер
     dlb: don't look bits
     sol: существующие решения
-    i: i-opt, сколько можно сделать последовательных улучшений
+    k: k-opt, k - кол-во сколько можно сделать последовательных улучшений
     return: выигрыш, новый тур
     """
     t1, t2, t3 = tour[it1], tour[it2], tour[it3]
     around_t3 = around(tour, it3)
 
     for it4, t4 in around_t3:
-        if len(set_y) == i - 1:  # выбираем длиннейшее ребро на последней итерации
+        if len(set_y) == k - 1:  # выбираем длиннейшее ребро на последней итерации
             if matrix[t3][around_t3[0][1]] < matrix[t3][around_t3[1][1]] and around_t3[0][1] == t4:
                 break
             if matrix[t3][around_t3[0][1]] > matrix[t3][around_t3[1][1]] and around_t3[0][1] == t4:
@@ -126,8 +126,8 @@ def __choose_t4(tour: np.ndarray, matrix: np.ndarray, it1: int, it2: int, it3: i
             if len(dlb) != 1:
                 dlb[t1] = dlb[t2] = dlb[t3] = dlb[t4] = False
             return _gain, _tour
-        elif len(_set_x) <= i:
-            _gain, _tour = __choose_t5(_tour, matrix, _it1, _it4, neighbours, _gain, _set_x, _set_y, dlb, sol, i)
+        elif len(_set_x) <= k:
+            _gain, _tour = __choose_t5(_tour, matrix, _it1, _it4, neighbours, _gain, _set_x, _set_y, dlb, sol, k)
             if _gain > 1.e-10:
                 if len(dlb) != 1:
                     dlb[t1] = dlb[t2] = dlb[t3] = dlb[t4] = False
@@ -140,7 +140,7 @@ def __choose_t4(tour: np.ndarray, matrix: np.ndarray, it1: int, it2: int, it3: i
 
 @nb.njit
 def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, neighbours: np.ndarray,
-                gain: float, set_x: set, set_y: set, dlb: np.ndarray, sol: set, i: int) -> Tuple[float, np.ndarray]:
+                gain: float, set_x: set, set_y: set, dlb: np.ndarray, sol: set, k: int) -> Tuple[float, np.ndarray]:
     """ Выбираем город t2i+1 - город, который создаст ребро на добавление
     tour: список городов
     matrix: матрица весов
@@ -150,7 +150,7 @@ def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, neighb
     set_x, set_y: наборы удаленных, добавленных ребер
     dlb: don't look bits
     sol: существующие решения
-    i: i-opt, сколько можно сделать последовательных улучшений
+    k: k-opt, k - кол-во сколько можно сделать последовательных улучшений
     return: выигрыш, новый тур
     """
     t1, t4 = tour[it1], tour[it4]
@@ -169,7 +169,7 @@ def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, neighb
         _set_y.add(t4t5)
 
         it5 = np.where(tour == t5)[0][0]
-        _gain, _tour = __choose_t4(tour, matrix, it1, it4, it5, neighbours, _gain, set_x, _set_y, dlb, sol, i)
+        _gain, _tour = __choose_t4(tour, matrix, it1, it4, it5, neighbours, _gain, set_x, _set_y, dlb, sol, k)
         if _gain > 1.e-10:
             return _gain, _tour
 

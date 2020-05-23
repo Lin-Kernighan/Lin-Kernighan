@@ -5,78 +5,171 @@ from typing import Tuple
 import numba as nb
 import numpy as np
 
-from src.algorithms.lk_opt import __get_tour
+from src.algorithms.lk_opt import __get_tour, __validation
 from src.algorithms.structures.matrix import alpha_matrix
+from src.algorithms.structures.one_tree import one_tree_topology
 from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.double_bridge import double_bridge
+from src.algorithms.utils.hash import generate_hash
 from src.algorithms.utils.subgradient_optimization import SubgradientOptimization
-from src.algorithms.structures.one_tree import one_tree_topology
-from src.algorithms.utils.utils import around, make_pair, between, check_dlb
+from src.algorithms.utils.utils import around, make_pair, check_dlb
 
 
-@nb.njit(cache=True)
+@nb.njit
 def _improve(tour: np.ndarray, matrix: np.ndarray, candidates: np.ndarray, dlb: np.ndarray,
-             it1: int, t1: int, iteration: int, best: set, set_y: set) -> Tuple[int, float, np.ndarray]:
+             it1: int, t1: int, best: set, solutions: set, k: int) -> Tuple[float, np.ndarray]:
     """ Последовательный 2-opt для эвристики Лина-Кернига-Хельсгауна
     tour: список городов
     matrix: матрица весов
     candidates: набор кандидатов
     dlb: don't look bits
     it1, t1: индекс, значение города, с которого начинать
-    iteration: номер итерации var-opt
-    best, set_y: наборы лучших, добавленных ребер
+    solutions: полученные ранее туры
+    best, set_y: наборы лушчих, добавленных ребер
+    k: k-opt, k - кол-во сколько можно сделать последовательных улучшений
+    return: выигрыш, новый тур
     """
-    fast = len(dlb) != 1
     around_t1 = around(tour, it1)
-    for it2, t2 in around_t1:  # кандидаты на t2 (их два)
+    for it2, t2 in around_t1:
         t1t2 = make_pair(t1, t2)
-        if iteration == 0 and t1t2 in best:
+        if t1t2 in best:
             continue
-        candidates_t3 = candidates[t2]
 
-        for t3 in candidates_t3:  # кандидаты на t3 (их много)
-            if t3 == t2 or t3 == -1 or (matrix[t1][t2] - matrix[t2][t3]) < 0:
+        for t3 in candidates[t2]:
+            if t3 == -1:
                 continue
-            t2t3 = make_pair(t2, t3)
-            it3 = np.where(tour == t3)[0][0]
-            around_t3 = around(tour, it3)
+            gain = matrix[t1][t2] - matrix[t2][t3]
+            if t3 == around_t1[0][1] or t3 == around_t1[1][1] or not gain > 1.e-10:
+                continue
 
-            for it4, t4 in around_t3:  # кандидаты на t4
-                t1t4 = make_pair(t1, t4)
-                if t4 == t1 or t4 == t2:
-                    continue
-                if t1t4 in set_y:
-                    continue
-                if not between(tour, it1, it3, it4) or not between(tour, it4, it2, it1):
-                    continue
-                gain = (matrix[t1][t2] + matrix[t3][t4]) - (matrix[t2][t3] + matrix[t4][t1])
-                if gain <= 0:
-                    continue
-                tour = __get_tour(tour, it1, it2, it3, it4)  # проверяем, свапаем
-                if fast:
-                    dlb[t1] = dlb[t2] = False
-                    dlb[t3] = dlb[t4] = False
-                it4 = np.where(tour == t4)[0][0]
-                set_y.add(t1t4)
-                set_y.add(t2t3)
-                iteration, up, tour = _improve(tour, matrix, candidates, dlb, it4, t4, iteration + 1, best, set_y)
-                gain += up
-                return iteration, gain, tour
-    return iteration, 0.0, tour
+            it3 = np.where(tour == t3)[0][0]
+            set_y = {make_pair(t2, t3)}
+            _gain, _tour = __choose_t4(tour, matrix, it1, it2, it3, candidates, gain, set_y, dlb, solutions, k)
+            if _gain > 1.e-10:
+                return _gain, _tour
+
+    return 0., tour
+
+
+@nb.njit
+def __choose_t4(tour: np.ndarray, matrix: np.ndarray, it1: int, it2: int, it3: int, candidates: np.ndarray,
+                gain: float, set_y: set, dlb: np.ndarray, sol: set, k: int) -> Tuple[float, np.ndarray]:
+    """ Выбираем город t2i - город, который создаст ребро на удаление
+    tour: список городов
+    matrix: матрица весов
+    it1, it2, it3: города t1, t2i, t2i+1, их индексы
+    candidates: набор кандидатов
+    gain: текущий выигрыш
+    set_y: набор добавленных ребер
+    dlb: don't look bits
+    sol: существующие решения
+    k: k-opt, k - кол-во сколько можно сделать последовательных улучшений
+    return: выигрыш, новый тур
+    """
+    t1, t2, t3 = tour[it1], tour[it2], tour[it3]
+    around_t3 = around(tour, it3)
+
+    for it4, t4 in around_t3:
+        t3t4 = make_pair(t3, t4)
+        if t3t4 in set_y:
+            continue
+        if not __validation(len(tour), it1, it2, it3, it4):  # проверяем на корректность
+            continue
+
+        _tour = tour.copy()
+        _it1, _it4 = __get_tour(_tour, it1, it2, it3, it4)  # единственное место, где меняется тур
+
+        _set_y = set_y.copy()
+        _set_y.add(make_pair(t1, t4))
+
+        if generate_hash(_tour) in sol:  # проверяем, был ли такой раньше
+            continue
+
+        _gain = gain + (matrix[t3][t4] - matrix[t1][t4])
+        if _gain > 1.e-10:
+            if len(dlb) != 1:
+                dlb[t1] = dlb[t2] = dlb[t3] = dlb[t4] = False
+            return _gain, _tour
+        elif len(_set_y) <= k:
+            _gain, _tour = __choose_t5(_tour, matrix, _it1, _it4, candidates, _gain, _set_y, dlb, sol, k)
+            if _gain > 1.e-10:
+                if len(dlb) != 1:
+                    dlb[t1] = dlb[t2] = dlb[t3] = dlb[t4] = False
+                return _gain, _tour
+        else:
+            break
+
+    return 0., tour
+
+
+@nb.njit
+def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, candidates: np.ndarray,
+                gain: float, set_y: set, dlb: np.ndarray, sol: set, k: int) -> Tuple[float, np.ndarray]:
+    """ Выбираем город t2i+1 - город, который создаст ребро на добавление
+    tour: список городов
+    matrix: матрица весов
+    it1, it4: города t1 и t2i, их индексы
+    candidates: набор кандидатов
+    gain: текущий выигрыш
+    set_y: набор добавленных ребер
+    dlb: don't look bits
+    sol: существующие решения
+    k: k-opt, k - кол-во сколько можно сделать последовательных улучшений
+    return: выигрыш, новый тур
+    """
+    t1, t4 = tour[it1], tour[it4]
+    around_t1 = around(tour, t1)
+    for t5 in candidates[t4]:
+        if t5 == -1 or t5 == around_t1[0][1] or t5 == around_t1[1][1]:
+            continue
+
+        t4t5 = make_pair(t4, t5)
+
+        _gain = gain + (matrix[t1][t4] - matrix[t4][t5])
+        if not _gain > 1.e-10:
+            continue
+
+        _set_y = set_y.copy()
+        _set_y.add(t4t5)
+
+        it5 = np.where(tour == t5)[0][0]
+        _gain, _tour = __choose_t4(tour, matrix, it1, it4, it5, candidates, _gain, _set_y, dlb, sol, k)
+        if _gain > 1.e-10:
+            return _gain, _tour
+
+    return 0., tour
 
 
 class LKHOpt(AbcOpt):
+    """ Локальный поиск: алгоритм Лина-Кернигана
+    Вычислительная сложность поиска локального минимума: O(n^2.6)?
+    Улучшен набором кандидатов
+    """
 
     def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
+        """
+        dlb: don't look bits [boolean]
+        bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
+        excess: parameter for cut bad candidates [float]
+        k: number of k for k-opt; how many sequential can make algorithm [int]
+        subgradient: use or not subgradient optimization
+        """
         super().__init__(length, tour, matrix, **kwargs)
 
-        self.gradient = SubgradientOptimization.run(self.matrix)
-        SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
-        _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
-        self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
-        SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
+        subgradient = kwargs.get('subgradient', True)
+
+        if subgradient:
+            self.gradient = SubgradientOptimization.run(self.matrix)
+            SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
+            _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
+            self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
+            SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
+        else:
+            _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
+            self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
 
         dlb = kwargs.get('dlb', False)
+        self.k = kwargs.get('k', 5)
         excess = kwargs.get('dlb', 1) * kwargs.get('excess', 1 / self.size * _length)
         self.bridge, self.fast = kwargs.get('bridge', (2, True))
 
@@ -86,6 +179,13 @@ class LKHOpt(AbcOpt):
 
     @staticmethod
     def _calc_candidates(tour: np.ndarray, alpha: np.ndarray, matrix: np.ndarray, excess: float) -> np.ndarray:
+        """ Отбираем кандидатов по альфа-мере
+        tour: список городов
+        alpha: матрица альфа-мер
+        matrix: матрица весов
+        excess: уровень по которому отбираем кандидатов
+        return: матрица кандидатов [size * max(num of candidates for i)], пустое заполнено -1
+        """
         max_num, size, candidates = 0, len(matrix), defaultdict(list)
         for i in tour:
             for j, dist in enumerate(matrix[i]):
@@ -106,16 +206,14 @@ class LKHOpt(AbcOpt):
         """ Локальный поиск (поиск изменения + само изменение)
         return: выигрыш от локального поиска
         """
-        gain, y = 0.0, {(0, 0)}
-
-        for t1, city in enumerate(self.tour):
-            if check_dlb(self.dlb, city):
+        for it1, t1 in enumerate(self.tour):
+            if check_dlb(self.dlb, t1):
                 continue
-            iteration, gain, tour = _improve(
-                self.tour, self.matrix, self.candidates, self.dlb, t1, city, 0, self.best_solution, y
+            gain, tour = _improve(
+                self.tour, self.matrix, self.candidates, self.dlb, it1, t1, self.best_solution, self.solutions, self.k
             )
             if gain > 1.e-10:
-                logging.info(f'iteration k-opt : {iteration}')
+                logging.info(f'iteration k-opt')
                 self.tour = tour
                 self.length -= gain
                 self.collector.update({'length': self.length, 'gain': gain})
