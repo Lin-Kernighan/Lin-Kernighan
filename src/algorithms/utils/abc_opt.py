@@ -20,6 +20,7 @@ class AbcOpt(ABC):
         tour: Список городов
         adjacency: Матрица весов
         """
+        logging.info('initialization')
         self.length, self.tour, self.matrix = length, tour, adjacency
         self.solutions: Set[int] = {generate_hash(self.tour)}
         self.size = len(tour)

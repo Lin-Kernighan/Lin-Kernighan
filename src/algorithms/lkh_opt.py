@@ -151,6 +151,7 @@ class LKHOpt(AbcOpt):
         dlb: don't look bits [boolean]
         bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
         excess: parameter for cut bad candidates [float]
+        mul: excess factor
         k: number of k for k-opt; how many sequential can make algorithm [int]
         subgradient: use or not subgradient optimization
         """
@@ -161,16 +162,19 @@ class LKHOpt(AbcOpt):
         if subgradient:
             self.gradient = SubgradientOptimization.run(self.matrix)
             SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
+            logging.info(f'subgradient optimization')
             _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
+            logging.info(f'alpha-matrix')
             SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
         else:
             _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
+            logging.info(f'alpha-matrix')
 
         dlb = kwargs.get('dlb', False)
         self.k = kwargs.get('k', 5)
-        excess = kwargs.get('dlb', 1) * kwargs.get('excess', 1 / self.size * _length)
+        excess = kwargs.get('mul', 1) * kwargs.get('excess', 1 / self.size * _length)
         self.bridge, self.fast = kwargs.get('bridge', (2, True))
 
         self.candidates = defaultdict(list)
