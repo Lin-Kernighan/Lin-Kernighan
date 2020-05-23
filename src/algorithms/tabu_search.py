@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+import logging
 from random import randint
 from sys import maxsize
 from typing import Tuple
@@ -29,7 +28,7 @@ class TabuSearch:
             self.opt.tabu_optimize(self.data, self.collector)
             if best_cost > self.best_tour()[0]:
                 self.length, self.tour = self.best_tour()
-            print(f'{iteration} : {self.best_tour()[0]} : {self.length}')
+            logging.info(f'{iteration} : {self.best_tour()[0]} : {self.length}')
             for _ in range(swap):
                 self.swap()
             iteration -= 1

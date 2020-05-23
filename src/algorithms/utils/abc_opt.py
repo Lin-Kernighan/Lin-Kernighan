@@ -6,7 +6,8 @@ import numpy as np
 
 from src.algorithms.structures.collector import Collector
 from src.algorithms.structures.tabu_list import TabuSet
-from src.algorithms.utils.utils import get_hash, get_length
+from src.algorithms.utils.hash import generate_hash
+from src.algorithms.utils.utils import get_length
 
 
 class AbcOpt(ABC):
@@ -20,8 +21,9 @@ class AbcOpt(ABC):
         adjacency: Матрица весов
         """
         self.length, self.tour, self.matrix = length, tour, adjacency
-        self.solutions: Set[int] = {get_hash(self.tour)}
+        self.solutions: Set[int] = {generate_hash(self.tour)}
         self.size = len(tour)
+
         self.tabu_list = None  # проверенные ранее туры
         self.collector = None  # для сбора данных
 
@@ -45,14 +47,14 @@ class AbcOpt(ABC):
                 logging.info(f'{iteration} : {self.length}')
                 iteration += 1
 
-            # h = get_hash(self.tour)
-            # if h in self.solutions:
-            #     break
-            # else:
-            #     self.solutions.add(h)
+            h = generate_hash(self.tour)
+            if h in self.solutions:
+                break
+            else:
+                self.solutions.add(h)
 
-            assert round(get_length(self.matrix, self.tour), 6) == round(self.length, 6), \
-                f'{get_length(self.matrix, self.tour)} != {self.length}'
+            assert round(get_length(self.tour, self.matrix), 2) == round(self.length, 2), \
+                f'{get_length(self.tour, self.matrix)} != {self.length}'
 
         return self.tour
 

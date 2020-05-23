@@ -3,7 +3,8 @@ from sys import maxsize
 import numba as nb
 import numpy as np
 
-from src.algorithms.utils.utils import get_hash, rotate_zero
+from src.algorithms.utils.hash import generate_hash
+from src.algorithms.utils.utils import rotate_zero
 
 
 @nb.experimental.jitclass(spec=[
@@ -20,15 +21,13 @@ class TabuSet:
         self.best_route = np.array([1] * 1, dtype=np.int64)
 
     def is_contains(self, item: np.ndarray) -> bool:
-        with nb.objmode(x='intp'):
-            x = get_hash(item)
+        x = generate_hash(item)
         if x in self.data:
             return True
         return False
 
     def __add(self, item: np.ndarray) -> None:
-        with nb.objmode(x='intp'):
-            x = get_hash(item)
+        x = generate_hash(item)
         self.data.add(x)
 
     def append(self, tour: np.ndarray, length: float) -> bool:

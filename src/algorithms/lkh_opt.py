@@ -32,7 +32,7 @@ def _improve(tour: np.ndarray, matrix: np.ndarray, candidates: np.ndarray, dlb: 
         t1t2 = make_pair(t1, t2)
         if iteration == 0 and t1t2 in best:
             continue
-        candidates_t3 = candidates[t1]
+        candidates_t3 = candidates[t2]
 
         for t3 in candidates_t3:  # кандидаты на t3 (их много)
             if t3 == t2 or t3 == -1 or (matrix[t1][t2] - matrix[t2][t3]) < 0:
@@ -77,7 +77,7 @@ class LKHOpt(AbcOpt):
         SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
 
         dlb = kwargs.get('dlb', False)
-        excess = kwargs.get('excess', 1 / self.size * _length)
+        excess = kwargs.get('dlb', 1) * kwargs.get('excess', 1 / self.size * _length)
         self.bridge, self.fast = kwargs.get('bridge', (2, True))
 
         self.candidates = defaultdict(list)
