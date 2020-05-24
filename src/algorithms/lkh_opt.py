@@ -198,7 +198,7 @@ class LKHOpt(AbcOpt):
             if max_num < len(candidates[i]):
                 max_num = len(candidates[i])
             candidates[i].sort()
-        temp = np.full((size, max_num), -1, dtype=int)
+        temp = np.full((size, max_num), -1, dtype=np.int64)
         for i, candidate in candidates.items():
             idx = 0
             for _, _, j in candidate:
@@ -241,21 +241,3 @@ class LKHOpt(AbcOpt):
                 return gain
 
         return 0.
-
-    # def lkh_optimize(self, iterations=10) -> np.ndarray:
-    #     self.optimize()
-    #     best_length, best_tour = self.length, self.tour
-    #     best_solution = get_set(self.tour)
-    #
-    #     for _ in range(iterations):
-    #         self.dlb = np.zeros(self.size, dtype=bool) if self.dlb is not None else None
-    #         self.length, self.tour = \
-    #             InitialTour.helsgaun(self.alpha, self.matrix, best_solution, self.candidates, self.excess)
-    #         self.temp_length = self.length
-    #         self.optimize()
-    #         if self.length < best_length:
-    #             best_length, best_tour = self.length, self.tour
-    #             best_solution = get_set(self.tour)
-    #
-    #     self.length, self.tour = best_length, best_tour
-    #     return self.tour

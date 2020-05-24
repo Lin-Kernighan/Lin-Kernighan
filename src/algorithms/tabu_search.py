@@ -8,8 +8,6 @@ import numpy as np
 from src.algorithms.structures.collector import Collector
 from src.algorithms.structures.tabu_list import TabuSet
 
-Node = int
-
 
 class TabuSearch:
 
