@@ -4,7 +4,6 @@ import numba as nb
 import numpy as np
 
 from src.algorithms.utils.hash import generate_hash
-from src.algorithms.utils.utils import rotate_zero
 
 
 @nb.experimental.jitclass(spec=[
@@ -31,8 +30,6 @@ class TabuSet:
         self.data.add(x)
 
     def append(self, tour: np.ndarray, length: float) -> bool:
-        with nb.objmode(tour='intp[:]'):
-            tour = rotate_zero(tour)
         if self.is_contains(tour):
             return False
         self.__add(tour)
