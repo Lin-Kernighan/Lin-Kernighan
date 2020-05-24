@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 import numpy as np
+import numba as nb
 
 from src.algorithms.utils.utils import rotate_zero
 
@@ -21,15 +22,17 @@ def generate_degrees(number: int, module: int, size: int) -> np.ndarray:
     return nums
 
 
-def generate_hash_from(tour: np.ndarray, degrees: np.ndarray, module: int) -> int:
+def generate_hash_from(tour: np.ndarray, number: int, module: int) -> int:
     """ Вычисление хеша для тура по туру и списку степенй
     tour: список городов
     degrees: массив степеней + модуль
     return: хеш
     """
+    degrees = generate_degrees(number, module, len(tour))
     return (tour * degrees % module).sum() % module
 
 
+@nb.njit
 def generate_hash(tour: np.ndarray, number=333667, module=909090909090909091) -> int:
     """ Вычисления  хеша по туру
     tour: список вершин
@@ -37,5 +40,7 @@ def generate_hash(tour: np.ndarray, number=333667, module=909090909090909091) ->
     module: по какому модулю
     return: хеш
     """
-    degrees = generate_degrees(number, module, len(tour))
-    return generate_hash_from(rotate_zero(tour), degrees, module)
+    h = 0
+    with nb.objmode(h='int64'):
+        h = generate_hash_from(rotate_zero(tour), number, module)
+    return h
