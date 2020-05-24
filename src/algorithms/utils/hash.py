@@ -1,8 +1,11 @@
+from functools import lru_cache
+
 import numpy as np
 
 from src.algorithms.utils.utils import rotate_zero
 
 
+@lru_cache
 def generate_degrees(number: int, module: int, size: int) -> np.ndarray:
     """ Вычисление степеней 0 - size числа number по модулю module
     number: чьи степени ищем
