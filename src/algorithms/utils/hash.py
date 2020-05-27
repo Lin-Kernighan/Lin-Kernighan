@@ -25,7 +25,7 @@ def generate_degrees(number: int, module: int, size: int) -> np.ndarray:
 def generate_hash_from(tour: np.ndarray, number: int, module: int) -> int:
     """ Вычисление хеша для тура по туру и списку степенй
     tour: список городов
-    degrees: массив степеней + модуль
+    number: чьи степени ищем
     return: хеш
     """
     degrees = generate_degrees(number, module, len(tour))
@@ -40,7 +40,6 @@ def generate_hash(tour: np.ndarray, number=333667, module=909090909090909091) ->
     module: по какому модулю
     return: хеш
     """
-    h = 0
     with nb.objmode(h='int64'):
         h = generate_hash_from(rotate_zero(tour), number, module)
     return h

@@ -157,7 +157,7 @@ class LKHOpt(AbcOpt):
         """
         super().__init__(length, tour, matrix, **kwargs)
 
-        subgradient = kwargs.get('subgradient', True)
+        subgradient = kwargs.get('subgradient', False)
 
         if subgradient:
             self.gradient = SubgradientOptimization.run(self.matrix)
@@ -172,7 +172,7 @@ class LKHOpt(AbcOpt):
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
             logging.info(f'alpha-matrix')
 
-        dlb = kwargs.get('dlb', False)
+        dlb = kwargs.get('dlb', True)
         self.k = kwargs.get('k', 5)
         excess = kwargs.get('mul', 1) * kwargs.get('excess', 1 / self.size * _length)
         self.bridge, self.fast = kwargs.get('bridge', (2, True))
