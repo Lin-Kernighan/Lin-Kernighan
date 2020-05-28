@@ -86,7 +86,7 @@ class TabuProcSearch:
                     if len(solutions) == 0:
                         length, tour = conn.recv(), conn.recv()
                         if length < self.length:
-                            best, self.length, self.tour = pid_process[proc.pid], length, tour
+                            self.length, self.tour = length, tour
                         proc.join()
                         del processes[proc]
                         logging.info(f'Done: {pid_process[proc.pid]} - {length}')

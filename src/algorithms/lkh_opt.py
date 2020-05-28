@@ -164,15 +164,15 @@ class LKHOpt(AbcOpt):
         if subgradient:
             self.gradient = SubgradientOptimization.run(self.matrix)
             SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
-            logging.info(f'subgradient optimization done')
+            logging.info('subgradient optimization done')
             _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
-            logging.info(f'alpha-matrix done')
+            logging.info('alpha-matrix done')
             SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
         else:
             _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
-            logging.info(f'alpha-matrix done')
+            logging.info('alpha-matrix done')
 
         dlb = kwargs.get('dlb', True)
         self.k = kwargs.get('k', 5)
@@ -219,7 +219,7 @@ class LKHOpt(AbcOpt):
                 self.tour, self.matrix, self.candidates, self.dlb, it1, t1, self.best_solution, self.solutions, self.k
             )
             if gain > 1.e-10:
-                logging.info(f'iteration k-opt')
+                logging.info('iteration k-opt')
                 self.tour = tour
                 self.length -= gain
                 if self.collector is not None:
@@ -233,7 +233,7 @@ class LKHOpt(AbcOpt):
             gain, tour = double_bridge(self.tour, self.matrix, self.candidates, True)
 
             if gain > 1.e-10:
-                logging.info(f'non-seq 4-opt')
+                logging.info('non-seq 4-opt')
                 self.tour = tour
                 self.length -= gain
 

@@ -3,6 +3,10 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
+  <component name="ProjectPlainTextFileTypeManager">
+    <file url="file://$PROJECT_DIR$/src/tsp/att532.py" />
+    <file url="file://$PROJECT_DIR$/src/tsp/bier127.py" />
+  </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="Pipenv (Lin-Kernighan)" project-jdk-type="Python SDK" />
   <component name="PythonCompatibilityInspectionAdvertiser">
     <option name="version" value="3" />

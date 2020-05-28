@@ -48,7 +48,7 @@ def _exchange(tour: np.ndarray, best_exchange: int, nodes: tuple) -> np.ndarray:
     """
     x, y, z = nodes
     s = len(tour)
-    a, b, c, d, e, f = x % s, (x + 1) % s, y % s, (y + 1) % s, z % s, (z + 1) % s
+    b, c, d, e = (x + 1) % s, y % s, (y + 1) % s, z % s
     if best_exchange == 0:
         tour = swap(tour, b, e)
     elif best_exchange == 1:

@@ -35,7 +35,7 @@ def __get_tour(tour: np.ndarray, it1: int, it2: int, it3: int, it4: int) -> tupl
         swap(tour, it1, it3)  # ... it2 it1 ... it3 it4 ... && it1 ... it3 it4 ... it2
         return it3, it4
     else:
-        assert False, f'bad tour'
+        assert False, 'bad tour'
 
 
 @nb.njit(cache=True)
@@ -210,7 +210,7 @@ class LKOpt(AbcOpt):
                 continue
             gain, tour = _improve(self.tour, self.matrix, self.neighbours, self.dlb, it1, t1, self.solutions, self.k)
             if gain > 1.e-10:
-                logging.info(f'iteration k-opt')
+                logging.info('iteration k-opt')
                 self.length -= gain
                 self.tour = tour
                 if self.collector is not None:
@@ -229,7 +229,7 @@ class LKOpt(AbcOpt):
                 gain, tour = double_bridge(self.tour, self.matrix, self.neighbours, self.fast)
 
             if gain > 1.e-10:
-                logging.info(f'non-seq 4-opt')
+                logging.info('non-seq 4-opt')
                 self.length -= gain
                 self.tour = tour
 

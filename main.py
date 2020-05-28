@@ -5,7 +5,7 @@ from time import time
 from src.algorithms.structures.matrix import adjacency_matrix
 from src.algorithms.utils.initial_tour import greedy
 from src.tabu_search import TabuSearch
-from src.tsp.generator import generator
+from src.algorithms.generator import generator
 
 if __name__ == '__main__':
     size = 200

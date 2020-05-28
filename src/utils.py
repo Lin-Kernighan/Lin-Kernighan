@@ -16,7 +16,7 @@ from src.algorithms.three_opt import ThreeOpt
 from src.algorithms.two_opt import TwoOpt
 from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.initial_tour import greedy
-from src.tsp.generator import generator
+from src.algorithms.generator import generator
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
