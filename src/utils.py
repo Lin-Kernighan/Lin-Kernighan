@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 from os import remove, path
 from typing import List, Tuple
@@ -16,12 +17,12 @@ from src.algorithms.three_opt import ThreeOpt
 from src.algorithms.two_opt import TwoOpt
 from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.initial_tour import greedy
-from src.algorithms.generator import generator
+from src.algorithms.utils.generator import generator
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
 
-opts: Dict[str, Type[AbcOpt]] = dict(two_opt=TwoOpt, three_opt=ThreeOpt, lk=LKOpt, lkh=LKHOpt)
+opts: Dict[str, Type[AbcOpt]] = dict(two_opt=TwoOpt, three_opt=ThreeOpt, lk_opt=LKOpt, lkh_opt=LKHOpt)
 
 
 def print_matrix(matrix: np.ndarray):
@@ -105,7 +106,7 @@ class TspLoader:
     @staticmethod
     def python_serializer(points: np.ndarray, name: str, directory: str) -> None:
         name = f'{name}.py'
-        print(name)
+        logging.info(name)
         points = to_list(points)
         with open(path.join(directory, name), 'w') as file:
             file.write('tsp = [\n')
@@ -119,7 +120,7 @@ class TspLoader:
         points: List[Point] = []
         with open(filename, 'r') as file:
             for _ in range(3):
-                print(file.readline())
+                logging.info(file.readline())
             i = int(file.readline().split()[2])
             for _ in range(2):
                 file.readline()
