@@ -12,7 +12,7 @@ from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.double_bridge import double_bridge
 from src.algorithms.utils.hash import generate_hash
 from src.algorithms.utils.subgradient_optimization import SubgradientOptimization
-from src.algorithms.utils.utils import around, make_pair, check_dlb
+from src.algorithms.utils.utils import around, make_pair, check_dlb, get_set
 
 
 @nb.njit
@@ -143,43 +143,45 @@ def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, candid
 class LKHOpt(AbcOpt):
     """ Локальный поиск: алгоритм Лина-Кернигана
     Вычислительная сложность поиска локального минимума: O(n^2.6)?
-    Улучшен набором кандидатов
+    Обладает улучшенной эвристикой поиска кандидатов
+
+    length: начальная длина тура
+    tour: начальный тур
+    matrix: матрица весов
+
+    dlb: don't look bits [boolean]
+    bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
+    excess: parameter for cut bad candidates [float]
+    mul: excess factor
+    k: number of k for k-opt; how many sequential can make algorithm [int]
+    subgradient: use or not subgradient optimization
     """
 
     def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
-        """
-        dlb: don't look bits [boolean]
-        bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
-        excess: parameter for cut bad candidates [float]
-        mul: excess factor
-        k: number of k for k-opt; how many sequential can make algorithm [int]
-        subgradient: use or not subgradient optimization
-        """
         super().__init__(length, tour, matrix, **kwargs)
 
         subgradient = kwargs.get('subgradient', False)
-
         if subgradient:
             self.gradient = SubgradientOptimization.run(self.matrix)
             SubgradientOptimization.make_move(self.gradient.pi_sum, self.matrix)
-            logging.info(f'subgradient optimization')
+            logging.info(f'subgradient optimization done')
             _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
-            logging.info(f'alpha-matrix')
+            logging.info(f'alpha-matrix done')
             SubgradientOptimization.get_back(self.gradient.pi_sum, self.matrix)
         else:
             _length, _f, _s, self.best_solution, topology = one_tree_topology(self.matrix)
             self.alpha = alpha_matrix(self.matrix, _f, _s, topology)
-            logging.info(f'alpha-matrix')
+            logging.info(f'alpha-matrix done')
 
         dlb = kwargs.get('dlb', True)
         self.k = kwargs.get('k', 5)
-        excess = kwargs.get('mul', 1) * kwargs.get('excess', 1 / self.size * _length)
+        self.excess = kwargs.get('mul', 1) * kwargs.get('excess', 1 / self.size * _length)
         self.bridge, self.fast = kwargs.get('bridge', (2, True))
 
-        self.candidates = defaultdict(list)
-        self.candidates = self._calc_candidates(self.tour, self.alpha, self.matrix, excess)
+        self.candidates = self._calc_candidates(self.tour, self.alpha, self.matrix, self.excess)
         self.dlb = np.zeros(self.size if dlb else 1, dtype=bool)
+        logging.info('initialization lkh done')
 
     @staticmethod
     def _calc_candidates(tour: np.ndarray, alpha: np.ndarray, matrix: np.ndarray, excess: float) -> np.ndarray:

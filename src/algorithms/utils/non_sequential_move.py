@@ -26,7 +26,7 @@ def __ns_two_opt(tour: np.ndarray, matrix: np.ndarray, candidates: np.ndarray) -
     for it1 in range(size):
         it2 = (it1 + 1) % size
         t1, t2 = tour[it1], tour[it2]
-        for t3 in candidates[t1]:
+        for t3 in candidates[t2]:
             if t3 == -1 or t3 == t1 or t3 == t2 \
                     or tour[(it1 - 1) % size] == t3 or tour[(it1 - 2) % size] == t3 or tour[(it1 - 3) % size] == t3 \
                     or tour[(it2 + 1) % size] == t3 or tour[(it2 + 2) % size] == t3:  # cheaper to check

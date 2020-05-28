@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Set
+from typing import Set, Tuple
 
 import numpy as np
 
@@ -34,13 +34,14 @@ class AbcOpt(ABC):
         return: выигрыш от локального поиска
         """
 
-    def optimize(self) -> np.ndarray:
+    def optimize(self) -> Tuple[float, np.ndarray]:
         """ Запуск локального поиска
         return: новый маршрут
         """
         gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'two_opt': self.size})
         self.collector.update({'length': self.length, 'gain': 0})
         logging.info(f'start : {self.length}')
+        start = self.length
 
         while gain > 0:
             gain = self.improve()
@@ -57,26 +58,29 @@ class AbcOpt(ABC):
             assert round(get_length(self.tour, self.matrix), 2) == round(self.length, 2), \
                 f'{get_length(self.tour, self.matrix)} != {self.length}'
 
-        return self.tour
+        return start - self.length, self.tour
 
-    def tabu_optimize(self, tabu_list: TabuSet, collector: Collector) -> np.ndarray:
-        """ Запуск локального поиска под управление tabu search
+    def meta_heuristic_optimize(self, tabu_list: TabuSet, collector: Collector) -> Tuple[float, np.ndarray]:
+        """ Запуск локального поиска под управление некоторой метаэвристики
         tabu_list: проверенные ранее маршруты
         collector: структура для сбора данных о локальном поиске
         return: новый маршрут
         """
-        self.tabu_list, best_change, self.collector = tabu_list, -1, collector
+        gain, self.tabu_list, self.collector = 1, tabu_list, collector
+        self.solutions = self.tabu_list.data
         self.collector.update({'length': self.length, 'gain': 0})
-        logging.info(f'Start: {self.length}')
+        start = self.length
 
-        while best_change > 0:
+        while gain > 0:
             gain = self.improve()
-            if gain > 0.0:
-                if self.tabu_list.contains(self.tour):
-                    break
-                self.length -= gain
-                tabu_list.append(self.tour, self.length)
-                self.collector.update({'length': self.length, 'gain': -best_change})
 
-        logging.info(f'End: {self.length}')
-        return self.tour
+            if gain > 1.e-10:
+                self.collector.update({'length': self.length, 'gain': gain})
+                if not self.tabu_list.append(self.length, self.tour):
+                    break
+                logging.info(self.length)
+
+            assert round(get_length(self.tour, self.matrix), 2) == round(self.length, 2), \
+                f'{get_length(self.tour, self.matrix)} != {self.length}'
+
+        return start - self.length, self.tour

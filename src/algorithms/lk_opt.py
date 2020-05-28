@@ -179,16 +179,18 @@ def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, neighb
 class LKOpt(AbcOpt):
     """ Локальный поиск: алгоритм Лина-Кернигана
     Вычислительная сложность поиска локального минимума: O(n^2.2)
-    Но итераций он может сделать очень много
+
+    length: начальная длина тура
+    tour: начальный тур
+    matrix: матрица весов
+
+    dlb: don't look bits [boolean]
+    bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
+    neighbours: number of neighbours [int]
+    k: number of k for k-opt; how many sequential can make algorithm [int]
     """
 
     def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):
-        """
-        dlb: don't look bits [boolean]
-        bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
-        neighbours: number of neighbours [int]
-        k: number of k for k-opt; how many sequential can make algorithm [int]
-        """
         super().__init__(length, tour, matrix, **kwargs)
 
         dlb = kwargs.get('dlb', False)

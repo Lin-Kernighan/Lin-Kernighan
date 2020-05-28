@@ -1,4 +1,5 @@
 from sys import maxsize
+from typing import Tuple
 
 import numba as nb
 import numpy as np
@@ -29,7 +30,7 @@ class TabuSet:
         x = generate_hash(item)
         self.data.add(x)
 
-    def append(self, tour: np.ndarray, length: float) -> bool:
+    def append(self, length: float, tour: np.ndarray) -> bool:
         if self.is_contains(tour):
             return False
         self.__add(tour)
@@ -37,8 +38,5 @@ class TabuSet:
             self.best_route, self.best_length = tour.copy(), length
         return True
 
-    def best_result(self) -> float:
-        return self.best_length
-
-    def best_tour(self) -> np.ndarray:
-        return self.best_route.copy()
+    def best_tour(self) -> Tuple[float, np.ndarray]:
+        return self.best_length, self.best_route.copy()
