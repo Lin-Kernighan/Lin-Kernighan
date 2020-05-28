@@ -12,7 +12,7 @@ from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.double_bridge import double_bridge
 from src.algorithms.utils.hash import generate_hash
 from src.algorithms.utils.subgradient_optimization import SubgradientOptimization
-from src.algorithms.utils.utils import around, make_pair, check_dlb, get_set
+from src.algorithms.utils.utils import around, make_pair, check_dlb
 
 
 @nb.njit
@@ -150,7 +150,7 @@ class LKHOpt(AbcOpt):
     matrix: матрица весов
 
     dlb: don't look bits [boolean]
-    bridge: make double bridge [tuple] ([not use: 0, all cities: 1, only neighbours: 2], fast scheme)
+    bridge: make double bridge [tuple]
     excess: parameter for cut bad candidates [float]
     mul: excess factor
     k: number of k for k-opt; how many sequential can make algorithm [int]
@@ -177,7 +177,7 @@ class LKHOpt(AbcOpt):
         dlb = kwargs.get('dlb', True)
         self.k = kwargs.get('k', 5)
         self.excess = kwargs.get('mul', 1) * kwargs.get('excess', 1 / self.size * _length)
-        self.bridge, self.fast = kwargs.get('bridge', (2, True))
+        self.bridge = kwargs.get('bridge', True)
 
         self.candidates = self._calc_candidates(self.tour, self.alpha, self.matrix, self.excess)
         self.dlb = np.zeros(self.size if dlb else 1, dtype=bool)
@@ -222,14 +222,15 @@ class LKHOpt(AbcOpt):
                 logging.info(f'iteration k-opt')
                 self.tour = tour
                 self.length -= gain
-                self.collector.update({'length': self.length, 'gain': gain})
+                if self.collector is not None:
+                    self.collector.update({'length': self.length, 'gain': gain})
                 return gain
 
             if len(self.dlb) != 1:
                 self.dlb[t1] = True
 
-        if self.bridge != 0:
-            gain, tour = double_bridge(self.tour, self.matrix, self.candidates, self.fast)
+        if self.bridge:
+            gain, tour = double_bridge(self.tour, self.matrix, self.candidates, True)
 
             if gain > 1.e-10:
                 logging.info(f'non-seq 4-opt')
@@ -239,7 +240,8 @@ class LKHOpt(AbcOpt):
                 if len(self.dlb) != 1:
                     self.dlb = np.zeros(self.size, dtype=bool)
 
-                self.collector.update({'length': self.length, 'gain': gain})
+                if self.collector is not None:
+                    self.collector.update({'length': self.length, 'gain': gain})
                 return gain
 
         return 0.

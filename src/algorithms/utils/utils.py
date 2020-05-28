@@ -74,6 +74,20 @@ def check_dlb(dlb: np.ndarray, idx: int) -> bool:
 
 
 @nb.njit(cache=True)
+def mix(tour: np.ndarray, iterations: int) -> None:
+    """ Попытка сломать тур. Ломается текущий сохраненный.
+    Идея в том, что если не получилось выйти из текущего локального оптимума,
+    с перемешанными n вершинами, то стоит попробовать перемешать еще n.
+    """
+    for _ in range(iterations):
+        size = len(tour) - 1
+        x = np.random.randint(0, size)
+        while x == (y := np.random.randint(0, size)):
+            continue
+        tour[x], tour[y] = tour[y], tour[x]
+
+
+@nb.njit(cache=True)
 def get_length(tour: np.ndarray, matrix: np.ndarray) -> float:
     """ Взятие длины по матрице смежности и туру в виде последовательных вершин
     tour: список вершин

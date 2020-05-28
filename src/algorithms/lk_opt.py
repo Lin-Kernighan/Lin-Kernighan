@@ -213,7 +213,8 @@ class LKOpt(AbcOpt):
                 logging.info(f'iteration k-opt')
                 self.length -= gain
                 self.tour = tour
-                self.collector.update({'length': self.length, 'gain': gain})
+                if self.collector is not None:
+                    self.collector.update({'length': self.length, 'gain': gain})
                 return gain
 
             if len(self.dlb) != 1:
@@ -235,7 +236,8 @@ class LKOpt(AbcOpt):
                 if len(self.dlb) != 1:
                     self.dlb = np.zeros(self.size, dtype=bool)
 
-                self.collector.update({'length': self.length, 'gain': gain})
+                if self.collector is not None:
+                    self.collector.update({'length': self.length, 'gain': gain})
                 return gain
 
         return 0.

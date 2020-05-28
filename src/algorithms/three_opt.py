@@ -87,9 +87,34 @@ class ThreeOpt(AbcOpt):
         if best_gain > 1.e-10:
             self.tour = _exchange(self.tour, best_exchange, best_nodes)
             self.length -= best_gain
-            self.collector.update({'length': self.length, 'gain': best_gain})
+            if self.collector is not None:
+                self.collector.update({'length': self.length, 'gain': best_gain})
             return best_gain
         return 0.0
+
+    @staticmethod
+    @nb.njit(cache=True)
+    def just_improve(length: float, tour: np.ndarray, matrix: np.ndarray) -> Tuple[float, np.ndarray]:
+        """ Локальный поиск без сбора информации
+        return: длина нового тура, новый тур
+        """
+        best_gain, size = 1., len(tour)
+
+        while best_gain > 1.e-10:
+            best_exchange, best_gain, t1, t3, t5 = 0, 0, 0, 0, 0
+
+            for x in range(size):
+                for y in range(x + 1, size):
+                    for z in range(y + 1, size):
+                        exchange, gain = _search(matrix, tour, x, y, z)
+                        if gain > best_gain:
+                            best_gain, best_exchange, t1, t3, t5 = gain, exchange, x, y, z
+
+            if best_gain > 1.e-10:
+                tour = _exchange(tour, best_exchange, (t1, t3, t5))
+                length -= best_gain
+
+        return length, tour
 
     @staticmethod
     @nb.njit(cache=True)

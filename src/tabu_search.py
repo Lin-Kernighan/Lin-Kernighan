@@ -1,11 +1,10 @@
 import logging
-from random import randint
 from typing import Tuple
 
 import numpy as np
 
 from src.algorithms.utils.abc_search import AbcSearch
-from src.algorithms.utils.utils import get_length
+from src.algorithms.utils.utils import get_length, mix
 from src.utils import opts
 
 
@@ -40,8 +39,7 @@ class TabuSearch(AbcSearch):
                     f'{get_length(self.tour, self.matrix)} != {self.length}'
 
             logging.info(f'{iteration} : {_length} : {self.length}')
-            for _ in range(swap):
-                self.swap()  # а вот ломается текущий сохраненный
+            mix(self.tour, swap)  # а вот ломается текущий сохраненный
             self.length = get_length(self.tour, self.matrix)
             self.opt.length, self.opt.tour = self.length, self.tour.copy()  # улучшается только копия
             iteration -= 1
@@ -49,14 +47,3 @@ class TabuSearch(AbcSearch):
         self.length, self.tour = self.best_tour()
         logging.info(f'tabu search done, best length: {self.length}')
         return self.length, self.tour
-
-    def swap(self) -> None:
-        """ Попытка сломать тур. Ломается текущий сохраненный.
-        Идея в том, что если не получилось выйти из текущего локального оптимума,
-        с перемешанными n вершинами, то стоит попробовать перемешать еще n.
-        """
-        size = len(self.tour) - 1
-        x = randint(0, size)
-        while x == (y := randint(0, size)):
-            continue
-        self.tour[x], self.tour[y] = self.tour[y], self.tour[x]

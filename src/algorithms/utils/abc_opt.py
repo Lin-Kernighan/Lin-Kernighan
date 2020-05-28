@@ -24,9 +24,12 @@ class AbcOpt(ABC):
         self.length, self.tour, self.matrix = length, tour, adjacency
         self.solutions: Set[int] = {generate_hash(self.tour)}
         self.size = len(tour)
+        collect = kwargs.get('collect', False)
 
         self.tabu_list = None  # проверенные ранее туры
-        self.collector = None  # для сбора данных
+        self.collector = None if not collect else Collector(['length', 'gain'], {'opt': self.size})  # для сбора данных
+        if collect:
+            self.collector.update({'length': self.length, 'gain': 0})
 
     @abstractmethod
     def improve(self) -> float:
@@ -38,8 +41,7 @@ class AbcOpt(ABC):
         """ Запуск локального поиска
         return: длина, список городов
         """
-        gain, iteration, self.collector = 1, 0, Collector(['length', 'gain'], {'two_opt': self.size})
-        self.collector.update({'length': self.length, 'gain': 0})
+        gain, iteration = 1, 0
         logging.info(f'start : {self.length}')
 
         while gain > 0:
@@ -67,13 +69,11 @@ class AbcOpt(ABC):
         """
         gain, self.tabu_list, self.collector = 1, tabu_list, collector
         self.solutions = self.tabu_list.data
-        self.collector.update({'length': self.length, 'gain': 0})
 
         while gain > 0:
             gain = self.improve()
 
             if gain > 1.e-10:
-                self.collector.update({'length': self.length, 'gain': gain})
                 if not self.tabu_list.append(self.length, self.tour):
                     break
                 logging.info(self.length)

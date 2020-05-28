@@ -29,13 +29,17 @@ class TwoOpt(AbcOpt):
             i, j = saved
             self.tour = swap(self.tour, i + 1, j)
             self.length += best_change
-            self.collector.update({'length': self.length, 'gain': -best_change})
+            if self.collector is not None:
+                self.collector.update({'length': self.length, 'gain': -best_change})
             return -best_change
         return 0.0
 
     @staticmethod
     @nb.njit(cache=True)
     def just_improve(length: float, tour: np.ndarray, matrix: np.ndarray) -> Tuple[float, np.ndarray]:
+        """ Локальный поиск без сбора информации
+        return: длина нового тура, новый тур
+        """
         best_change, size = 1., len(tour)
 
         while best_change > 1.e-10:
