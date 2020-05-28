@@ -3,12 +3,11 @@ import logging
 from time import time
 
 from src.algorithms.structures.matrix import adjacency_matrix
-from src.algorithms.utils.initial_tour import greedy
-from src.tabu_search import TabuSearch
 from src.algorithms.utils.generator import generator
+from src.lkh_search import LKHSearch
 
 if __name__ == '__main__':
-    size = 200
+    size = 500
     logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
     faulthandler.enable()
@@ -18,10 +17,9 @@ if __name__ == '__main__':
     for _ in range(num):
         tsp = generator(size)
         matrix = adjacency_matrix(tsp)
-        length, tour = greedy(matrix)
 
         t_start = time()
-        opt = TabuSearch('lk_opt', matrix)
+        opt = LKHSearch(matrix)
         opt.optimize()
         full += (time() - t_start)
 

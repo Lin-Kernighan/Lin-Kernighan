@@ -32,14 +32,14 @@ class LKHSearch(AbcSearch):
 
         logging.info('initialization multi trial lkh done')
 
-    def optimize(self, iteration=10, **kwargs) -> Tuple[float, np.ndarray]:
+    def optimize(self, iterations=10, **kwargs) -> Tuple[float, np.ndarray]:
         """ Запуск метаэвристики Multi trial LKH
-        iteration: количество возможных перезапусков
+        iterations: количество возможных перезапусков
         return: лучшая длина тура, лучший тур
         """
         self.collector.update({'length': self.length, 'gain': 0})
 
-        while iteration > 0:
+        while iterations > 0:
             self.opt.meta_heuristic_optimize(self.data, self.collector)
             _length, _tour = self.best_tour()
 
@@ -49,7 +49,7 @@ class LKHSearch(AbcSearch):
                 assert round(get_length(self.tour, self.matrix), 2) == round(self.length, 2), \
                     f'{get_length(self.tour, self.matrix)} != {self.length}'
 
-            logging.info(f'{iteration} : {_length} : {self.length}')
+            logging.info(f'{iterations} : {_length} : {self.length}')
             self.opt.length, self.opt.tour = _initialization[self.initial](
                 self.opt.alpha,
                 self.matrix,
@@ -59,7 +59,7 @@ class LKHSearch(AbcSearch):
             )
             assert round(get_length(self.opt.tour, self.matrix), 2) == round(self.opt.length, 2), \
                 f'{get_length(self.opt.tour, self.matrix)} != {self.opt.length}'
-            iteration -= 1
+            iterations -= 1
 
         self.length, self.tour = self.best_tour()
         logging.info(f'multi trial lkh done, best length: {self.length}')

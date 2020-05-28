@@ -22,7 +22,7 @@ from src.algorithms.utils.generator import generator
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
 
-opts: Dict[str, Type[AbcOpt]] = dict(two_opt=TwoOpt, three_opt=ThreeOpt, lk_opt=LKOpt, lkh_opt=LKHOpt)
+opts_type: Dict[str, Type[AbcOpt]] = dict(two_opt=TwoOpt, three_opt=ThreeOpt, lk_opt=LKOpt, lkh_opt=LKHOpt)
 
 
 def print_matrix(matrix: np.ndarray):
@@ -74,7 +74,7 @@ def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: 
     plt.show()
 
 
-def draw_tour(tour: np.ndarray, nodes: np.ndarray, color: str) -> None:
+def draw_tour(tour: np.ndarray, nodes: np.ndarray, color='r', show=True) -> None:
     """ Нарисовать граф по списку номеров вершин в порядке тура """
     first, second = tour[-1], tour[0]
     [x1, y1] = nodes[first]
@@ -84,6 +84,8 @@ def draw_tour(tour: np.ndarray, nodes: np.ndarray, color: str) -> None:
         [x1, y1] = nodes[tour[idx]]
         [x2, y2] = nodes[tour[idx + 1]]
         plt.plot([x1, x2], [y1, y2], linewidth=1, color=color)
+    if show:
+        plt.show()
 
 
 class TspLoader:

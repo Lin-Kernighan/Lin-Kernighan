@@ -8,22 +8,22 @@ import numpy as np
 from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.initial_tour import greedy
 from src.algorithms.utils.utils import get_length, mix
-from src.utils import opts
+from src.utils import opts_type
 
 
-def worker(opt: AbcOpt, conn: Connection, iteration: int, swap: int):
+def worker(opt: AbcOpt, conn: Connection, iterations: int, swap: int):
     """ Локальный поиск под управлением Поиска с запретами
     Табу обновляется раз в итерацию, в основном процессе хранится весь табу
     opt: эвристика
     conn: для передачи данных
-    iteration: количество возможных перезапусков
+    iterations: количество возможных перезапусков
     swap: сколько раз ломать тур за итерацию
     """
     best_length, best_tour = opt.length, opt.tour.copy()
     length, tour = opt.length, opt.tour
     try:
 
-        while iteration > 0:
+        while iterations > 0:
             _length, _tour = opt.optimize()
             if best_length > _length:
                 best_length, best_tour = _length, _tour.copy()
@@ -36,7 +36,7 @@ def worker(opt: AbcOpt, conn: Connection, iteration: int, swap: int):
             mix(tour, swap)
             length = get_length(tour, opt.matrix)
             opt.length, opt.tour, opt.solutions = length, tour, solutions
-            iteration -= 1
+            iterations -= 1
 
     except Exception as exc:
         print(f'Exception: {exc}')
@@ -57,11 +57,11 @@ class TabuProcSearch:
     def __init__(self, opt: str, matrix: np.ndarray, **kwargs):
         length, tour = greedy(matrix)
         self.matrix = matrix
-        self.opt = opts[opt](length, tour, matrix, **kwargs)
+        self.opt = opts_type[opt](length, tour, matrix, **kwargs)
         self.length, self.tour = self.opt.length, self.opt.tour
         self.proc = kwargs.get('proc', 4)
 
-    def optimize(self, iteration=10, swap=2) -> Tuple[float, np.ndarray]:
+    def optimize(self, iterations=10, swap=2) -> Tuple[float, np.ndarray]:
         """ Запуск метаэвристики табу поиска на нескольких процессах
         Алгоритм запоминает все локальные минимумы: all_solutions
         iteration: количество возможных перезапусков
@@ -74,7 +74,7 @@ class TabuProcSearch:
 
         for idx in range(self.proc):
             m, w = mp.Pipe()
-            p = mp.Process(target=worker, args=(self.opt, w, iteration, swap))
+            p = mp.Process(target=worker, args=(self.opt, w, iterations, swap))
             p.start()
             processes[p], pid_process[p.pid] = m, idx
 
