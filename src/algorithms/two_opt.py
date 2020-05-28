@@ -35,6 +35,29 @@ class TwoOpt(AbcOpt):
 
     @staticmethod
     @nb.njit(cache=True)
+    def just_improve(length: float, tour: np.ndarray, matrix: np.ndarray) -> Tuple[float, np.ndarray]:
+        best_change, size = 1., len(tour)
+
+        while best_change > 1.e-10:
+            best_change, x, y = 0., 0, 0
+
+            for it1 in range(size):
+                for it3 in range(it1 + 1, size):
+                    t1, t2 = tour[it1 % size], tour[(it1 + 1) % size]
+                    t3, t4 = tour[it3 % size], tour[(it3 + 1) % size]
+                    change = (matrix[t1][t2] + matrix[t3][t4]) - (matrix[t1][t3] + matrix[t2][t4])
+                    if best_change < change:
+                        best_change = change
+                        x, y = it1, it3
+
+            if best_change > 1.e-10:
+                tour = swap(tour, x + 1, y)
+                length -= best_change
+
+        return length, tour
+
+    @staticmethod
+    @nb.njit(cache=True)
     def _improve(matrix: np.ndarray, tour: np.ndarray) -> Tuple[tuple, float]:
         """ Основной цикл 2-opt: поиск лучшего измения тура
         matrix: Матрица весов
