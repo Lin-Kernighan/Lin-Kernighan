@@ -11,6 +11,7 @@ from src.algorithms.structures.one_tree import one_tree_topology
 from src.algorithms.utils.abc_opt import AbcOpt
 from src.algorithms.utils.double_bridge import double_bridge
 from src.algorithms.utils.hash import generate_hash
+from src.algorithms.utils.non_sequential_move import non_sequential_move
 from src.algorithms.utils.subgradient_optimization import SubgradientOptimization
 from src.algorithms.utils.utils import around, make_pair, check_dlb
 
@@ -150,7 +151,8 @@ class LKHOpt(AbcOpt):
     matrix: матрица весов
 
     dlb: don't look bits [boolean]
-    bridge: make double bridge [tuple]
+    bridge: make double bridge [boolean]
+    non_seq: use non sequential move [boolean]
     excess: parameter for cut bad candidates [float]
     mul: excess factor
     k: number of k for k-opt; how many sequential can make algorithm [int]
@@ -178,6 +180,7 @@ class LKHOpt(AbcOpt):
         self.k = kwargs.get('k', 5)
         self.excess = kwargs.get('mul', 1) * kwargs.get('excess', 1 / self.size * _length)
         self.bridge = kwargs.get('bridge', True)
+        self.non_seq = kwargs.get('non_seq', False)
 
         self.candidates = self._calc_candidates(self.tour, self.alpha, self.matrix, self.excess)
         self.dlb = np.zeros(self.size if dlb else 1, dtype=bool)
@@ -195,7 +198,7 @@ class LKHOpt(AbcOpt):
         max_num, size, candidates = 0, len(matrix), defaultdict(list)
         for i in tour:
             for j, dist in enumerate(matrix[i]):
-                if alpha[i][j] < excess:
+                if i != j and alpha[i][j] < excess:
                     candidates[i].append((alpha[i][j], matrix[i][j], j))
             if max_num < len(candidates[i]):
                 max_num = len(candidates[i])
@@ -225,21 +228,26 @@ class LKHOpt(AbcOpt):
                 if self.collector is not None:
                     self.collector.update({'length': self.length, 'gain': gain})
                 return gain
-
             if len(self.dlb) != 1:
                 self.dlb[t1] = True
 
-        if self.bridge:
-            gain, tour = double_bridge(self.tour, self.matrix, self.candidates, True)
+        if self.bridge or self.non_seq:
+            gain, tour = 0., None
+            if self.bridge:
+                gain, tour = double_bridge(self.tour, self.matrix, self.candidates, True)
+                if gain > 1.e-10:
+                    logging.info('non-seq 4-opt')
+
+            if self.non_seq and not gain > 1.e-10:
+                gain, tour = non_sequential_move(self.tour, self.matrix, self.candidates)
+                if gain > 1.e-10:
+                    logging.info('non-seq 5-opt')
 
             if gain > 1.e-10:
-                logging.info('non-seq 4-opt')
                 self.tour = tour
                 self.length -= gain
-
                 if len(self.dlb) != 1:
                     self.dlb = np.zeros(self.size, dtype=bool)
-
                 if self.collector is not None:
                     self.collector.update({'length': self.length, 'gain': gain})
                 return gain

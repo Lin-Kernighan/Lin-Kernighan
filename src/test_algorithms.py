@@ -77,6 +77,14 @@ def test_lk_opt_dlb(generate_metric_tsp):
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
 
 
+def test_lk_opt_full_bridge(generate_metric_tsp):
+    length, tour, matrix = generate_metric_tsp
+    lk_opt = LKOpt(length, tour, matrix, bridge=(1, True))
+    opt_length, opt_tour = lk_opt.optimize()
+    assert opt_length < length, 'optimized'
+    assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
+
+
 def test_lkh_opt_simple(generate_metric_tsp):
     length, tour, matrix = generate_metric_tsp
     lkh_opt = LKHOpt(length, tour, matrix, dlb=False)
@@ -88,6 +96,14 @@ def test_lkh_opt_simple(generate_metric_tsp):
 def test_lkh_opt_dlb(generate_metric_tsp):
     length, tour, matrix = generate_metric_tsp
     lkh_opt = LKHOpt(length, tour, matrix, dlb=True)
+    opt_length, opt_tour = lkh_opt.optimize()
+    assert opt_length < length, 'optimized'
+    assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
+
+
+def test_lkh_opt_non_seq(generate_metric_tsp):
+    length, tour, matrix = generate_metric_tsp
+    lkh_opt = LKHOpt(length, tour, matrix, bridge=True, non_seq=True)
     opt_length, opt_tour = lkh_opt.optimize()
     assert opt_length < length, 'optimized'
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'

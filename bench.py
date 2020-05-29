@@ -55,8 +55,9 @@ def searchers(search, size, number, info, opt, iterations, swap, proc):
 @click.option('--neighbours', default=5, help='Neighbours for LK')
 @click.option('--k', default=5, help='Number of k for LK or LKH')
 @click.option('--mul', default=1, help='Excess factor for LKH (factor * excess)')
-@click.option('--sb', default=False, help='Use or not subgradient optimization ofr LKH')
-def opts(opt, size, number, info, neighbours, k, mul, sb):
+@click.option('--sb', default=False, help='Use or not subgradient optimization for LKH')
+@click.option('--ns', default=False, help='Use or not non seq for LKH')
+def opts(opt, size, number, info, neighbours, k, mul, sb, ns):
     if info:
         logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
@@ -68,7 +69,7 @@ def opts(opt, size, number, info, neighbours, k, mul, sb):
         length, tour = greedy(matrix)
 
         t_start = time()
-        searcher = opts_type[opt](length, tour, matrix, neighbours=neighbours, k=k, mul=mul, subgradient=sb)
+        searcher = opts_type[opt](length, tour, matrix, neighbours=neighbours, k=k, mul=mul, subgradient=sb, non_seq=ns)
         searcher.optimize()
         average += (time() - t_start)
 
