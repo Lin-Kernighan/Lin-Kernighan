@@ -1,27 +1,25 @@
-import datetime
 import logging
-import os
 from os import remove, path
 from typing import List, Tuple
 from typing import Type, Dict
 
 import matplotlib.pyplot as plt
 import numpy as np
-from pandas import DataFrame
 from wget import download
 
 from src.algorithms.lk_opt import LKOpt
 from src.algorithms.lkh_opt import LKHOpt
-from src.algorithms.structures.matrix import adjacency_matrix
 from src.algorithms.three_opt import ThreeOpt
 from src.algorithms.two_opt import TwoOpt
 from src.algorithms.utils.abc_opt import AbcOpt
-from src.algorithms.utils.initial_tour import greedy
-from src.algorithms.utils.generator import generator
+from src.lkh_search import LKHSearch
+from src.tabu_proc_search import TabuProcSearch
+from src.tabu_search import TabuSearch
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
 
+search_type = dict(lkh=LKHSearch, tabu=TabuSearch, tabu_p=TabuProcSearch)
 opts_type: Dict[str, Type[AbcOpt]] = dict(two_opt=TwoOpt, three_opt=ThreeOpt, lk_opt=LKOpt, lkh_opt=LKHOpt)
 
 
@@ -46,32 +44,6 @@ def to_list(points: np.ndarray) -> List[Point]:
 def to_array(points: List[Point]) -> np.ndarray:
     """ List[Point] to array, Point = float, float """
     return np.array(points, dtype=('f8', 'f8'))
-
-
-def draw_plots_i_y(data: List[DataFrame], names: List[str], columns: List[str], file: str, directory: str) -> None:
-    """ Рисуем и сохраняем много графиков column == y_name от итерации """
-    for column in columns:
-        frame = DataFrame()
-        for i in range(len(data)):
-            frame[names[i]] = data[i][column]
-        fig = frame.plot().get_figure()
-        plt.ylabel(column)
-        plt.xlabel('iteration')
-        plt.show()
-        if file is not None:
-            fig.savefig(f'{directory}/{file}_{column}.png')
-
-
-def draw_plot_x_y(data: List[DataFrame], names: List[str], x_name: str, y_name: str, file: str, directory: str) -> None:
-    """ Рисуем и сохраняем график x_name от y_name """
-    for i in range(len(data)):
-        plt.plot(data[i][x_name], data[i][y_name], label=names[i])
-    plt.xlabel(x_name)
-    plt.ylabel(y_name)
-    plt.legend()
-    if file is not None:
-        plt.savefig(f'{directory}/{file}_{x_name}_{y_name}.png')
-    plt.show()
 
 
 def draw_tour(tour: np.ndarray, nodes: np.ndarray, color='r', show=True) -> None:
@@ -133,31 +105,6 @@ class TspLoader:
         points: np.ndarray = to_array(points)
         TspLoader.python_serializer(points, filename.replace('.tsp', ''), directory)
         return points
-
-
-def save_test(heuristics: List[Type[AbcOpt]], names: List[str], size: int) -> None:
-    tsp = generator(size)
-    matrix = adjacency_matrix(tsp)
-    length, tour = greedy(matrix)
-
-    suffix = datetime.datetime.now().strftime("%y%m%d_%H%M%S")
-    filename = f'{"_".join(["test", suffix])}_{size}'
-    frames = []
-
-    os.mkdir(filename)
-    TspLoader.python_serializer(tsp, filename, filename)
-    heuristics = [heuristic(length, tour, matrix) for heuristic in heuristics]
-
-    for idx in range(len(heuristics)):
-        heuristics[idx].optimize()
-        frames.append(heuristics[idx].collector.as_frame())
-        heuristics[idx].collector.dump(filename=f'{filename}_{names[idx]}', directory=filename)
-
-    for frame in frames:
-        frame['time'] -= frame['time'][0]
-
-    draw_plots_i_y(frames, names, ['delta', 'gain', 'time', 'length'], filename, filename)
-    draw_plot_x_y(frames, names, 'time', 'length', filename, filename)
 
 
 def candidates(lkh: LKHOpt, nodes: np.ndarray, color='r') -> None:
