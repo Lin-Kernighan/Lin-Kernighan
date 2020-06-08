@@ -20,18 +20,13 @@ def popmusic() -> Tuple[float, np.ndarray]:
     pass
 
 
-def fast_helsgaun(alpha_matrix: np.ndarray, adjacency_matrix: np.ndarray, best_solution: Set[Edge],
-                  candidates: np.ndarray, excess: float) -> Tuple[float, np.ndarray]:
-    """ Генерируем новый тур по рецепту Хельгауна, c постоптимизацей 2-opt
-    alpha_matrix: альфа-матрица
-    adjacency_matrix: матрица весов
-    best_solution: лучший тур в виде ребер
-    candidates: сгенерированные кандидаты для LKH
-    excess: уровень по которому отсекаются кандидаты
+def two_opt(matrix: np.ndarray) -> Tuple[float, np.ndarray]:
+    """ Генерация начального тура жадным методом + 2-opt
+    matrix: матрица весов
     return: длина, список городов
     """
-    length, tour = helsgaun(alpha_matrix, adjacency_matrix, best_solution, candidates, excess)
-    return TwoOpt.just_improve(length, tour, adjacency_matrix)
+    length, tour = greedy(matrix)
+    return TwoOpt.just_improve(length, tour, matrix)
 
 
 @nb.njit(cache=True)
@@ -62,6 +57,20 @@ def greedy(matrix: np.ndarray) -> Tuple[float, np.ndarray]:
     path += matrix[search][start]
     order[-1] = search
     return path, order
+
+
+def fast_helsgaun(alpha_matrix: np.ndarray, adjacency_matrix: np.ndarray, best_solution: Set[Edge],
+                  candidates: np.ndarray, excess: float) -> Tuple[float, np.ndarray]:
+    """ Генерируем новый тур по рецепту Хельгауна, c постоптимизацей 2-opt
+    alpha_matrix: альфа-матрица
+    adjacency_matrix: матрица весов
+    best_solution: лучший тур в виде ребер
+    candidates: сгенерированные кандидаты для LKH
+    excess: уровень по которому отсекаются кандидаты
+    return: длина, список городов
+    """
+    length, tour = helsgaun(alpha_matrix, adjacency_matrix, best_solution, candidates, excess)
+    return TwoOpt.just_improve(length, tour, adjacency_matrix)
 
 
 @nb.njit(cache=True)

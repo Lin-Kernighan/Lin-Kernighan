@@ -143,7 +143,6 @@ def __choose_t5(tour: np.ndarray, matrix: np.ndarray, it1: int, it4: int, candid
 
 class LKHOpt(AbcOpt):
     """ Локальный поиск: алгоритм Лина-Кернигана
-    Вычислительная сложность поиска локального минимума: O(n^2.6)?
     Обладает улучшенной эвристикой поиска кандидатов
 
     length: начальная длина тура
@@ -154,9 +153,9 @@ class LKHOpt(AbcOpt):
     bridge: make double bridge [boolean]
     non_seq: use non sequential move [boolean]
     excess: parameter for cut bad candidates [float]
-    mul: excess factor
+    mul: excess factor [float]
     k: number of k for k-opt; how many sequential can make algorithm [int]
-    subgradient: use or not subgradient optimization
+    subgradient: use or not subgradient optimization [boolean]
     """
 
     def __init__(self, length: float, tour: np.ndarray, matrix: np.ndarray, **kwargs):

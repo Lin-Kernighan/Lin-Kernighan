@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Set, Tuple
+from typing import Set, Tuple, Optional
 
 import numpy as np
 
@@ -61,7 +61,7 @@ class AbcOpt(ABC):
 
         return self.length, self.tour
 
-    def meta_heuristic_optimize(self, tabu_list: TabuSet, collector: Collector) -> Tuple[float, np.ndarray]:
+    def meta_heuristic_optimize(self, tabu_list: TabuSet, collector: Optional[Collector]) -> Tuple[float, np.ndarray]:
         """ Запуск локального поиска под управление некоторой метаэвристики
         tabu_list: проверенные ранее маршруты
         collector: структура для сбора данных о локальном поиске

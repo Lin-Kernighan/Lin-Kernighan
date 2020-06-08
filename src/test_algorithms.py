@@ -6,7 +6,7 @@ from src.algorithms.structures.matrix import adjacency_matrix
 from src.algorithms.three_opt import ThreeOpt
 from src.algorithms.two_opt import TwoOpt
 from src.algorithms.utils.generator import generator
-from src.algorithms.utils.initial_tour import greedy
+from src.algorithms.utils.initial_tour import greedy, two_opt
 from src.algorithms.utils.utils import get_length
 from src.lkh_search import LKHSearch
 from src.tabu_proc_search import TabuProcSearch
@@ -31,10 +31,17 @@ def test_greedy():
     assert round(get_length(tour, matrix), 2) == round(length, 2), 'generated wrong tour'
 
 
+def test_greedy_with_two_opt():
+    tsp = generator(size)
+    matrix = adjacency_matrix(tsp)
+    length, tour = two_opt(matrix)
+    assert round(get_length(tour, matrix), 2) == round(length, 2), 'generated wrong tour'
+
+
 def test_two_opt(generate_metric_tsp):
     length, tour, matrix = generate_metric_tsp
-    two_opt = TwoOpt(length, tour, matrix)
-    opt_length, opt_tour = two_opt.optimize()
+    opt = TwoOpt(length, tour, matrix)
+    opt_length, opt_tour = opt.optimize()
     assert opt_length < length, 'optimized'
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
 
@@ -141,25 +148,57 @@ def test_tabu_search_lkh_opt(generate_metric_tsp):
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
 
 
+def test_tabu_search_with_collect(generate_metric_tsp):
+    length, tour, matrix = generate_metric_tsp
+    tabu_search = TabuSearch('two_opt', matrix, collect=True)
+    opt_length, opt_tour = tabu_search.optimize()
+    assert opt_length < length, 'optimized'
+    assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
+
+
 def test_lkh_search_fast_helsgaun(generate_metric_tsp):
     length, tour, matrix = generate_metric_tsp
-    tabu_search = LKHSearch(matrix, init='fast_helsgaun')
-    opt_length, opt_tour = tabu_search.optimize()
+    lkh_search = LKHSearch(matrix, init='fast_helsgaun')
+    opt_length, opt_tour = lkh_search.optimize()
+    assert opt_length < length, 'optimized'
+    assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
+
+
+def test_lkh_search_two_opt(generate_metric_tsp):
+    length, tour, matrix = generate_metric_tsp
+    lkh_search = LKHSearch(matrix, init='two_opt')
+    opt_length, opt_tour = lkh_search.optimize()
     assert opt_length < length, 'optimized'
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
 
 
 def test_lkh_search_helsgaun(generate_metric_tsp):
     length, tour, matrix = generate_metric_tsp
-    tabu_search = LKHSearch(matrix, init='helsgaun')
-    opt_length, opt_tour = tabu_search.optimize()
+    lkh_search = LKHSearch(matrix, init='helsgaun')
+    opt_length, opt_tour = lkh_search.optimize()
+    assert opt_length < length, 'optimized'
+    assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
+
+
+def test_lkh_search_with_collect(generate_metric_tsp):
+    length, tour, matrix = generate_metric_tsp
+    lkh_search = LKHSearch(matrix, collect=True)
+    opt_length, opt_tour = lkh_search.optimize()
+    assert opt_length < length, 'optimized'
+    assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
+
+
+def test_lkh_search_with_two_opt_init(generate_metric_tsp):
+    length, tour, matrix = generate_metric_tsp
+    lkh_search = LKHSearch(matrix, two_opt=True)
+    opt_length, opt_tour = lkh_search.optimize()
     assert opt_length < length, 'optimized'
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'
 
 
 def test_tabu_proc_search(generate_metric_tsp):
     length, tour, matrix = generate_metric_tsp
-    tabu_search = TabuProcSearch('two_opt', matrix)
-    opt_length, opt_tour = tabu_search.optimize()
+    lkh_search = TabuProcSearch('two_opt', matrix)
+    opt_length, opt_tour = lkh_search.optimize()
     assert opt_length < length, 'optimized'
     assert round(get_length(opt_tour, matrix), 2) == round(opt_length, 2), 'generated wrong tour'

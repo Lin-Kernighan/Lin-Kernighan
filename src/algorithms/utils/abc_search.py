@@ -14,7 +14,10 @@ class AbcSearch(ABC):
 
     def __init__(self, matrix: np.ndarray, **kwargs):
         (self.length, self.tour), self.matrix = greedy(matrix), matrix
-        self.collector = Collector(['length', 'gain'], {'tabu search': len(self.tour)})
+
+        collect = kwargs.get('collect', False)
+        self.collector = None if not collect else Collector(['length', 'gain'], {'lkh_search': len(self.tour)})
+
         self.data = TabuSet()
         self.data.append(self.length, self.tour)
 

@@ -10,8 +10,9 @@ from src.utils import opts_type
 
 class TabuSearch(AbcSearch):
     """ Базовая метаэвристика: Поиск с запретами
-    opt: название эвристики поиска [two_opt, three_opt, lk, lkh]
+    opt: название эвристики поиска [two_opt, three_opt, lk_opt, lkh_opt]
     matrix: матрица весов
+
     **kwargs: дополнительные параметры для локального поиска
     """
 
@@ -27,7 +28,8 @@ class TabuSearch(AbcSearch):
         swap: сколько раз ломать тур за итерацию. Если тур не улучшится, на следующей итерации ломается он же
         return: лучшая длина тура, лучший тур
         """
-        self.collector.update({'length': self.length, 'gain': 0})
+        if self.collector is not None:
+            self.collector.update({'length': self.length, 'gain': 0})
 
         while iterations > 0:
             self.opt.meta_heuristic_optimize(self.data, self.collector)
