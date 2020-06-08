@@ -6,7 +6,12 @@ import click
 from src.algorithms.structures.matrix import adjacency_matrix
 from src.algorithms.utils.generator import generator
 from src.algorithms.utils.initial_tour import greedy
-from src.utils import opts_type, search_type
+from src.lkh_search import LKHSearch
+from src.tabu_proc_search import TabuProcSearch
+from src.tabu_search import TabuSearch
+from src.utils import opts_type
+
+search_type = dict(lkh=LKHSearch, tabu=TabuSearch, tabu_p=TabuProcSearch)
 
 
 @click.group()

@@ -12,14 +12,10 @@ from src.algorithms.lkh_opt import LKHOpt
 from src.algorithms.three_opt import ThreeOpt
 from src.algorithms.two_opt import TwoOpt
 from src.algorithms.utils.abc_opt import AbcOpt
-from src.lkh_search import LKHSearch
-from src.tabu_proc_search import TabuProcSearch
-from src.tabu_search import TabuSearch
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
 
-search_type = dict(lkh=LKHSearch, tabu=TabuSearch, tabu_p=TabuProcSearch)
 opts_type: Dict[str, Type[AbcOpt]] = dict(two_opt=TwoOpt, three_opt=ThreeOpt, lk_opt=LKOpt, lkh_opt=LKHOpt)
 
 
