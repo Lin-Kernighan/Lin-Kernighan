@@ -5,15 +5,15 @@ from typing import Tuple
 import numba as nb
 import numpy as np
 
-from src.algorithms.lk_opt import __get_tour, __validation
-from src.algorithms.structures.matrix import alpha_matrix
-from src.algorithms.structures.one_tree import one_tree_topology
-from src.algorithms.utils.abc_opt import AbcOpt
-from src.algorithms.utils.double_bridge import double_bridge
-from src.algorithms.utils.hash import generate_hash
-from src.algorithms.utils.non_sequential_move import non_sequential_move
-from src.algorithms.utils.subgradient_optimization import SubgradientOptimization
-from src.algorithms.utils.utils import around, make_pair, check_dlb
+from lin_kernighan.algorithms.lk_opt import __get_tour, __validation
+from lin_kernighan.algorithms.structures.matrix import alpha_matrix
+from lin_kernighan.algorithms.structures.one_tree import one_tree_topology
+from lin_kernighan.algorithms.utils.abc_opt import AbcOpt
+from lin_kernighan.algorithms.utils.double_bridge import double_bridge
+from lin_kernighan.algorithms.utils.hash import generate_hash
+from lin_kernighan.algorithms.utils.non_sequential_move import non_sequential_move
+from lin_kernighan.algorithms.utils.subgradient_optimization import SubgradientOptimization
+from lin_kernighan.algorithms.utils.utils import around, make_pair, check_dlb
 
 
 @nb.njit

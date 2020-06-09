@@ -3,9 +3,9 @@ from typing import Tuple
 
 import numpy as np
 
-from src.algorithms.utils.abc_search import AbcSearch
-from src.algorithms.utils.utils import get_length, mix
-from src.utils import opts_type
+from lin_kernighan.algorithms.utils.abc_search import AbcSearch
+from lin_kernighan.algorithms.utils.utils import get_length, mix
+from lin_kernighan.utils import opts_type
 
 
 class TabuSearch(AbcSearch):

@@ -5,10 +5,10 @@ from typing import Tuple, Dict
 
 import numpy as np
 
-from src.algorithms.utils.abc_opt import AbcOpt
-from src.algorithms.utils.initial_tour import greedy
-from src.algorithms.utils.utils import get_length, mix
-from src.utils import opts_type
+from lin_kernighan.algorithms.utils.abc_opt import AbcOpt
+from lin_kernighan.algorithms.utils.initial_tour import greedy
+from lin_kernighan.algorithms.utils.utils import get_length, mix
+from lin_kernighan.utils import opts_type
 
 
 def worker(opt: AbcOpt, conn: Connection, iterations: int, swap: int):

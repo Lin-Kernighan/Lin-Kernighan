@@ -3,11 +3,11 @@ from typing import Tuple
 
 import numpy as np
 
-from src.algorithms.lkh_opt import LKHOpt
-from src.algorithms.two_opt import TwoOpt
-from src.algorithms.utils.abc_search import AbcSearch
-from src.algorithms.utils.initial_tour import helsgaun, fast_helsgaun, greedy, two_opt
-from src.algorithms.utils.utils import get_length, get_set
+from lin_kernighan.algorithms.lkh_opt import LKHOpt
+from lin_kernighan.algorithms.two_opt import TwoOpt
+from lin_kernighan.algorithms.utils.abc_search import AbcSearch
+from lin_kernighan.algorithms.utils.initial_tour import helsgaun, fast_helsgaun, greedy, two_opt
+from lin_kernighan.algorithms.utils.utils import get_length, get_set
 
 _initialization = dict(helsgaun=helsgaun, fast_helsgaun=fast_helsgaun, greedy=greedy, two_opt=two_opt)
 

@@ -4,7 +4,7 @@ from typing import Tuple
 import numba as nb
 import numpy as np
 
-from src.algorithms.utils.hash import generate_hash
+from lin_kernighan.algorithms.utils.hash import generate_hash
 
 
 @nb.experimental.jitclass(spec=[

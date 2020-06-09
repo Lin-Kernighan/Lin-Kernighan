@@ -3,7 +3,7 @@ from functools import lru_cache
 import numpy as np
 import numba as nb
 
-from src.algorithms.utils.utils import rotate_zero
+from lin_kernighan.algorithms.utils.utils import rotate_zero
 
 
 @lru_cache

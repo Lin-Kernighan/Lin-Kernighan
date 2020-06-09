@@ -6,7 +6,7 @@ from typing import Tuple
 import numpy as np
 import numba as nb
 
-from src.algorithms.structures.one_tree import one_tree
+from lin_kernighan.algorithms.structures.one_tree import one_tree
 
 Edge = Tuple[int, int]
 

@@ -5,13 +5,13 @@ import numpy as np
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 
-from src.algorithms.structures.heap import Heap
-from src.algorithms.utils.utils import make_pair
+from lin_kernighan.algorithms.structures.heap import Heap
+from lin_kernighan.algorithms.utils.utils import make_pair
 
 
 def one_tree(adjacency_matrix: np.ndarray) -> Tuple[float, np.ndarray, np.ndarray]:
     """ MST( все точки кроме нулевой ) + два ребра от нулевой вершины
-    return: длина графа, два массива в формате начало (src array) - конец (dst array)
+    return: длина графа, два массива в формате начало (lin_kernighan array) - конец (dst array)
     """
     # noinspection PyTypeChecker
     coo: coo_matrix = minimum_spanning_tree(adjacency_matrix[1:, 1:]).tocoo()

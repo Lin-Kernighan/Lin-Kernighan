@@ -1,16 +1,16 @@
 import pytest
 
-from src.algorithms.lk_opt import LKOpt
-from src.algorithms.lkh_opt import LKHOpt
-from src.algorithms.structures.matrix import adjacency_matrix
-from src.algorithms.three_opt import ThreeOpt
-from src.algorithms.two_opt import TwoOpt
-from src.algorithms.utils.generator import generator
-from src.algorithms.utils.initial_tour import greedy, two_opt
-from src.algorithms.utils.utils import get_length
-from src.lkh_search import LKHSearch
-from src.tabu_proc_search import TabuProcSearch
-from src.tabu_search import TabuSearch
+from lin_kernighan.algorithms.lk_opt import LKOpt
+from lin_kernighan.algorithms.lkh_opt import LKHOpt
+from lin_kernighan.algorithms.structures.matrix import adjacency_matrix
+from lin_kernighan.algorithms.three_opt import ThreeOpt
+from lin_kernighan.algorithms.two_opt import TwoOpt
+from lin_kernighan.algorithms.utils.generator import generator
+from lin_kernighan.algorithms.utils.initial_tour import greedy, two_opt
+from lin_kernighan.algorithms.utils.utils import get_length
+from lin_kernighan.lkh_search import LKHSearch
+from lin_kernighan.tabu_proc_search import TabuProcSearch
+from lin_kernighan.tabu_search import TabuSearch
 
 size = 100
 

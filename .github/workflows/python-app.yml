@@ -27,4 +27,4 @@ jobs:
         flake8 . --config=setup.cfg
     - name: Test with pytest
       run: |
-        pytest src -v --disable-warnings
+        pytest lin_kernighan -v --disable-warnings

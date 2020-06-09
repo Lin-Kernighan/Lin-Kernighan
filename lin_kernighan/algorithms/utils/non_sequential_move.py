@@ -3,7 +3,7 @@ from typing import Tuple
 import numba as nb
 import numpy as np
 
-from src.algorithms.utils.utils import between, around, make_pair
+from lin_kernighan.algorithms.utils.utils import between, around, make_pair
 
 
 @nb.njit(cache=True)

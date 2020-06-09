@@ -15,7 +15,7 @@ class Collector:
         колонки time and delta (time) создаются сами
         """
         self.data = {}
-        self.info = {'info': info, 'time': ctime(), 'src': self.data}
+        self.info = {'info': info, 'time': ctime(), 'lin_kernighan': self.data}
         self.dimension = len(names)
         for name in names:
             self.data.update({name: []})

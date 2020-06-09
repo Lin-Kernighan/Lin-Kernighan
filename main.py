@@ -2,9 +2,9 @@ import faulthandler
 import logging
 from time import time
 
-from src.algorithms.structures.matrix import adjacency_matrix
-from src.algorithms.utils.generator import generator
-from src.lkh_search import LKHSearch
+from lin_kernighan.algorithms.structures.matrix import adjacency_matrix
+from lin_kernighan.algorithms.utils.generator import generator
+from lin_kernighan.lkh_search import LKHSearch
 
 if __name__ == '__main__':
     size = 500

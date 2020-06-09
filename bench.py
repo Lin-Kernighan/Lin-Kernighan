@@ -3,13 +3,13 @@ from time import time
 
 import click
 
-from src.algorithms.structures.matrix import adjacency_matrix
-from src.algorithms.utils.generator import generator
-from src.algorithms.utils.initial_tour import greedy
-from src.lkh_search import LKHSearch
-from src.tabu_proc_search import TabuProcSearch
-from src.tabu_search import TabuSearch
-from src.utils import opts_type
+from lin_kernighan.algorithms.structures.matrix import adjacency_matrix
+from lin_kernighan.algorithms.utils.generator import generator
+from lin_kernighan.algorithms.utils.initial_tour import greedy
+from lin_kernighan.lkh_search import LKHSearch
+from lin_kernighan.tabu_proc_search import TabuProcSearch
+from lin_kernighan.tabu_search import TabuSearch
+from lin_kernighan.utils import opts_type
 
 search_type = dict(lkh=LKHSearch, tabu=TabuSearch, tabu_p=TabuProcSearch)
 

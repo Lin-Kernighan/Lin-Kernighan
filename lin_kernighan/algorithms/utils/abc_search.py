@@ -3,9 +3,9 @@ from typing import Tuple
 
 import numpy as np
 
-from src.algorithms.structures.collector import Collector
-from src.algorithms.structures.tabu_list import TabuSet
-from src.algorithms.utils.initial_tour import greedy
+from lin_kernighan.algorithms.structures.collector import Collector
+from lin_kernighan.algorithms.structures.tabu_list import TabuSet
+from lin_kernighan.algorithms.utils.initial_tour import greedy
 
 
 class AbcSearch(ABC):

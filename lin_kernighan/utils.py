@@ -7,11 +7,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from wget import download
 
-from src.algorithms.lk_opt import LKOpt
-from src.algorithms.lkh_opt import LKHOpt
-from src.algorithms.three_opt import ThreeOpt
-from src.algorithms.two_opt import TwoOpt
-from src.algorithms.utils.abc_opt import AbcOpt
+from lin_kernighan.algorithms.lk_opt import LKOpt
+from lin_kernighan.algorithms.lkh_opt import LKHOpt
+from lin_kernighan.algorithms.three_opt import ThreeOpt
+from lin_kernighan.algorithms.two_opt import TwoOpt
+from lin_kernighan.algorithms.utils.abc_opt import AbcOpt
 
 Edge = Tuple[int, int]
 Point = Tuple[float, float]
@@ -60,7 +60,7 @@ class TspLoader:
 
     @staticmethod
     def serializer(points: np.ndarray, name: str) -> None:
-        with open(path.join('src', 'tsp', name), 'w') as file:
+        with open(path.join('lin_kernighan', 'tsp', name), 'w') as file:
             for point in points:
                 file.write(f'{point[0]} {point[1]}\n')
 

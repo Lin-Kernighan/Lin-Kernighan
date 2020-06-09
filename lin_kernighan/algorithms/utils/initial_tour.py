@@ -5,7 +5,7 @@ from typing import Tuple, Set
 import numba as nb
 import numpy as np
 
-from src.algorithms.two_opt import TwoOpt
+from lin_kernighan.algorithms.two_opt import TwoOpt
 
 Edge = Tuple[int, int]
 

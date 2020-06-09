@@ -6,10 +6,10 @@ import numba as nb
 import numpy as np
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 
-from src.algorithms.utils.abc_opt import AbcOpt
-from src.algorithms.utils.double_bridge import double_bridge
-from src.algorithms.utils.hash import generate_hash
-from src.algorithms.utils.utils import swap, around, make_pair, between, check_dlb
+from lin_kernighan.algorithms.utils.abc_opt import AbcOpt
+from lin_kernighan.algorithms.utils.double_bridge import double_bridge
+from lin_kernighan.algorithms.utils.hash import generate_hash
+from lin_kernighan.algorithms.utils.utils import swap, around, make_pair, between, check_dlb
 
 warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
 warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)

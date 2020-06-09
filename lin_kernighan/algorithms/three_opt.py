@@ -3,8 +3,8 @@ from typing import Tuple
 import numba as nb
 import numpy as np
 
-from src.algorithms.utils.abc_opt import AbcOpt
-from src.algorithms.utils.utils import swap
+from lin_kernighan.algorithms.utils.abc_opt import AbcOpt
+from lin_kernighan.algorithms.utils.utils import swap
 
 
 @nb.njit(cache=True)
