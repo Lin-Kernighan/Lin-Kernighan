@@ -30,11 +30,11 @@ class LKHSearch(AbcSearch):
     def __init__(self, matrix: np.ndarray, **kwargs):
         super().__init__(matrix, **kwargs)
 
-        if kwargs.get('two_opt', False):
+        if kwargs.get('two_opt', True):
             self.length, self.tour = TwoOpt.just_improve(self.length, self.tour, self.matrix)
 
         self.opt = LKHOpt(self.length, self.tour, self.matrix, **kwargs)
-        self.initial = kwargs.get('init', 'fast_helsgaun')
+        self.initial = kwargs.get('init', 'two_opt')
 
         logging.info('initialization multi trial lkh done')
 
